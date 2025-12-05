@@ -1,0 +1,2038 @@
+{
+  "metadata": {
+    "description": "ISO/IEC 27002:2022, ISO/IEC 27005, ISO 22301, ISO 27017, ISO 27018, ISO 31000, and ISO 20000 controls mapped to DORA requirements",
+    "version": "2.0",
+    "standard": "ISO/IEC 27002:2022, ISO/IEC 27005:2022, ISO 22301:2019, ISO/IEC 27017:2015, ISO/IEC 27018:2019, ISO 31000:2018, ISO/IEC 20000-1:2018",
+    "lastUpdated": "2024-12-05",
+    "totalControls": 137
+  },
+  "controls": [
+    {
+      "controlId": "ISO-5.1",
+      "iso27002Control": "5.1",
+      "title": "Policies for information security",
+      "description": "A set of policies for information security shall be defined, approved by management, published and communicated to employees and relevant external parties.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-001",
+        "DORA-REQ-002",
+        "DORA-REQ-003"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Risk management framework"
+    },
+    {
+      "controlId": "ISO-5.2",
+      "iso27002Control": "5.2",
+      "title": "Review of the policies for information security",
+      "description": "The policies for information security shall be reviewed at planned intervals or if significant changes occur.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-001",
+        "DORA-REQ-004"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Risk assessment review"
+    },
+    {
+      "controlId": "ISO-5.3",
+      "iso27002Control": "5.3",
+      "title": "Segregation of duties",
+      "description": "Duties and areas of responsibility shall be segregated to reduce opportunities for unauthorized or unintentional modification or misuse of the organization's assets.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-005",
+        "DORA-REQ-006"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Risk treatment - organizational controls"
+    },
+    {
+      "controlId": "ISO-5.4",
+      "iso27002Control": "5.4",
+      "title": "Management responsibilities",
+      "description": "Management shall require all employees, contractors and third-party users to apply information security in accordance with the established policies and procedures of the organization.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-007",
+        "DORA-REQ-008"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Risk governance"
+    },
+    {
+      "controlId": "ISO-5.5",
+      "iso27002Control": "5.5",
+      "title": "Contact with authorities",
+      "description": "Appropriate contacts with relevant authorities shall be maintained.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "INCIDENT_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-050",
+        "DORA-REQ-051"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Risk communication"
+    },
+    {
+      "controlId": "ISO-5.6",
+      "iso27002Control": "5.6",
+      "title": "Contact with special interest groups",
+      "description": "Appropriate contacts with special interest groups or other specialist security forums and professional associations shall be maintained.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "INFORMATION_SHARING",
+      "doraRequirements": [
+        "DORA-REQ-200",
+        "DORA-REQ-201"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Information sharing"
+    },
+    {
+      "controlId": "ISO-5.7",
+      "iso27002Control": "5.7",
+      "title": "Threat intelligence",
+      "description": "Information relating to information security threats shall be collected, analyzed and used to inform information security risk management decisions.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-009",
+        "DORA-REQ-010"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Risk identification"
+    },
+    {
+      "controlId": "ISO-5.8",
+      "iso27002Control": "5.8",
+      "title": "Information security in project management",
+      "description": "Information security shall be integrated into project management.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-011",
+        "DORA-REQ-012"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Risk treatment planning"
+    },
+    {
+      "controlId": "ISO-5.9",
+      "iso27002Control": "5.9",
+      "title": "Inventory of information and other associated assets",
+      "description": "An inventory of information and other associated assets, including owners, shall be developed and maintained.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-013",
+        "DORA-REQ-014"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Asset identification"
+    },
+    {
+      "controlId": "ISO-5.10",
+      "iso27002Control": "5.10",
+      "title": "Acceptable use of information and other associated assets",
+      "description": "Rules for the acceptable use and procedures for handling information and other associated assets shall be identified, documented and implemented.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-015",
+        "DORA-REQ-016"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Risk treatment"
+    },
+    {
+      "controlId": "ISO-5.11",
+      "iso27002Control": "5.11",
+      "title": "Return of assets",
+      "description": "All employees, contractors and third-party users shall return all of the organization's assets in their possession upon termination of their employment, contract or agreement.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-017"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Asset management"
+    },
+    {
+      "controlId": "ISO-5.12",
+      "iso27002Control": "5.12",
+      "title": "Classification of information",
+      "description": "Information shall be classified according to the information security requirements of the organization based on legal requirements, value, criticality and sensitivity to unauthorized disclosure or modification.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-018",
+        "DORA-REQ-019"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Risk assessment - asset valuation"
+    },
+    {
+      "controlId": "ISO-5.13",
+      "iso27002Control": "5.13",
+      "title": "Labelling of information",
+      "description": "An appropriate set of procedures for information labelling shall be developed and implemented in accordance with the information classification scheme adopted by the organization.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-020"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Information handling"
+    },
+    {
+      "controlId": "ISO-5.14",
+      "iso27002Control": "5.14",
+      "title": "Information transfer",
+      "description": "Information transfer policies, procedures and controls shall be in place to protect the transfer of information through the use of all types of communication facilities.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "INFORMATION_SHARING",
+      "doraRequirements": [
+        "DORA-REQ-202",
+        "DORA-REQ-203"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Information sharing controls"
+    },
+    {
+      "controlId": "ISO-5.15",
+      "iso27002Control": "5.15",
+      "title": "Access control",
+      "description": "Rules to control physical and logical access to information and other associated assets shall be established and implemented based on business and information security requirements.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-021",
+        "DORA-REQ-022"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Access control risk"
+    },
+    {
+      "controlId": "ISO-5.16",
+      "iso27002Control": "5.16",
+      "title": "Identity management",
+      "description": "The full life cycle of identities shall be managed.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-023",
+        "DORA-REQ-024"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Identity risk management"
+    },
+    {
+      "controlId": "ISO-5.17",
+      "iso27002Control": "5.17",
+      "title": "Authentication information",
+      "description": "Allocation and management of authentication information shall be controlled by a management process.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-025",
+        "DORA-REQ-026"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Authentication risk"
+    },
+    {
+      "controlId": "ISO-5.18",
+      "iso27002Control": "5.18",
+      "title": "Access rights",
+      "description": "Access rights shall be provisioned, reviewed, modified and removed in accordance with the organization's topic-specific policy on access control.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-027",
+        "DORA-REQ-028"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Access rights risk"
+    },
+    {
+      "controlId": "ISO-5.19",
+      "iso27002Control": "5.19",
+      "title": "Information security in supplier relationships",
+      "description": "Processes and procedures shall be defined and implemented to manage the information security risks associated with the use of supplier's products or services.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "THIRD_PARTY_RISK",
+      "doraRequirements": [
+        "DORA-REQ-100",
+        "DORA-REQ-101",
+        "DORA-REQ-102"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Third-party risk assessment"
+    },
+    {
+      "controlId": "ISO-5.20",
+      "iso27002Control": "5.20",
+      "title": "Addressing information security within supplier agreements",
+      "description": "Relevant information security requirements shall be established and agreed with each supplier that may access, process, store, communicate, or provide an IT infrastructure component for, the organization's information.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "THIRD_PARTY_RISK",
+      "doraRequirements": [
+        "DORA-REQ-103",
+        "DORA-REQ-104",
+        "DORA-REQ-105"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Supplier risk management"
+    },
+    {
+      "controlId": "ISO-5.21",
+      "iso27002Control": "5.21",
+      "title": "Managing information security in the ICT supply chain",
+      "description": "Processes and procedures shall be defined and implemented to manage the information security risks associated with the ICT products and services supply chain.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "THIRD_PARTY_RISK",
+      "doraRequirements": [
+        "DORA-REQ-106",
+        "DORA-REQ-107"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Supply chain risk"
+    },
+    {
+      "controlId": "ISO-5.22",
+      "iso27002Control": "5.22",
+      "title": "Monitoring, review and change management of supplier services",
+      "description": "Organizations shall regularly monitor, review, audit and manage changes to supplier information security practices and service delivery.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "THIRD_PARTY_RISK",
+      "doraRequirements": [
+        "DORA-REQ-108",
+        "DORA-REQ-109"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Ongoing supplier risk monitoring"
+    },
+    {
+      "controlId": "ISO-5.23",
+      "iso27002Control": "5.23",
+      "title": "Information security for use of cloud services",
+      "description": "Processes for acquisition, use, management and exit from cloud services shall be established in accordance with the organization's information security requirements.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "THIRD_PARTY_RISK",
+      "doraRequirements": [
+        "DORA-REQ-110",
+        "DORA-REQ-111"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Cloud service risk"
+    },
+    {
+      "controlId": "ISO-5.24",
+      "iso27002Control": "5.24",
+      "title": "Information security incident management planning and preparation",
+      "description": "Processes and procedures shall be established and maintained to ensure a quick, effective and orderly response to information security incidents.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "INCIDENT_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-052",
+        "DORA-REQ-053",
+        "DORA-REQ-054"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Incident risk management"
+    },
+    {
+      "controlId": "ISO-5.25",
+      "iso27002Control": "5.25",
+      "title": "Assessment and decision on information security events",
+      "description": "Information security events shall be assessed and it shall be decided if they are to be classified as information security incidents.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "INCIDENT_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-055",
+        "DORA-REQ-056"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Event assessment"
+    },
+    {
+      "controlId": "ISO-5.26",
+      "iso27002Control": "5.26",
+      "title": "Response to information security incidents",
+      "description": "Information security incidents shall be responded to in accordance with the documented procedures.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "INCIDENT_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-057",
+        "DORA-REQ-058",
+        "DORA-REQ-059"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Incident response"
+    },
+    {
+      "controlId": "ISO-5.27",
+      "iso27002Control": "5.27",
+      "title": "Learning from information security incidents",
+      "description": "Knowledge gained from analyzing and resolving information security incidents shall be used to reduce the likelihood or impact of future incidents.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "INCIDENT_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-060",
+        "DORA-REQ-061"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Lessons learned"
+    },
+    {
+      "controlId": "ISO-5.28",
+      "iso27002Control": "5.28",
+      "title": "Collection of evidence",
+      "description": "The organization shall establish and implement procedures for the identification, collection, acquisition and preservation of information that can serve as evidence.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "INCIDENT_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-062",
+        "DORA-REQ-063"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Evidence management"
+    },
+    {
+      "controlId": "ISO-5.29",
+      "iso27002Control": "5.29",
+      "title": "Information security during disruption",
+      "description": "The organization shall plan how to maintain information security at an appropriate level during disruption.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-029",
+        "DORA-REQ-030"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 3,
+      "iso27005Mapping": "Business continuity risk"
+    },
+    {
+      "controlId": "ISO-5.30",
+      "iso27002Control": "5.30",
+      "title": "ICT readiness for business continuity",
+      "description": "ICT continuity shall be planned, implemented, maintained and tested based on business continuity objectives and ICT risk requirements.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-031",
+        "DORA-REQ-032"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 3,
+      "iso27005Mapping": "ICT continuity risk"
+    },
+    {
+      "controlId": "ISO-5.31",
+      "iso27002Control": "5.31",
+      "title": "Legal, statutory, regulatory and contractual requirements",
+      "description": "All relevant legislative, statutory, regulatory and contractual requirements related to information security and the organization's approach to meet these requirements shall be explicitly identified, documented and kept up to date.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-033",
+        "DORA-REQ-034"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Compliance risk"
+    },
+    {
+      "controlId": "ISO-5.32",
+      "iso27002Control": "5.32",
+      "title": "Intellectual property rights",
+      "description": "Appropriate procedures shall be implemented to ensure compliance with legislative, regulatory and contractual requirements related to intellectual property rights.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-035"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "IP risk"
+    },
+    {
+      "controlId": "ISO-5.33",
+      "iso27002Control": "5.33",
+      "title": "Protection of records",
+      "description": "Records shall be protected from loss, destruction, falsification, unauthorized access and unauthorized release, in accordance with legislative, regulatory, contractual and business requirements.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-036",
+        "DORA-REQ-037"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Records management risk"
+    },
+    {
+      "controlId": "ISO-5.34",
+      "iso27002Control": "5.34",
+      "title": "Privacy and protection of PII",
+      "description": "Privacy and protection of personally identifiable information (PII) shall be ensured as required in applicable legislation and regulations where applicable.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-038",
+        "DORA-REQ-039"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Privacy risk"
+    },
+    {
+      "controlId": "ISO-5.35",
+      "iso27002Control": "5.35",
+      "title": "Independent review of information security",
+      "description": "The organization's approach to managing information security and its implementation (i.e. control objectives, controls, policies, processes and procedures for information security) shall be reviewed independently at planned intervals, or when significant changes occur.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-040",
+        "DORA-REQ-041"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Risk review"
+    },
+    {
+      "controlId": "ISO-5.36",
+      "iso27002Control": "5.36",
+      "title": "Compliance with policies, rules and standards for information security",
+      "description": "Compliance with the organization's information security policies, topic-specific policies, rules and standards shall be regularly reviewed.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-042",
+        "DORA-REQ-043"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Compliance monitoring"
+    },
+    {
+      "controlId": "ISO-5.37",
+      "iso27002Control": "5.37",
+      "title": "Documented operating procedures",
+      "description": "Operating procedures for information processing facilities shall be documented and made available to all personnel who need them.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-044",
+        "DORA-REQ-045"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Operational risk"
+    },
+    {
+      "controlId": "ISO-6.1",
+      "iso27002Control": "6.1",
+      "title": "Screening",
+      "description": "Background verification checks on all candidates for employment, contractors and third-party users shall be carried out in accordance with relevant legislation, regulations, ethics and contractual requirements and shall be proportional to the business requirements, the classification of the information to be accessed and the perceived risks.",
+      "category": "PEOPLE",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-046"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Personnel risk"
+    },
+    {
+      "controlId": "ISO-6.2",
+      "iso27002Control": "6.2",
+      "title": "Terms and conditions of employment",
+      "description": "The contractual agreements with employees, contractors and third-party users shall state their and the organization's responsibilities for information security.",
+      "category": "PEOPLE",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-047"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Employment risk"
+    },
+    {
+      "controlId": "ISO-6.3",
+      "iso27002Control": "6.3",
+      "title": "Information security awareness, education and training",
+      "description": "All employees of the organization and, where relevant, contractors and third-party users shall receive appropriate awareness, education and training and regular updates in organizational policies and procedures, as relevant for their job function.",
+      "category": "PEOPLE",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-048",
+        "DORA-REQ-049"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Awareness risk"
+    },
+    {
+      "controlId": "ISO-6.4",
+      "iso27002Control": "6.4",
+      "title": "Disciplinary process",
+      "description": "A formal disciplinary process for employees who have committed an information security breach shall be established.",
+      "category": "PEOPLE",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-050"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Disciplinary risk"
+    },
+    {
+      "controlId": "ISO-6.5",
+      "iso27002Control": "6.5",
+      "title": "Responsibilities after termination or change of employment",
+      "description": "Information security responsibilities and duties that remain valid after termination or change of employment shall be defined, enforced and communicated to relevant personnel.",
+      "category": "PEOPLE",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-051"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Termination risk"
+    },
+    {
+      "controlId": "ISO-6.6",
+      "iso27002Control": "6.6",
+      "title": "Confidentiality or non-disclosure agreements",
+      "description": "Confidentiality or non-disclosure agreements reflecting the organization's needs for the protection of information shall be identified, documented, regularly reviewed and signed by personnel.",
+      "category": "PEOPLE",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-052"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Confidentiality risk"
+    },
+    {
+      "controlId": "ISO-6.7",
+      "iso27002Control": "6.7",
+      "title": "Remote working",
+      "description": "Information security policy and supporting security measures shall be implemented to protect information accessed, processed or stored at remote working sites.",
+      "category": "PEOPLE",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-053"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Remote work risk"
+    },
+    {
+      "controlId": "ISO-6.8",
+      "iso27002Control": "6.8",
+      "title": "Information security event reporting",
+      "description": "Information security events shall be reported through appropriate management channels as quickly as possible.",
+      "category": "PEOPLE",
+      "pillar": "INCIDENT_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-064",
+        "DORA-REQ-065"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Event reporting"
+    },
+    {
+      "controlId": "ISO-7.1",
+      "iso27002Control": "7.1",
+      "title": "Physical security perimeters",
+      "description": "Physical security perimeters shall be defined and used to protect areas that contain either sensitive or critical information and information processing facilities.",
+      "category": "PHYSICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-054"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "INFRASTRUCTURE",
+        "DATA_STORAGE"
+      ],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Physical security risk"
+    },
+    {
+      "controlId": "ISO-7.2",
+      "iso27002Control": "7.2",
+      "title": "Physical entry",
+      "description": "Physical entry controls shall be designed and applied.",
+      "category": "PHYSICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-055"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "INFRASTRUCTURE",
+        "DATA_STORAGE"
+      ],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Physical access risk"
+    },
+    {
+      "controlId": "ISO-7.3",
+      "iso27002Control": "7.3",
+      "title": "Securing offices, rooms and facilities",
+      "description": "Physical security for offices, rooms and facilities shall be designed and applied.",
+      "category": "PHYSICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-056"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "INFRASTRUCTURE"
+      ],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Facility security risk"
+    },
+    {
+      "controlId": "ISO-7.4",
+      "iso27002Control": "7.4",
+      "title": "Physical security monitoring",
+      "description": "Premises shall be continuously monitored for unauthorized physical access.",
+      "category": "PHYSICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-057"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "INFRASTRUCTURE",
+        "SECURITY_TOOL"
+      ],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Monitoring risk"
+    },
+    {
+      "controlId": "ISO-7.5",
+      "iso27002Control": "7.5",
+      "title": "Protecting against physical and environmental threats",
+      "description": "Protection against physical and environmental threats, such as natural disasters, malicious attack or accidents shall be designed and applied.",
+      "category": "PHYSICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-058",
+        "DORA-REQ-059"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "INFRASTRUCTURE",
+        "DATA_STORAGE"
+      ],
+      "minCriticalityLevel": 3,
+      "iso27005Mapping": "Environmental risk"
+    },
+    {
+      "controlId": "ISO-7.6",
+      "iso27002Control": "7.6",
+      "title": "Working in secure areas",
+      "description": "Guidelines for working in secure areas shall be designed and applied.",
+      "category": "PHYSICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-060"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "INFRASTRUCTURE"
+      ],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Secure area risk"
+    },
+    {
+      "controlId": "ISO-7.7",
+      "iso27002Control": "7.7",
+      "title": "Clear desk and clear screen",
+      "description": "Clear desk and clear screen policies and procedures shall be defined and adopted taking into account the information security risks and the legal, statutory, regulatory and contractual requirements.",
+      "category": "PHYSICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-061"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Information exposure risk"
+    },
+    {
+      "controlId": "ISO-7.8",
+      "iso27002Control": "7.8",
+      "title": "Equipment siting and protection",
+      "description": "Equipment shall be sited and protected to reduce the risks from environmental threats and hazards, and opportunities for unauthorized access.",
+      "category": "PHYSICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-062"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "INFRASTRUCTURE",
+        "NETWORK"
+      ],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Equipment risk"
+    },
+    {
+      "controlId": "ISO-7.9",
+      "iso27002Control": "7.9",
+      "title": "Security of assets off-premises",
+      "description": "Security shall be applied to off-premises assets, taking into account the different risks of working outside the organization's premises.",
+      "category": "PHYSICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-063"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Off-premises risk"
+    },
+    {
+      "controlId": "ISO-7.10",
+      "iso27002Control": "7.10",
+      "title": "Storage media",
+      "description": "Storage media shall be managed throughout their life cycle in accordance with the topic-specific policy on the use, handling and storage of assets.",
+      "category": "PHYSICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-064"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "DATA_STORAGE"
+      ],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Media risk"
+    },
+    {
+      "controlId": "ISO-7.11",
+      "iso27002Control": "7.11",
+      "title": "Supporting utilities",
+      "description": "Information processing facilities shall be protected from power failures and other disruptions caused by failures in supporting utilities.",
+      "category": "PHYSICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-065",
+        "DORA-REQ-066"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "INFRASTRUCTURE"
+      ],
+      "minCriticalityLevel": 3,
+      "iso27005Mapping": "Utility risk"
+    },
+    {
+      "controlId": "ISO-7.12",
+      "iso27002Control": "7.12",
+      "title": "Cabling security",
+      "description": "Power and telecommunications cabling carrying data or supporting information services shall be protected from interception, interference or damage.",
+      "category": "PHYSICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-067"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "NETWORK",
+        "INFRASTRUCTURE"
+      ],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Cabling risk"
+    },
+    {
+      "controlId": "ISO-7.13",
+      "iso27002Control": "7.13",
+      "title": "Maintenance",
+      "description": "Equipment shall be correctly maintained to ensure its continued availability and integrity.",
+      "category": "PHYSICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-068"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "INFRASTRUCTURE",
+        "NETWORK"
+      ],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Maintenance risk"
+    },
+    {
+      "controlId": "ISO-7.14",
+      "iso27002Control": "7.14",
+      "title": "Secure disposal or re-use of equipment",
+      "description": "Items of equipment containing storage media shall be verified to ensure that any sensitive data and licensed software has been removed or securely overwritten prior to disposal or re-use.",
+      "category": "PHYSICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-069"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Disposal risk"
+    },
+    {
+      "controlId": "ISO-8.1",
+      "iso27002Control": "8.1",
+      "title": "User endpoint devices",
+      "description": "Information stored on, processed by or accessible via user endpoint devices shall be protected.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-070"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "APPLICATION",
+        "INFRASTRUCTURE"
+      ],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Endpoint risk"
+    },
+    {
+      "controlId": "ISO-8.2",
+      "iso27002Control": "8.2",
+      "title": "Privileged access rights",
+      "description": "The allocation and use of privileged access rights shall be restricted and managed.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-071",
+        "DORA-REQ-072"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Privileged access risk"
+    },
+    {
+      "controlId": "ISO-8.3",
+      "iso27002Control": "8.3",
+      "title": "Information access restriction",
+      "description": "Access to information and other associated assets shall be restricted in accordance with the established topic-specific policy on access control.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-073",
+        "DORA-REQ-074"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Access restriction risk"
+    },
+    {
+      "controlId": "ISO-8.4",
+      "iso27002Control": "8.4",
+      "title": "Access to source code",
+      "description": "Read and write access to source code, development tools and software libraries shall be appropriately managed.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-075"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "APPLICATION"
+      ],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Source code risk"
+    },
+    {
+      "controlId": "ISO-8.5",
+      "iso27002Control": "8.5",
+      "title": "Secure authentication",
+      "description": "Secure authentication methods shall be used to control access to systems, applications and information.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-076",
+        "DORA-REQ-077"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Authentication risk"
+    },
+    {
+      "controlId": "ISO-8.6",
+      "iso27002Control": "8.6",
+      "title": "Capacity management",
+      "description": "The use of resources shall be monitored, tuned and projections made of future capacity requirements to ensure the required system performance.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-078"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "INFRASTRUCTURE",
+        "DATABASE"
+      ],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Capacity risk"
+    },
+    {
+      "controlId": "ISO-8.7",
+      "iso27002Control": "8.7",
+      "title": "Protection against malware",
+      "description": "Protection against malware shall be implemented and supported by appropriate user awareness.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-079",
+        "DORA-REQ-080"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Malware risk"
+    },
+    {
+      "controlId": "ISO-8.8",
+      "iso27002Control": "8.8",
+      "title": "Management of technical vulnerabilities",
+      "description": "Information about technical vulnerabilities of information systems being used shall be obtained in a timely fashion, the organization's exposure to such vulnerabilities evaluated, and appropriate measures taken to address the associated risk.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "RESILIENCE_TESTING",
+      "doraRequirements": [
+        "DORA-REQ-120",
+        "DORA-REQ-121",
+        "DORA-REQ-122"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Vulnerability risk"
+    },
+    {
+      "controlId": "ISO-8.9",
+      "iso27002Control": "8.9",
+      "title": "Configuration management",
+      "description": "Configurations, including security configurations, of hardware, software, services and networks shall be established, documented, implemented, monitored and reviewed.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-081",
+        "DORA-REQ-082"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Configuration risk"
+    },
+    {
+      "controlId": "ISO-8.10",
+      "iso27002Control": "8.10",
+      "title": "Information deletion",
+      "description": "Information stored in information systems, devices or any other storage media shall be deleted when no longer required.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-083"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Data retention risk"
+    },
+    {
+      "controlId": "ISO-8.11",
+      "iso27002Control": "8.11",
+      "title": "Data masking",
+      "description": "Data masking shall be used in accordance with the organization's topic-specific policy on access control and the business requirements, taking into account applicable legislation and regulations.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-084"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "DATABASE",
+        "APPLICATION"
+      ],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Data protection risk"
+    },
+    {
+      "controlId": "ISO-8.12",
+      "iso27002Control": "8.12",
+      "title": "Data leakage prevention",
+      "description": "Data leakage prevention measures shall be applied to systems, networks and any other devices that process, store or transmit sensitive information.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-085"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Data leakage risk"
+    },
+    {
+      "controlId": "ISO-8.13",
+      "iso27002Control": "8.13",
+      "title": "Information backup",
+      "description": "Backup copies of information, software and systems shall be maintained, along with the business continuity and disaster recovery plans.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-086",
+        "DORA-REQ-087"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 3,
+      "iso27005Mapping": "Backup risk"
+    },
+    {
+      "controlId": "ISO-8.14",
+      "iso27002Control": "8.14",
+      "title": "Redundancy of information processing facilities",
+      "description": "Information processing facilities shall be implemented with redundancy sufficient to meet availability requirements.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-088",
+        "DORA-REQ-089"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "INFRASTRUCTURE",
+        "DATABASE"
+      ],
+      "minCriticalityLevel": 3,
+      "iso27005Mapping": "Redundancy risk"
+    },
+    {
+      "controlId": "ISO-8.15",
+      "iso27002Control": "8.15",
+      "title": "Logging",
+      "description": "Logging facilities and log information shall be protected against tampering and unauthorized access.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "INCIDENT_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-066",
+        "DORA-REQ-067"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Logging risk"
+    },
+    {
+      "controlId": "ISO-8.16",
+      "iso27002Control": "8.16",
+      "title": "Monitoring activities",
+      "description": "Networks, systems and applications shall be monitored for anomalous behavior and appropriate actions taken to evaluate potential information security incidents.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "INCIDENT_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-068",
+        "DORA-REQ-069"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Monitoring risk"
+    },
+    {
+      "controlId": "ISO-8.17",
+      "iso27002Control": "8.17",
+      "title": "Clock synchronization",
+      "description": "The clocks of all relevant information processing systems within an organization or security domain shall be synchronized to a single reference time source.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-090"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Time synchronization risk"
+    },
+    {
+      "controlId": "ISO-8.18",
+      "iso27002Control": "8.18",
+      "title": "Use of privileged utility programs",
+      "description": "The use of utility programs that might be capable of overriding system and application controls shall be restricted and tightly controlled.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-091"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Utility program risk"
+    },
+    {
+      "controlId": "ISO-8.19",
+      "iso27002Control": "8.19",
+      "title": "Installation of software on operational systems",
+      "description": "Procedures and measures shall be implemented to securely install software on operational systems.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-092"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Software installation risk"
+    },
+    {
+      "controlId": "ISO-8.20",
+      "iso27002Control": "8.20",
+      "title": "Network security",
+      "description": "Networks and network devices shall be secured, managed and controlled to protect information in systems and applications.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-093",
+        "DORA-REQ-094"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "NETWORK",
+        "INFRASTRUCTURE"
+      ],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Network security risk"
+    },
+    {
+      "controlId": "ISO-8.21",
+      "iso27002Control": "8.21",
+      "title": "Security of network services",
+      "description": "Security mechanisms, service levels and service requirements of network services shall be identified, implemented and monitored.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-095"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "NETWORK",
+        "THIRD_PARTY_SERVICE"
+      ],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Network service risk"
+    },
+    {
+      "controlId": "ISO-8.22",
+      "iso27002Control": "8.22",
+      "title": "Segregation of networks",
+      "description": "Groups of information services, users and information systems shall be segregated on networks.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-096"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "NETWORK"
+      ],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Network segregation risk"
+    },
+    {
+      "controlId": "ISO-8.23",
+      "iso27002Control": "8.23",
+      "title": "Web filtering",
+      "description": "Access to external websites shall be managed to reduce exposure to malicious content.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-097"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Web filtering risk"
+    },
+    {
+      "controlId": "ISO-8.24",
+      "iso27002Control": "8.24",
+      "title": "Use of cryptography",
+      "description": "Cryptographic controls shall be used in accordance with all applicable laws, regulations and standards.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-098",
+        "DORA-REQ-099"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Cryptography risk"
+    },
+    {
+      "controlId": "ISO-8.25",
+      "iso27002Control": "8.25",
+      "title": "Secure development life cycle",
+      "description": "Rules for the development of software and systems shall be established and applied to developments within the organization.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "RESILIENCE_TESTING",
+      "doraRequirements": [
+        "DORA-REQ-123",
+        "DORA-REQ-124"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "APPLICATION"
+      ],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Secure development risk"
+    },
+    {
+      "controlId": "ISO-8.26",
+      "iso27002Control": "8.26",
+      "title": "Application security requirements",
+      "description": "Information security requirements shall be identified, specified and approved when developing or acquiring applications.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "RESILIENCE_TESTING",
+      "doraRequirements": [
+        "DORA-REQ-125"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "APPLICATION"
+      ],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Application security risk"
+    },
+    {
+      "controlId": "ISO-8.27",
+      "iso27002Control": "8.27",
+      "title": "Secure system architecture and engineering principles",
+      "description": "Principles for engineering secure systems shall be established, documented, maintained and applied to any information system development activities.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "RESILIENCE_TESTING",
+      "doraRequirements": [
+        "DORA-REQ-126"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "APPLICATION",
+        "INFRASTRUCTURE"
+      ],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "System architecture risk"
+    },
+    {
+      "controlId": "ISO-8.28",
+      "iso27002Control": "8.28",
+      "title": "Secure coding",
+      "description": "Secure coding principles shall be applied to software development.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "RESILIENCE_TESTING",
+      "doraRequirements": [
+        "DORA-REQ-127"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "APPLICATION"
+      ],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Secure coding risk"
+    },
+    {
+      "controlId": "ISO-8.29",
+      "iso27002Control": "8.29",
+      "title": "Security testing in development and acceptance",
+      "description": "Security testing shall be performed during development and acceptance of systems, applications and infrastructure components.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "RESILIENCE_TESTING",
+      "doraRequirements": [
+        "DORA-REQ-128",
+        "DORA-REQ-129",
+        "DORA-REQ-130"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Security testing risk"
+    },
+    {
+      "controlId": "ISO-8.30",
+      "iso27002Control": "8.30",
+      "title": "Outsourced development",
+      "description": "The organization shall direct, monitor, review and audit the development activities carried out by external parties.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "THIRD_PARTY_RISK",
+      "doraRequirements": [
+        "DORA-REQ-112",
+        "DORA-REQ-113"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Outsourced development risk"
+    },
+    {
+      "controlId": "ISO-8.31",
+      "iso27002Control": "8.31",
+      "title": "Separation of development, test and production environments",
+      "description": "Development, test and production environments shall be separated and managed.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-100"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "INFRASTRUCTURE",
+        "APPLICATION"
+      ],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Environment separation risk"
+    },
+    {
+      "controlId": "ISO-8.32",
+      "iso27002Control": "8.32",
+      "title": "Change management",
+      "description": "Changes to information processing facilities and systems shall be subject to change management.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-101",
+        "DORA-REQ-102"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Change management risk"
+    },
+    {
+      "controlId": "ISO-8.33",
+      "iso27002Control": "8.33",
+      "title": "Test information",
+      "description": "Test information shall be selected appropriately, protected and managed.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "RESILIENCE_TESTING",
+      "doraRequirements": [
+        "DORA-REQ-131"
+      ],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": [
+        "DATABASE",
+        "APPLICATION"
+      ],
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Test data risk"
+    },
+    {
+      "controlId": "ISO-8.34",
+      "iso27002Control": "8.34",
+      "title": "Protection of information systems during audit testing",
+      "description": "Audit tests and other assurance activities involving assessment of operational systems shall be planned and agreed between the tester and appropriate management.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "RESILIENCE_TESTING",
+      "doraRequirements": [
+        "DORA-REQ-132",
+        "DORA-REQ-133"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Audit testing risk"
+    },
+    {
+      "controlId": "ISO-27005-1",
+      "iso27002Control": "27005",
+      "title": "Information security risk management framework",
+      "description": "Establish, implement, maintain and continually improve an information security risk management framework.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-001",
+        "DORA-REQ-002",
+        "DORA-REQ-003",
+        "DORA-REQ-004"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Risk management framework"
+    },
+    {
+      "controlId": "ISO-27005-2",
+      "iso27002Control": "27005",
+      "title": "Risk identification",
+      "description": "Identify information security risks by identifying threats, vulnerabilities and impacts on assets.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-005",
+        "DORA-REQ-006",
+        "DORA-REQ-007"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Risk identification process"
+    },
+    {
+      "controlId": "ISO-27005-3",
+      "iso27002Control": "27005",
+      "title": "Risk analysis",
+      "description": "Analyze information security risks to determine the likelihood of occurrence and potential impact.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-008",
+        "DORA-REQ-009",
+        "DORA-REQ-010"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Risk analysis methodology"
+    },
+    {
+      "controlId": "ISO-27005-4",
+      "iso27002Control": "27005",
+      "title": "Risk evaluation",
+      "description": "Evaluate information security risks to determine which risks need treatment and their priority.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-011",
+        "DORA-REQ-012",
+        "DORA-REQ-013"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Risk evaluation criteria"
+    },
+    {
+      "controlId": "ISO-27005-5",
+      "iso27002Control": "27005",
+      "title": "Risk treatment",
+      "description": "Select and implement appropriate risk treatment options to address information security risks.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-014",
+        "DORA-REQ-015",
+        "DORA-REQ-016"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Risk treatment plan"
+    },
+    {
+      "controlId": "ISO-27005-6",
+      "iso27002Control": "27005",
+      "title": "Risk acceptance",
+      "description": "Residual risks shall be formally accepted by risk owners.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-017",
+        "DORA-REQ-018"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Risk acceptance criteria"
+    },
+    {
+      "controlId": "ISO-27005-7",
+      "iso27002Control": "27005",
+      "title": "Risk communication and consultation",
+      "description": "Information security risks and risk treatment decisions shall be communicated and consulted with relevant stakeholders.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "INFORMATION_SHARING",
+      "doraRequirements": [
+        "DORA-REQ-204",
+        "DORA-REQ-205"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Risk communication"
+    },
+    {
+      "controlId": "ISO-27005-8",
+      "iso27002Control": "27005",
+      "title": "Risk monitoring and review",
+      "description": "Information security risks shall be monitored and reviewed on an ongoing basis to identify changes in the risk context.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": [
+        "DORA-REQ-019",
+        "DORA-REQ-020",
+        "DORA-REQ-021"
+      ],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Risk monitoring"
+    },
+    {
+      "controlId": "ISO-22301-1",
+      "iso27002Control": "22301",
+      "title": "Business continuity policy",
+      "description": "The organization shall establish, implement and maintain a business continuity policy that is appropriate to the purpose of the organization.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-029", "DORA-REQ-030", "DORA-REQ-031"],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 3,
+      "iso27005Mapping": "Business continuity framework"
+    },
+    {
+      "controlId": "ISO-22301-2",
+      "iso27002Control": "22301",
+      "title": "Business continuity objectives",
+      "description": "The organization shall establish business continuity objectives at relevant functions and levels.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-032", "DORA-REQ-033"],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 3,
+      "iso27005Mapping": "BC objectives"
+    },
+    {
+      "controlId": "ISO-22301-3",
+      "iso27002Control": "22301",
+      "title": "Business impact analysis",
+      "description": "The organization shall conduct business impact analysis to determine the impact of disruption on its activities.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-034", "DORA-REQ-035"],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 3,
+      "iso27005Mapping": "Impact analysis"
+    },
+    {
+      "controlId": "ISO-22301-4",
+      "iso27002Control": "22301",
+      "title": "Risk assessment for business continuity",
+      "description": "The organization shall identify and assess risks that could cause disruption to its activities.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-036", "DORA-REQ-037"],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "BC risk assessment"
+    },
+    {
+      "controlId": "ISO-22301-5",
+      "iso27002Control": "22301",
+      "title": "Business continuity strategies and solutions",
+      "description": "The organization shall determine and select business continuity strategies and solutions.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-038", "DORA-REQ-039"],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 3,
+      "iso27005Mapping": "BC strategies"
+    },
+    {
+      "controlId": "ISO-22301-6",
+      "iso27002Control": "22301",
+      "title": "Business continuity plans",
+      "description": "The organization shall establish, implement and maintain business continuity plans.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-040", "DORA-REQ-041"],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 3,
+      "iso27005Mapping": "BC plans"
+    },
+    {
+      "controlId": "ISO-22301-7",
+      "iso27002Control": "22301",
+      "title": "Business continuity exercises and testing",
+      "description": "The organization shall exercise and test its business continuity procedures to ensure they are effective.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "RESILIENCE_TESTING",
+      "doraRequirements": ["DORA-REQ-134", "DORA-REQ-135", "DORA-REQ-136"],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 3,
+      "iso27005Mapping": "BC testing"
+    },
+    {
+      "controlId": "ISO-27017-1",
+      "iso27002Control": "27017",
+      "title": "Shared responsibility matrix",
+      "description": "The cloud service provider and customer shall agree on and document a shared responsibility matrix that clearly defines the responsibilities for information security controls.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "THIRD_PARTY_RISK",
+      "doraRequirements": ["DORA-REQ-185", "DORA-REQ-186", "DORA-REQ-187"],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Cloud responsibility"
+    },
+    {
+      "controlId": "ISO-27017-2",
+      "iso27002Control": "27017",
+      "title": "Removal of customer assets",
+      "description": "The cloud service provider shall ensure that customer assets are removed from the cloud service provider's systems when requested by the customer or when the service is terminated.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "THIRD_PARTY_RISK",
+      "doraRequirements": ["DORA-REQ-188", "DORA-REQ-189"],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": ["CLOUD_SERVICE", "THIRD_PARTY_SERVICE"],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Cloud asset removal"
+    },
+    {
+      "controlId": "ISO-27017-3",
+      "iso27002Control": "27017",
+      "title": "Return, transfer or disposal of customer assets",
+      "description": "The cloud service provider shall return, transfer or dispose of customer assets in accordance with agreed terms and conditions.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "THIRD_PARTY_RISK",
+      "doraRequirements": ["DORA-REQ-190", "DORA-REQ-191"],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": ["CLOUD_SERVICE", "DATA_STORAGE"],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Cloud data transfer"
+    },
+    {
+      "controlId": "ISO-27017-4",
+      "iso27002Control": "27017",
+      "title": "Segregation in virtual computing environments",
+      "description": "The cloud service provider shall ensure that virtual computing environments are segregated to prevent unauthorized access to customer assets.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "THIRD_PARTY_RISK",
+      "doraRequirements": ["DORA-REQ-192", "DORA-REQ-193"],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": ["CLOUD_SERVICE", "INFRASTRUCTURE"],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Cloud segregation"
+    },
+    {
+      "controlId": "ISO-27017-5",
+      "iso27002Control": "27017",
+      "title": "Virtual machine hardening",
+      "description": "The cloud service provider shall implement appropriate hardening measures for virtual machines.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "THIRD_PARTY_RISK",
+      "doraRequirements": ["DORA-REQ-194"],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": ["CLOUD_SERVICE", "INFRASTRUCTURE"],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "VM hardening"
+    },
+    {
+      "controlId": "ISO-27017-6",
+      "iso27002Control": "27017",
+      "title": "Administrative operations and procedures",
+      "description": "The cloud service provider shall document and implement administrative operations and procedures for the cloud service.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "THIRD_PARTY_RISK",
+      "doraRequirements": ["DORA-REQ-195", "DORA-REQ-196"],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": ["CLOUD_SERVICE"],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Cloud operations"
+    },
+    {
+      "controlId": "ISO-27017-7",
+      "iso27002Control": "27017",
+      "title": "Monitoring of cloud services",
+      "description": "The cloud service provider shall monitor the security of cloud services and report security events to customers.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "INCIDENT_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-054", "DORA-REQ-055", "DORA-REQ-056"],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": ["CLOUD_SERVICE", "SECURITY_TOOL"],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Cloud monitoring"
+    },
+    {
+      "controlId": "ISO-27018-1",
+      "iso27002Control": "27018",
+      "title": "Consent and choice",
+      "description": "The cloud service provider acting as a PII processor shall only process PII in accordance with the customer's instructions and the customer's consent choices.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-038", "DORA-REQ-039"],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": ["CLOUD_SERVICE", "DATABASE"],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "PII consent"
+    },
+    {
+      "controlId": "ISO-27018-2",
+      "iso27002Control": "27018",
+      "title": "Purpose limitation and specification",
+      "description": "The cloud service provider acting as a PII processor shall process PII only for the purposes specified by the customer.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-040", "DORA-REQ-041"],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": ["CLOUD_SERVICE", "DATABASE"],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "PII purpose"
+    },
+    {
+      "controlId": "ISO-27018-3",
+      "iso27002Control": "27018",
+      "title": "Collection limitation",
+      "description": "The cloud service provider acting as a PII processor shall collect only the PII that is necessary for the specified purposes.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-042"],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": ["CLOUD_SERVICE", "DATABASE"],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "PII collection"
+    },
+    {
+      "controlId": "ISO-27018-4",
+      "iso27002Control": "27018",
+      "title": "PII retention and disposal",
+      "description": "The cloud service provider acting as a PII processor shall retain PII only for as long as necessary to fulfill the specified purposes.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-043", "DORA-REQ-044"],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": ["CLOUD_SERVICE", "DATA_STORAGE"],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "PII retention"
+    },
+    {
+      "controlId": "ISO-27018-5",
+      "iso27002Control": "27018",
+      "title": "Disclosure to third parties",
+      "description": "The cloud service provider acting as a PII processor shall not disclose PII to third parties except as specified by the customer or required by law.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "THIRD_PARTY_RISK",
+      "doraRequirements": ["DORA-REQ-197", "DORA-REQ-198"],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": ["CLOUD_SERVICE"],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "PII disclosure"
+    },
+    {
+      "controlId": "ISO-27018-6",
+      "iso27002Control": "27018",
+      "title": "Security of processing",
+      "description": "The cloud service provider acting as a PII processor shall implement appropriate technical and organizational measures to protect PII.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-045", "DORA-REQ-046"],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": ["CLOUD_SERVICE", "DATABASE"],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "PII security"
+    },
+    {
+      "controlId": "ISO-27018-7",
+      "iso27002Control": "27018",
+      "title": "Data breach notification",
+      "description": "The cloud service provider acting as a PII processor shall notify the customer of any data breach affecting PII without undue delay.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "INCIDENT_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-057", "DORA-REQ-058", "DORA-REQ-059"],
+      "controlType": "SPECIFIC",
+      "applicableAssetTypes": ["CLOUD_SERVICE"],
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "PII breach notification"
+    },
+    {
+      "controlId": "ISO-31000-1",
+      "iso27002Control": "31000",
+      "title": "Risk management framework",
+      "description": "The organization shall establish, implement and maintain a risk management framework that provides the foundation and organizational arrangements for designing, implementing, monitoring, reviewing and continually improving risk management.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-001", "DORA-REQ-002", "DORA-REQ-003"],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Risk framework"
+    },
+    {
+      "controlId": "ISO-31000-2",
+      "iso27002Control": "31000",
+      "title": "Risk management policy",
+      "description": "The organization shall establish a risk management policy that clearly states its objectives and commitment to risk management.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-004", "DORA-REQ-005"],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Risk policy"
+    },
+    {
+      "controlId": "ISO-31000-3",
+      "iso27002Control": "31000",
+      "title": "Integration of risk management",
+      "description": "The organization shall integrate risk management into all organizational activities.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-006", "DORA-REQ-007"],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Risk integration"
+    },
+    {
+      "controlId": "ISO-31000-4",
+      "iso27002Control": "31000",
+      "title": "Risk assessment process",
+      "description": "The organization shall establish and maintain a risk assessment process that includes risk identification, risk analysis and risk evaluation.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-008", "DORA-REQ-009", "DORA-REQ-010"],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Risk assessment"
+    },
+    {
+      "controlId": "ISO-31000-5",
+      "iso27002Control": "31000",
+      "title": "Risk treatment",
+      "description": "The organization shall select and implement risk treatment options to address risks.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-011", "DORA-REQ-012", "DORA-REQ-013"],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Risk treatment"
+    },
+    {
+      "controlId": "ISO-31000-6",
+      "iso27002Control": "31000",
+      "title": "Monitoring and review",
+      "description": "The organization shall monitor and review the risk management framework, process and activities to ensure their effectiveness.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-019", "DORA-REQ-020", "DORA-REQ-021"],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Risk monitoring"
+    },
+    {
+      "controlId": "ISO-20000-1",
+      "iso27002Control": "20000",
+      "title": "Service management system",
+      "description": "The organization shall establish, implement, maintain and continually improve a service management system.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-047", "DORA-REQ-048"],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Service management"
+    },
+    {
+      "controlId": "ISO-20000-2",
+      "iso27002Control": "20000",
+      "title": "Service level management",
+      "description": "The organization shall establish and maintain service level agreements and monitor service performance against agreed service levels.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "THIRD_PARTY_RISK",
+      "doraRequirements": ["DORA-REQ-199", "DORA-REQ-200"],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "SLA management"
+    },
+    {
+      "controlId": "ISO-20000-3",
+      "iso27002Control": "20000",
+      "title": "Service continuity and availability management",
+      "description": "The organization shall plan, implement and maintain service continuity and availability management to ensure services meet agreed availability and continuity requirements.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-049", "DORA-REQ-050"],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 3,
+      "iso27005Mapping": "Service continuity"
+    },
+    {
+      "controlId": "ISO-20000-4",
+      "iso27002Control": "20000",
+      "title": "Capacity management",
+      "description": "The organization shall plan, implement and maintain capacity management to ensure adequate capacity is available to meet service requirements.",
+      "category": "TECHNOLOGICAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-051"],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Capacity management"
+    },
+    {
+      "controlId": "ISO-20000-5",
+      "iso27002Control": "20000",
+      "title": "Information security management",
+      "description": "The organization shall plan, implement and maintain information security management to ensure information security risks are managed.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-052", "DORA-REQ-053"],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "ITSM security"
+    },
+    {
+      "controlId": "ISO-20000-6",
+      "iso27002Control": "20000",
+      "title": "Incident management",
+      "description": "The organization shall plan, implement and maintain incident management to restore normal service operation as quickly as possible.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "INCIDENT_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-060", "DORA-REQ-061", "DORA-REQ-062"],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "ITSM incidents"
+    },
+    {
+      "controlId": "ISO-20000-7",
+      "iso27002Control": "20000",
+      "title": "Problem management",
+      "description": "The organization shall plan, implement and maintain problem management to prevent incidents and minimize the impact of incidents that cannot be prevented.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "INCIDENT_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-063", "DORA-REQ-064"],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27005Mapping": "Problem management"
+    },
+    {
+      "controlId": "ISO-20000-8",
+      "iso27002Control": "20000",
+      "title": "Change management",
+      "description": "The organization shall plan, implement and maintain change management to ensure changes are assessed, approved, implemented and reviewed in a controlled manner.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "ICT_RISK_MANAGEMENT",
+      "doraRequirements": ["DORA-REQ-065", "DORA-REQ-066"],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Change management"
+    },
+    {
+      "controlId": "ISO-20000-9",
+      "iso27002Control": "20000",
+      "title": "Supplier management",
+      "description": "The organization shall plan, implement and maintain supplier management to ensure suppliers and their services are managed effectively.",
+      "category": "ORGANIZATIONAL",
+      "pillar": "THIRD_PARTY_RISK",
+      "doraRequirements": ["DORA-REQ-201", "DORA-REQ-202", "DORA-REQ-203"],
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27005Mapping": "Supplier management"
+    }
+  ]
+}

@@ -1,0 +1,150 @@
+{
+  "metadata": {
+    "description": "ISO 27001 control mappings for DORA requirements",
+    "version": "1.0",
+    "lastUpdated": "2024-01-01"
+  },
+  "mappings": {
+    "ICT_RISK_MANAGEMENT": {
+      "controls": [
+        {
+          "iso27001Control": "A.5.1.1",
+          "title": "Policies for information security",
+          "description": "A set of policies for information security shall be defined, approved by management, published and communicated to employees and relevant external parties.",
+          "relevance": "High - DORA requires comprehensive ICT risk management policies"
+        },
+        {
+          "iso27001Control": "A.5.1.2",
+          "title": "Review of the policies for information security",
+          "description": "The policies for information security shall be reviewed at planned intervals or if significant changes occur.",
+          "relevance": "High - Regular review aligns with DORA's continuous monitoring requirements"
+        },
+        {
+          "iso27001Control": "A.6.1.1",
+          "title": "Information security roles and responsibilities",
+          "description": "All information security responsibilities shall be defined and allocated.",
+          "relevance": "High - DORA requires clear accountability for ICT risk management"
+        },
+        {
+          "iso27001Control": "A.12.1.1",
+          "title": "Documented operating procedures",
+          "description": "Operating procedures for information processing facilities shall be documented and made available to all personnel who need them.",
+          "relevance": "Medium - Supports DORA's requirement for documented processes"
+        },
+        {
+          "iso27001Control": "A.12.6.1",
+          "title": "Management of technical vulnerabilities",
+          "description": "Information about technical vulnerabilities of information systems being used shall be obtained in a timely fashion, the organization's exposure to such vulnerabilities evaluated, and appropriate measures taken to address the associated risk.",
+          "relevance": "High - Critical for DORA's vulnerability management requirements"
+        }
+      ]
+    },
+    "INCIDENT_MANAGEMENT": {
+      "controls": [
+        {
+          "iso27001Control": "A.5.26",
+          "title": "Response to information security incidents",
+          "description": "Information security incident management responsibilities and procedures shall be established to ensure a quick, effective and orderly response to information security incidents.",
+          "relevance": "High - Directly aligns with DORA's incident management requirements"
+        },
+        {
+          "iso27001Control": "A.5.27",
+          "title": "Learning from information security incidents",
+          "description": "Knowledge gained from analyzing and resolving information security incidents shall be used to reduce the likelihood or impact of future incidents.",
+          "relevance": "High - Supports DORA's continuous improvement requirements"
+        },
+        {
+          "iso27001Control": "A.5.28",
+          "title": "Collection of evidence",
+          "description": "The organization shall establish and implement procedures for the identification, collection, acquisition and preservation of information that can serve as evidence.",
+          "relevance": "High - Critical for DORA's incident reporting and evidence requirements"
+        },
+        {
+          "iso27001Control": "A.6.1.3",
+          "title": "Contact with authorities",
+          "description": "Appropriate contacts with relevant authorities shall be maintained.",
+          "relevance": "High - Required for DORA's regulatory reporting"
+        }
+      ]
+    },
+    "RESILIENCE_TESTING": {
+      "controls": [
+        {
+          "iso27001Control": "A.12.6.1",
+          "title": "Management of technical vulnerabilities",
+          "description": "Information about technical vulnerabilities of information systems being used shall be obtained in a timely fashion.",
+          "relevance": "High - Supports vulnerability testing requirements"
+        },
+        {
+          "iso27001Control": "A.14.2.1",
+          "title": "Secure development policy",
+          "description": "Rules for the development of software and systems shall be established and applied to developments within the organization.",
+          "relevance": "Medium - Supports secure development practices"
+        },
+        {
+          "iso27001Control": "A.14.2.8",
+          "title": "System security testing",
+          "description": "Security testing shall cover security functionality, technical vulnerability testing and penetration testing.",
+          "relevance": "High - Directly aligns with DORA's resilience testing requirements"
+        },
+        {
+          "iso27001Control": "A.18.1.1",
+          "title": "Identification of applicable legislation and contractual requirements",
+          "description": "All relevant legislative, statutory, regulatory and contractual requirements and the organization's approach to meet these requirements shall be explicitly identified, documented and kept up to date.",
+          "relevance": "High - Ensures compliance with DORA testing requirements"
+        }
+      ]
+    },
+    "THIRD_PARTY_RISK": {
+      "controls": [
+        {
+          "iso27001Control": "A.15.1.1",
+          "title": "Information security policy for supplier relationships",
+          "description": "Information security requirements for mitigating the risks associated with supplier's access to the organization's assets shall be agreed with the supplier and documented.",
+          "relevance": "High - Directly addresses DORA's third-party risk management"
+        },
+        {
+          "iso27001Control": "A.15.1.2",
+          "title": "Addressing security within supplier agreements",
+          "description": "All relevant information security requirements shall be established and agreed with each supplier that may access, process, store, communicate, or provide IT infrastructure components for, the organization's information.",
+          "relevance": "High - Critical for DORA's third-party agreements"
+        },
+        {
+          "iso27001Control": "A.15.1.3",
+          "title": "Information and communication technology supply chain",
+          "description": "Agreements with suppliers shall include requirements to address the information security risks associated with information and communications technology services and product supply chain.",
+          "relevance": "High - Essential for DORA's ICT third-party risk management"
+        },
+        {
+          "iso27001Control": "A.15.2.1",
+          "title": "Monitoring and review of supplier services",
+          "description": "Organizations shall regularly monitor, review and audit supplier service delivery.",
+          "relevance": "High - Supports DORA's ongoing monitoring of third parties"
+        }
+      ]
+    },
+    "INFORMATION_SHARING": {
+      "controls": [
+        {
+          "iso27001Control": "A.6.1.3",
+          "title": "Contact with authorities",
+          "description": "Appropriate contacts with relevant authorities shall be maintained.",
+          "relevance": "High - Required for DORA's information sharing arrangements"
+        },
+        {
+          "iso27001Control": "A.13.2.1",
+          "title": "Information transfer policies and procedures",
+          "description": "Information transfer policies, procedures and controls shall be in place to protect the transfer of information through the use of all types of communication facilities.",
+          "relevance": "High - Supports secure information sharing"
+        },
+        {
+          "iso27001Control": "A.13.2.3",
+          "title": "Agreements on information transfer",
+          "description": "Agreements shall address the secure transfer of business information between the organization and external parties.",
+          "relevance": "High - Required for DORA's information sharing agreements"
+        }
+      ]
+    }
+  }
+}
+
