@@ -22,6 +22,8 @@ export default function RemediationPage() {
   const [generating, setGenerating] = useState(false);
   const [uploadingEvidence, setUploadingEvidence] = useState<string | null>(null);
   const [summary, setSummary] = useState<any>(null);
+  const [strategy, setStrategy] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<'actions' | 'strategy'>('actions');
 
   useEffect(() => {
     // Clear previous data when pillar changes
@@ -50,6 +52,7 @@ export default function RemediationPage() {
       setRemediationPlan(response.remediationPlan);
       setTableData(response.tableData || []);
       setSummary(response.summary || null);
+      setStrategy(response.strategy || null);
       alert(`Remediation plan generated with ${response.summary?.totalActions || 0} actions.`);
     } catch (error: any) {
       alert(`Error: ${error.message}`);
@@ -74,6 +77,8 @@ export default function RemediationPage() {
       if (response.remediationPlans && response.remediationPlans.length > 0) {
         const plan = response.remediationPlans[0];
         setRemediationPlan(plan);
+        // Note: Strategy is only available when generating a new plan, not when loading existing
+        setStrategy(null);
         
         // Generate table data from plan
         if (plan.actions && Array.isArray(plan.actions) && plan.actions.length > 0) {
@@ -121,6 +126,7 @@ export default function RemediationPage() {
         setTableData([]);
         setRemediationPlan(null);
         setSummary(null);
+        setStrategy(null);
       }
     } catch (error) {
       console.error('Failed to load remediation plan:', error);
@@ -205,6 +211,15 @@ export default function RemediationPage() {
     }
   };
 
+  const formatCurrency = (amount: number): string => {
+    if (amount >= 1000000) {
+      return `${(amount / 1000000).toFixed(2)}M`;
+    } else if (amount >= 1000) {
+      return `${(amount / 1000).toFixed(0)}K`;
+    }
+    return amount.toFixed(0);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm">
@@ -224,6 +239,35 @@ export default function RemediationPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="text-3xl font-bold mb-6">Remediation Plan</h1>
+
+        {/* Tab Navigation */}
+        {remediationPlan && (
+          <div className="mb-6 border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8">
+              <button
+                onClick={() => setActiveTab('actions')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'actions'
+                    ? 'border-primary-500 text-primary-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Remediation Actions
+              </button>
+              <button
+                onClick={() => setActiveTab('strategy')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'strategy'
+                    ? 'border-primary-500 text-primary-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Strategic Overview
+                {strategy && <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">AI Generated</span>}
+              </button>
+            </nav>
+          </div>
+        )}
 
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <div className="flex gap-4 items-end">
@@ -274,7 +318,171 @@ export default function RemediationPage() {
           </div>
         )}
 
-        {tableData.length > 0 && (
+        {activeTab === 'strategy' && strategy && (
+          <div className="space-y-6">
+            {/* Strategic Overview */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-2xl font-bold mb-4">Strategic Overview</h2>
+              <p className="text-gray-700 leading-relaxed">{strategy.overview}</p>
+            </div>
+
+            {/* Investment Summary */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Total Investment</h3>
+                <p className="text-3xl font-bold text-primary-600">
+                  €{formatCurrency(strategy.totalInvestment)}
+                </p>
+              </div>
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Risk Reduction</h3>
+                <p className="text-3xl font-bold text-green-600">
+                  {strategy.riskReduction}%
+                </p>
+              </div>
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Max Loss Reduction</h3>
+                <p className="text-3xl font-bold text-red-600">
+                  €{formatCurrency(strategy.estimatedMaxLossReduction)}
+                </p>
+              </div>
+            </div>
+
+            {/* Investment Breakdown */}
+            {strategy.investmentBreakdown && strategy.investmentBreakdown.length > 0 && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold mb-4">Investment Breakdown by Pillar</h2>
+                <div className="space-y-4">
+                  {strategy.investmentBreakdown.map((breakdown: any, index: number) => (
+                    <div key={index} className="border-l-4 border-primary-500 pl-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <h3 className="font-semibold">{breakdown.pillar}</h3>
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-primary-600">
+                            €{formatCurrency(breakdown.estimatedCost)}
+                          </p>
+                          <p className="text-sm text-gray-500">ROI: {breakdown.roi.toFixed(2)}x</p>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        {breakdown.actionCount} actions • Priority: {breakdown.priority}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Phased Approach */}
+            {strategy.phasedApproach && strategy.phasedApproach.length > 0 && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold mb-4">Phased Implementation Approach</h2>
+                <div className="space-y-6">
+                  {strategy.phasedApproach.map((phase: any) => (
+                    <div key={phase.phase} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h3 className="text-lg font-semibold">
+                            Phase {phase.phase}: {phase.name}
+                          </h3>
+                          <p className="text-sm text-gray-600 mt-1">{phase.description}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-primary-600">
+                            €{formatCurrency(phase.investment)}
+                          </p>
+                          <p className="text-sm text-gray-500">{phase.duration}</p>
+                        </div>
+                      </div>
+                      <div className="mb-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-700">Risk Reduction</span>
+                          <span className="text-sm font-bold text-green-600">{phase.riskReduction}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-green-500 h-2 rounded-full"
+                            style={{ width: `${phase.riskReduction}%` }}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-2">Key Actions:</p>
+                        <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                          {phase.actions.slice(0, 5).map((action: string, idx: number) => (
+                            <li key={idx}>{action}</li>
+                          ))}
+                          {phase.actions.length > 5 && (
+                            <li className="text-gray-400">+{phase.actions.length - 5} more actions</li>
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Quick Wins */}
+            {strategy.quickWins && strategy.quickWins.length > 0 && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold mb-4">Quick Wins</h2>
+                <p className="text-sm text-gray-600 mb-4">
+                  Start with these high-impact, low-effort controls to build momentum:
+                </p>
+                <ul className="list-disc list-inside space-y-2">
+                  {strategy.quickWins.map((win: string, index: number) => (
+                    <li key={index} className="text-gray-700">{win}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Resource Allocation */}
+            {strategy.resourceAllocation && strategy.resourceAllocation.length > 0 && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold mb-4">Resource Allocation</h2>
+                <div className="space-y-4">
+                  {strategy.resourceAllocation.map((alloc: any, index: number) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <h3 className="font-semibold">{alloc.team}</h3>
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-primary-600">
+                            {alloc.estimatedHours}h
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            €{formatCurrency(alloc.cost)}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        {alloc.controls.length} control(s) assigned
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Key Recommendations */}
+            {strategy.keyRecommendations && strategy.keyRecommendations.length > 0 && (
+              <div className="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-6">
+                <h2 className="text-xl font-semibold mb-4 text-blue-900">Key Recommendations</h2>
+                <ul className="space-y-3">
+                  {strategy.keyRecommendations.map((rec: string, index: number) => (
+                    <li key={index} className="flex items-start">
+                      <span className="text-blue-500 mr-2">•</span>
+                      <span className="text-blue-900">{rec}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'actions' && tableData.length > 0 && (
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
@@ -411,9 +619,23 @@ export default function RemediationPage() {
           </div>
         )}
 
-        {!loading && tableData.length === 0 && remediationPlan === null && (
+        {!loading && tableData.length === 0 && remediationPlan === null && activeTab === 'actions' && (
           <div className="bg-white rounded-lg shadow p-6 text-center">
             <p className="text-gray-500">No remediation plan found. Generate one to get started.</p>
+          </div>
+        )}
+
+        {activeTab === 'strategy' && !strategy && remediationPlan && (
+          <div className="bg-white rounded-lg shadow p-6 text-center">
+            <p className="text-gray-500">
+              Strategic recommendations will be generated when you create a new remediation plan.
+            </p>
+            <button
+              onClick={handleGenerate}
+              className="mt-4 bg-primary-600 text-white px-6 py-2 rounded-md hover:bg-primary-700"
+            >
+              Generate Remediation Plan with Strategy
+            </button>
           </div>
         )}
       </main>

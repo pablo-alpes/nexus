@@ -6,6 +6,9 @@
  * 2. Controls fall back to requirements when ISO file doesn't exist
  * 3. All controls have requirementIds populated
  * 4. Controls can be queried by requirements and vice versa
+ * 5. Questionnaire responses properly map to controls with requirementIds
+ * 6. Questions properly map to controls with requirementIds
+ * 7. Full chain: Questionnaire → Controls → Requirements is valid
  */
 
 const fs = require('fs');
@@ -330,6 +333,238 @@ async function testControlsRequirementsFallback() {
       }
     }
     
+    // Test 6: Verify Questionnaire → Controls → Requirements chain
+    console.log('\n📋 Test 6: Questionnaire → Controls → Requirements chain');
+    console.log('-'.repeat(60));
+    
+    const questionnaireResponses = readCollection('QuestionnaireResponse');
+    const questions = readCollection('Question');
+    
+    console.log(`   Questionnaire responses found: ${questionnaireResponses.length}`);
+    console.log(`   Questions found: ${questions.length}`);
+    
+    if (questionnaireResponses.length > 0 && controls.length > 0) {
+      let responsesWithValidControls = 0;
+      let responsesWithInvalidControls = 0;
+      let totalApplicableControls = 0;
+      let controlsWithReqs = 0;
+      let controlsWithoutReqs = 0;
+      
+      questionnaireResponses.forEach(response => {
+        if (response.applicableControls && Array.isArray(response.applicableControls)) {
+          totalApplicableControls += response.applicableControls.length;
+          
+          // Check if each applicable control exists and has requirementIds
+          const validControls = [];
+          const invalidControls = [];
+          
+          response.applicableControls.forEach(controlId => {
+            const controlIdStr = String(controlId);
+            const control = controls.find(c => 
+              String(c._id) === controlIdStr || 
+              String(c.controlId) === controlIdStr
+            );
+            
+            if (control) {
+              validControls.push(control);
+              if (control.requirementIds && control.requirementIds.length > 0) {
+                controlsWithReqs++;
+              } else {
+                controlsWithoutReqs++;
+              }
+            } else {
+              invalidControls.push(controlIdStr);
+            }
+          });
+          
+          if (invalidControls.length === 0 && controlsWithoutReqs === 0) {
+            responsesWithValidControls++;
+          } else {
+            responsesWithInvalidControls++;
+            if (invalidControls.length > 0) {
+              console.log(`   ⚠️  Response ${response._id} has ${invalidControls.length} invalid control IDs`);
+            }
+            if (controlsWithoutReqs > 0) {
+              console.log(`   ⚠️  Response ${response._id} references ${controlsWithoutReqs} controls without requirementIds`);
+            }
+          }
+        }
+      });
+      
+      console.log(`   Responses with valid controls: ${responsesWithValidControls}/${questionnaireResponses.length}`);
+      console.log(`   Total applicable controls in responses: ${totalApplicableControls}`);
+      console.log(`   Controls with requirementIds: ${controlsWithReqs}`);
+      if (controlsWithoutReqs > 0) {
+        console.log(`   ⚠️  Controls without requirementIds: ${controlsWithoutReqs}`);
+      } else {
+        console.log(`   ✅ PASS: All applicable controls in responses have requirementIds`);
+      }
+      
+      if (responsesWithInvalidControls === 0) {
+        console.log(`   ✅ PASS: All questionnaire responses have valid control references`);
+      }
+    } else {
+      if (questionnaireResponses.length === 0) {
+        console.log('   ℹ️  No questionnaire responses found (this is OK - responses are created when users complete questionnaires)');
+      }
+      if (controls.length === 0) {
+        console.log('   ⚠️  No controls found - cannot verify questionnaire → controls chain');
+      }
+    }
+    
+    // Test 6b: Verify Questions → Controls → Requirements chain
+    console.log('\n📋 Test 6b: Questions → Controls → Requirements chain');
+    console.log('-'.repeat(60));
+    
+    if (questions.length > 0 && controls.length > 0) {
+      let questionsWithControls = 0;
+      let questionsWithoutControls = 0;
+      let questionsWithValidControls = 0;
+      let questionsWithInvalidControls = 0;
+      let totalQuestionControls = 0;
+      
+      questions.forEach(question => {
+        if (question.options && Array.isArray(question.options)) {
+          const yesOption = question.options.find(opt => opt.value === 'yes');
+          if (yesOption && yesOption.applicableControls && Array.isArray(yesOption.applicableControls)) {
+            questionsWithControls++;
+            totalQuestionControls += yesOption.applicableControls.length;
+            
+            // Verify each control exists and has requirementIds
+            let hasInvalidControls = false;
+            let hasControlsWithoutReqs = false;
+            
+            yesOption.applicableControls.forEach(controlId => {
+              const controlIdStr = String(controlId);
+              const control = controls.find(c => 
+                String(c._id) === controlIdStr || 
+                String(c.controlId) === controlIdStr
+              );
+              
+              if (!control) {
+                hasInvalidControls = true;
+              } else if (!control.requirementIds || control.requirementIds.length === 0) {
+                hasControlsWithoutReqs = true;
+              }
+            });
+            
+            if (hasInvalidControls) {
+              questionsWithInvalidControls++;
+            } else if (hasControlsWithoutReqs) {
+              questionsWithInvalidControls++;
+            } else {
+              questionsWithValidControls++;
+            }
+          } else {
+            questionsWithoutControls++;
+          }
+        }
+      });
+      
+      console.log(`   Questions with applicableControls: ${questionsWithControls}/${questions.length}`);
+      console.log(`   Questions with valid controls (with requirementIds): ${questionsWithValidControls}`);
+      console.log(`   Total controls referenced in questions: ${totalQuestionControls}`);
+      
+      if (questionsWithInvalidControls > 0) {
+        console.log(`   ⚠️  Questions with invalid/missing requirementIds: ${questionsWithInvalidControls}`);
+      } else if (questionsWithControls > 0) {
+        console.log(`   ✅ PASS: All question controls have requirementIds`);
+      }
+      
+      if (questionsWithoutControls > questions.length * 0.5) {
+        console.log(`   ℹ️  ${questionsWithoutControls} questions without applicableControls (may need auto-setup)`);
+      }
+    } else {
+      if (questions.length === 0) {
+        console.log('   ⚠️  No questions found');
+      }
+      if (controls.length === 0) {
+        console.log('   ⚠️  No controls found');
+      }
+    }
+    
+    // Test 6c: Verify full chain integrity
+    console.log('\n📋 Test 6c: Full chain integrity (Questionnaire → Controls → Requirements)');
+    console.log('-'.repeat(60));
+    
+    if (questionnaireResponses.length > 0 && controls.length > 0 && requirements.length > 0) {
+      let completeChains = 0;
+      let brokenChains = 0;
+      const chainBreakReasons = {
+        missingControl: 0,
+        missingRequirementIds: 0,
+        invalidRequirement: 0,
+      };
+      
+      questionnaireResponses.forEach(response => {
+        if (response.applicableControls && Array.isArray(response.applicableControls)) {
+          let chainIsComplete = true;
+          
+          for (const controlId of response.applicableControls) {
+            const controlIdStr = String(controlId);
+            const control = controls.find(c => 
+              String(c._id) === controlIdStr || 
+              String(c.controlId) === controlIdStr
+            );
+            
+            if (!control) {
+              chainBreakReasons.missingControl++;
+              chainIsComplete = false;
+              break;
+            }
+            
+            if (!control.requirementIds || control.requirementIds.length === 0) {
+              chainBreakReasons.missingRequirementIds++;
+              chainIsComplete = false;
+              break;
+            }
+            
+            // Verify all requirementIds are valid
+            const invalidReqs = control.requirementIds.filter(reqId => {
+              const reqIdStr = String(reqId);
+              return !requirements.some(r => 
+                String(r._id) === reqIdStr || 
+                String(r.requirementId) === reqIdStr
+              );
+            });
+            
+            if (invalidReqs.length > 0) {
+              chainBreakReasons.invalidRequirement += invalidReqs.length;
+              chainIsComplete = false;
+              break;
+            }
+          }
+          
+          if (chainIsComplete) {
+            completeChains++;
+          } else {
+            brokenChains++;
+          }
+        }
+      });
+      
+      console.log(`   Complete chains: ${completeChains}`);
+      console.log(`   Broken chains: ${brokenChains}`);
+      
+      if (chainBreakReasons.missingControl > 0) {
+        console.log(`   ⚠️  Missing controls: ${chainBreakReasons.missingControl}`);
+      }
+      if (chainBreakReasons.missingRequirementIds > 0) {
+        console.log(`   ⚠️  Controls without requirementIds: ${chainBreakReasons.missingRequirementIds}`);
+      }
+      if (chainBreakReasons.invalidRequirement > 0) {
+        console.log(`   ⚠️  Invalid requirement references: ${chainBreakReasons.invalidRequirement}`);
+      }
+      
+      if (brokenChains === 0 && completeChains > 0) {
+        console.log(`   ✅ PASS: All questionnaire → controls → requirements chains are complete`);
+      } else if (brokenChains > 0) {
+        console.log(`   ⚠️  Some chains are broken - see details above`);
+      }
+    } else {
+      console.log('   ℹ️  Cannot verify full chain - need questionnaire responses, controls, and requirements');
+    }
+    
     // Summary
     console.log('\n' + '='.repeat(60));
     console.log('📊 Test Summary');
@@ -350,14 +585,36 @@ async function testControlsRequirementsFallback() {
         });
       });
     
+    // Check questionnaire chain
+    let questionnaireChainValid = true;
+    if (questionnaireResponses.length > 0) {
+      questionnaireResponses.forEach(response => {
+        if (response.applicableControls && Array.isArray(response.applicableControls)) {
+          response.applicableControls.forEach(controlId => {
+            const controlIdStr = String(controlId);
+            const control = controls.find(c => 
+              String(c._id) === controlIdStr || 
+              String(c.controlId) === controlIdStr
+            );
+            if (!control || !control.requirementIds || control.requirementIds.length === 0) {
+              questionnaireChainValid = false;
+            }
+          });
+        }
+      });
+    }
+    
     console.log(`\n✅ Controls: ${controls.length}`);
     console.log(`✅ Requirements: ${requirements.length}`);
+    console.log(`✅ Questions: ${questions.length}`);
+    console.log(`✅ Questionnaire responses: ${questionnaireResponses.length}`);
     console.log(`${allControlsHaveReqs ? '✅' : '❌'} All controls have requirementIds: ${allControlsHaveReqs}`);
     console.log(`${allReqsAreValid ? '✅' : '❌'} All requirementIds are valid: ${allReqsAreValid}`);
+    console.log(`${questionnaireChainValid ? '✅' : '⚠️ '} Questionnaire → Controls → Requirements chain: ${questionnaireChainValid ? 'VALID' : 'BROKEN'}`);
     console.log(`${isoFileExists ? '✅' : '⚠️ '} ISO file exists: ${isoFileExists}`);
     
-    if (allControlsHaveReqs && allReqsAreValid) {
-      console.log('\n🎉 All tests PASSED! Controls properly reference requirements.');
+    if (allControlsHaveReqs && allReqsAreValid && questionnaireChainValid) {
+      console.log('\n🎉 All tests PASSED! Controls properly reference requirements and questionnaire chain is valid.');
     } else {
       console.log('\n⚠️  Some tests FAILED. Please review the output above.');
     }

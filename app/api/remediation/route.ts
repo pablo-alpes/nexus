@@ -7,6 +7,7 @@ import Asset from '@/models/Asset';
 import { getAuthUser } from '@/lib/auth-helper';
 import { DORAPillar } from '@/models/DORARequirement';
 import { ensureControlsSetup } from '@/lib/auto-controls';
+import { generateAIStrategy } from '@/lib/services/ai-strategy';
 
 // Evidence suggestions based on control type and pillar
 const EVIDENCE_SUGGESTIONS: { [key: string]: string[] } = {
@@ -174,10 +175,12 @@ export async function POST(request: NextRequest) {
           assetId: a.assetId,
           name: a.name,
           criticalityLevel: a.criticalityLevel,
+          assetType: a.assetType, // Include asset type for cost estimation
         })),
         evidenceSuggestions: evidenceSuggestions,
         controlTitle: control.title,
         controlDescription: control.description,
+        controlType: control.controlType, // Include control type for cost estimation
       };
       
       actions.push(action);
@@ -222,6 +225,63 @@ export async function POST(request: NextRequest) {
         gapDescription: action.description,
       };
     });
+
+    // Calculate KPIs for strategy generation
+    // Use simplified calculation based on gap analysis
+    const CRITICALITY_MULTIPLIERS: Record<number, number> = {
+      1: 10000,
+      2: 50000,
+      3: 200000,
+      4: 1000000,
+    };
+    const GAP_SEVERITY_MULTIPLIERS: Record<string, number> = {
+      'CRITICAL': 1.0,
+      'HIGH': 0.7,
+      'MEDIUM': 0.4,
+      'LOW': 0.1,
+    };
+
+    let estimatedMaxLoss = 0;
+    gapAnalysis.gaps?.forEach((gap: any) => {
+      if (gap.status === 'NOT_IMPLEMENTED' || gap.status === 'PARTIALLY_IMPLEMENTED') {
+        const severityMultiplier = GAP_SEVERITY_MULTIPLIERS[gap.priority] || 0.1;
+        const maxAssetCriticality = assets.length > 0
+          ? Math.max(...assets.map((a: any) => a.criticalityLevel || 1))
+          : 1;
+        const baseLoss = CRITICALITY_MULTIPLIERS[maxAssetCriticality] || CRITICALITY_MULTIPLIERS[1];
+        estimatedMaxLoss += baseLoss * severityMultiplier;
+      }
+    });
+
+    const formatCurrency = (amount: number) => {
+      if (amount >= 1000000) {
+        return `€${(amount / 1000000).toFixed(2)}M`;
+      } else if (amount >= 1000) {
+        return `€${(amount / 1000).toFixed(0)}K`;
+      }
+      return `€${amount.toFixed(0)}`;
+    };
+
+    const kpis = {
+      estimatedMaxLoss: Math.round(estimatedMaxLoss),
+      estimatedMaxLossFormatted: formatCurrency(estimatedMaxLoss),
+      overallCompliance: gapAnalysis.compliancePercentage || 0,
+    };
+
+    // Generate AI-powered strategic recommendations
+    let strategy = null;
+    try {
+      strategy = await generateAIStrategy(
+        actions,
+        gapAnalysis,
+        assets,
+        kpis,
+        pillar
+      );
+    } catch (error) {
+      console.error('Error generating AI strategy:', error);
+      // Continue without strategy if generation fails
+    }
     
     return NextResponse.json({
       remediationPlan,
@@ -234,6 +294,7 @@ export async function POST(request: NextRequest) {
         critical: actions.filter(a => a.priority === 'CRITICAL').length,
         high: actions.filter(a => a.priority === 'HIGH').length,
       },
+      strategy, // AI-generated strategic recommendations
     });
   } catch (error: any) {
     console.error('Remediation plan error:', error);
