@@ -239,6 +239,186 @@ The rule engine uses a sophisticated elimination/inclusion algorithm:
    - Links to controls and evidence
    - Prioritizes by criticality
 
+### Asset-to-Control Matching Logic
+
+The gap analysis and remediation planning depend on matching assets to controls. This matching is **explicit and rule-based** to ensure transparency and predictability.
+
+#### Matching Criteria
+
+Assets are matched to controls based on **three criteria**:
+
+1. **Control Type** (`TRANSVERSAL` vs `SPECIFIC`)
+2. **Asset Type** (for `SPECIFIC` controls only)
+3. **Criticality Level** (minimum threshold)
+
+#### Control Types
+
+**TRANSVERSAL Controls:**
+- Apply to **all assets** regardless of asset type
+- Still respect criticality level if specified
+- Example: "Access Control Policy" applies to all assets
+
+**SPECIFIC Controls:**
+- Apply only to **matching asset types**
+- Must match both asset type AND criticality level
+- Example: "Database Encryption" only applies to `DATABASE` assets
+
+#### Asset Types
+
+The system supports the following asset types:
+- `APPLICATION` - Software applications
+- `DATABASE` - Database systems
+- `NETWORK` - Network infrastructure
+- `INFRASTRUCTURE` - Physical or cloud infrastructure
+- `THIRD_PARTY_SERVICE` - External services
+- `DATA_STORAGE` - Data storage systems
+- `SECURITY_TOOL` - Security tools and systems
+- `OTHER` - Other asset types
+
+#### Criticality Levels
+
+Assets are tiered by operational resilience criticality (1-4):
+- **Level 1**: Low criticality
+- **Level 2**: Medium criticality
+- **Level 3**: High criticality
+- **Level 4**: Critical (highest priority)
+
+Controls can specify a `minCriticalityLevel` (1-4). An asset matches only if:
+```
+asset.criticalityLevel >= control.minCriticalityLevel
+```
+
+If a control has **no** `minCriticalityLevel`, it applies to all assets (within its type constraints).
+
+#### Matching Algorithm
+
+For each control, the system determines applicable assets using this logic:
+
+```typescript
+// TRANSVERSAL Controls
+if (control.controlType === 'TRANSVERSAL') {
+  if (control.minCriticalityLevel) {
+    // Apply to all assets meeting criticality threshold
+    return asset.criticalityLevel >= control.minCriticalityLevel;
+  }
+  // Apply to all assets (no criticality requirement)
+  return true;
+}
+
+// SPECIFIC Controls
+else if (control.controlType === 'SPECIFIC') {
+  // Must match asset type
+  const matchesType = control.applicableAssetTypes?.includes(asset.assetType);
+  
+  if (matchesType && control.minCriticalityLevel) {
+    // Matches type AND meets criticality requirement
+    return asset.criticalityLevel >= control.minCriticalityLevel;
+  }
+  // Just check type if no criticality requirement
+  return matchesType;
+}
+```
+
+#### Example Scenarios
+
+**Example 1: Transversal Control with Criticality**
+- **Control**: "Access Control Policy" (`TRANSVERSAL`, `minCriticalityLevel: 2`)
+- **Assets**:
+  - Production Database (Level 4) → ✅ **Matches** (4 >= 2)
+  - Development Server (Level 1) → ❌ **Does not match** (1 < 2)
+
+**Example 2: Specific Control with Type and Criticality**
+- **Control**: "Database Encryption" (`SPECIFIC`, `applicableAssetTypes: ['DATABASE']`, `minCriticalityLevel: 3`)
+- **Assets**:
+  - Production Database (Level 4, `DATABASE`) → ✅ **Matches** (type matches, 4 >= 3)
+  - Test Database (Level 2, `DATABASE`) → ❌ **Does not match** (type matches, but 2 < 3)
+  - Web Server (Level 4, `APPLICATION`) → ❌ **Does not match** (wrong type)
+
+**Example 3: Transversal Control without Criticality**
+- **Control**: "Security Awareness Training" (`TRANSVERSAL`, no `minCriticalityLevel`)
+- **Assets**: All assets → ✅ **All match** (no criticality filter)
+
+**Example 4: Specific Control without Criticality**
+- **Control**: "Application Security Testing" (`SPECIFIC`, `applicableAssetTypes: ['APPLICATION']`, no `minCriticalityLevel`)
+- **Assets**:
+  - Web Application (Level 1, `APPLICATION`) → ✅ **Matches**
+  - Database Server (Level 4, `DATABASE`) → ❌ **Does not match** (wrong type)
+
+#### Where Matching Happens
+
+1. **Asset Creation** (`POST /api/assets`):
+   - When creating an asset, applicable controls are automatically found
+   - Controls are stored in `asset.controls` array
+   - This provides immediate feedback on which controls apply
+
+2. **Gap Analysis** (`POST /api/gap-analysis`):
+   - For each applicable control (from questionnaire), finds matching assets
+   - Determines control status per asset
+   - Calculates compliance percentage
+
+3. **Remediation Planning** (`POST /api/remediation`):
+   - Uses same matching logic to identify affected assets
+   - Lists assets in each remediation action
+   - Helps prioritize remediation efforts
+
+#### Data Flow
+
+```
+Questionnaire Response
+    ↓
+Applicable Controls (from elimination/inclusion logic)
+    ↓
+For each Control:
+    ├─ Check controlType (TRANSVERSAL/SPECIFIC)
+    ├─ If SPECIFIC: Check asset.assetType ∈ control.applicableAssetTypes
+    └─ Check asset.criticalityLevel >= control.minCriticalityLevel
+    ↓
+Applicable Assets List
+    ↓
+Gap Analysis (control status per asset)
+    ↓
+Remediation Plan (actions per control-asset pair)
+```
+
+#### Best Practices for Users
+
+1. **Asset Classification**:
+   - Accurately classify assets by type (`APPLICATION`, `DATABASE`, etc.)
+   - Assign appropriate criticality levels (1-4)
+   - Update criticality as business context changes
+
+2. **Control Configuration**:
+   - Review control `controlType` and `applicableAssetTypes` when creating custom controls
+   - Set `minCriticalityLevel` appropriately to focus on high-priority assets
+   - Use `TRANSVERSAL` for controls that apply organization-wide
+
+3. **Gap Analysis**:
+   - Review which assets are affected by each control
+   - Prioritize remediation for controls affecting Level 3-4 assets
+   - Use asset lists in remediation plans to coordinate implementation
+
+4. **Remediation Planning**:
+   - Focus on controls affecting multiple high-criticality assets
+   - Group remediation actions by asset type for efficiency
+   - Track evidence per asset-control pair
+
+#### Troubleshooting
+
+**Issue**: Control not appearing in gap analysis for an asset
+- **Check**: Asset type matches `applicableAssetTypes` (for `SPECIFIC` controls)
+- **Check**: Asset criticality level >= `minCriticalityLevel`
+- **Check**: Control is in the applicable set from questionnaire
+
+**Issue**: Too many controls matched to an asset
+- **Review**: Asset criticality level (lower criticality = fewer controls)
+- **Review**: Control `minCriticalityLevel` settings
+- **Consider**: Using `SPECIFIC` controls instead of `TRANSVERSAL` where appropriate
+
+**Issue**: Control matched to wrong asset type
+- **Check**: `applicableAssetTypes` array in control definition
+- **Check**: Asset `assetType` field is correctly set
+- **Update**: Control definition or asset classification as needed
+
 ---
 
 ## Knowledge Base: Requirements & Controls
