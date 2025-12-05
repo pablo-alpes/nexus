@@ -421,6 +421,327 @@ Remediation Plan (actions per control-asset pair)
 
 ---
 
+## Gap Analysis Logic
+
+The Gap Analysis module is the core compliance assessment engine. It analyzes which controls are implemented, partially implemented, or missing for your assets, providing a clear picture of your DORA compliance posture.
+
+### Overview
+
+Gap Analysis takes the applicable controls (determined by the questionnaire) and cross-references them with your assets to identify compliance gaps. It generates a comprehensive report showing:
+- Which controls are fully implemented
+- Which controls are partially implemented
+- Which controls are not implemented (gaps)
+- Which controls are not applicable to your assets
+- Compliance percentage per pillar
+- Priority levels for each gap
+
+### Gap Analysis Process
+
+The gap analysis follows a **8-step process**:
+
+#### Step 1: Gather User Assets
+- Retrieves all assets belonging to the user
+- Assets are already classified by type and criticality level
+
+#### Step 2: Get Questionnaire Response
+- Retrieves the user's questionnaire response
+- Extracts the `applicableControls` set (determined by elimination/inclusion logic)
+- If no questionnaire exists, all controls are considered applicable
+
+#### Step 3: Get DORA Requirements
+- Retrieves all DORA requirements for the specified pillar
+- Requirements are used for priority calculation and control mapping
+
+#### Step 4: Determine Applicable Requirements
+- Analyzes questionnaire answers to identify applicable requirements
+- "Yes" answers may indicate requirements that are already met
+- "No" answers indicate requirements that need attention
+- If no questionnaire, all requirements are considered applicable
+
+#### Step 5: Filter Controls by Questionnaire
+- **Priority 1**: If questionnaire response has `applicableControls`, **strictly filter** to only those controls
+- **Priority 2**: If no questionnaire controls but applicable requirements exist, filter by requirement mapping
+- **Priority 3**: If no questionnaire at all, include all controls for the pillar
+
+**Key Point**: The questionnaire response takes **absolute precedence**. If it specifies applicable controls, only those are analyzed.
+
+#### Step 6: Analyze Each Control
+
+For each filtered control, the system:
+
+**6a. Find Applicable Assets**
+- Uses the [Asset-to-Control Matching Logic](#asset-to-control-matching-logic)
+- Filters assets based on:
+  - Control type (TRANSVERSAL vs SPECIFIC)
+  - Asset type matching (for SPECIFIC controls)
+  - Criticality level threshold
+
+**6b. Determine Control Status**
+- **NOT_APPLICABLE**: No assets match the control criteria
+- **FULLY_IMPLEMENTED**: Control has `complianceStatus: 'FULLY_COMPLIANT'` or `status: 'FULLY_IMPLEMENTED'`
+- **PARTIALLY_IMPLEMENTED**: Control has `complianceStatus: 'PARTIALLY_COMPLIANT'` or `status: 'PARTIALLY_IMPLEMENTED'`
+- **NOT_IMPLEMENTED**: Control has no compliance status or is marked as non-compliant
+
+**6c. Calculate Priority**
+Priority is determined by:
+- **Asset Criticality**: Maximum criticality level of applicable assets
+- **Requirement Compliance**: Whether linked requirements are non-compliant
+
+Priority Levels:
+- **CRITICAL**: Max criticality >= 4 OR has non-compliant requirements
+- **HIGH**: Max criticality >= 3
+- **MEDIUM**: Max criticality >= 2
+- **LOW**: Max criticality = 1
+
+**6d. Collect Control Metadata**
+- Control title and description
+- Linked requirement IDs and names
+- Gap description (explains why it's a gap)
+
+#### Step 7: Calculate Compliance Metrics
+
+```typescript
+totalControls = controlsToAnalyze.length
+applicableControls = totalControls - notApplicableCount
+implementedControls = fullyImplemented + (partiallyImplemented * 0.5)
+compliancePercentage = (implementedControls / applicableControls) * 100
+```
+
+**Note**: `NOT_APPLICABLE` controls are excluded from compliance calculation.
+
+#### Step 8: Generate Summary
+
+The gap analysis includes:
+- **Total Controls**: All controls analyzed
+- **Applicable Controls**: Excluding NOT_APPLICABLE
+- **Implemented Controls**: Fully + partially implemented
+- **Compliance Percentage**: Overall compliance score
+- **Gaps by Priority**: Count of gaps per priority level
+- **Gaps by Status**: Count of gaps per status
+
+### Gap Analysis Output
+
+Each gap in the analysis contains:
+- `controlId`: Unique identifier for the control
+- `controlTitle`: Human-readable control name
+- `controlDescription`: Detailed control description
+- `requirementIds`: Array of linked DORA requirement IDs
+- `requirementNames`: Array of linked DORA requirement names (for display)
+- `status`: Implementation status (NOT_IMPLEMENTED, PARTIALLY_IMPLEMENTED, FULLY_IMPLEMENTED, NOT_APPLICABLE)
+- `gapDescription`: Explanation of the gap
+- `priority`: Priority level (LOW, MEDIUM, HIGH, CRITICAL)
+
+### Example Gap Analysis Flow
+
+1. **User has 15 assets** (various types, criticality 1-4)
+2. **Questionnaire response** identifies **20 applicable controls** for ICT_RISK_MANAGEMENT pillar
+3. **Gap Analysis**:
+   - Analyzes all 20 controls
+   - Finds applicable assets for each control (using matching logic)
+   - Determines status:
+     - 8 controls: FULLY_IMPLEMENTED
+     - 3 controls: PARTIALLY_IMPLEMENTED
+     - 7 controls: NOT_IMPLEMENTED (gaps)
+     - 2 controls: NOT_APPLICABLE (no matching assets)
+4. **Compliance Calculation**:
+   - Applicable: 18 (20 - 2 NOT_APPLICABLE)
+   - Implemented: 8 + (3 * 0.5) = 9.5
+   - Compliance: 9.5 / 18 = **52.8%**
+5. **Priority Distribution**:
+   - CRITICAL: 2 gaps (affecting Level 4 assets)
+   - HIGH: 3 gaps (affecting Level 3 assets)
+   - MEDIUM: 2 gaps (affecting Level 2 assets)
+
+### Best Practices
+
+1. **Run Gap Analysis After Questionnaire**: Always complete the questionnaire first to get accurate, filtered results
+2. **Review by Priority**: Start with CRITICAL and HIGH priority gaps
+3. **Check Asset Matching**: Verify that controls are correctly matched to assets
+4. **Update Control Status**: Manually update control compliance status as you implement controls
+5. **Re-run Periodically**: Run gap analysis after implementing remediation actions to track progress
+
+---
+
+## Remediation Plan Logic
+
+The Remediation Plan module transforms gap analysis results into actionable remediation steps. It provides a structured, prioritized plan for addressing compliance gaps.
+
+### Overview
+
+Remediation Plans take gaps identified in the Gap Analysis and convert them into:
+- **Actionable remediation steps** with clear descriptions
+- **Asset mapping** showing which assets need each control
+- **Priority levels** for prioritization
+- **Evidence suggestions** per DORA pillar
+- **Status tracking** (Not Started, In Progress, Completed)
+- **Progress metrics** and summary statistics
+
+### Remediation Plan Process
+
+The remediation plan follows a **6-step process**:
+
+#### Step 1: Retrieve Gap Analysis
+- Gets the latest gap analysis for the specified pillar
+- **Requirement**: Gap analysis must exist before generating remediation plan
+- If no gap analysis exists, returns an error prompting user to run gap analysis first
+
+#### Step 2: Get User Assets
+- Retrieves all user assets
+- Assets are used to determine which assets need each remediation action
+
+#### Step 3: Get Controls
+- Retrieves all controls for the pillar
+- Creates a control map for quick lookup by control ID
+
+#### Step 4: Generate Remediation Actions
+
+For each gap in the gap analysis:
+
+**4a. Filter Gaps**
+- **Skip**: `FULLY_IMPLEMENTED` gaps (no remediation needed)
+- **Skip**: `NOT_APPLICABLE` gaps (not relevant)
+- **Include**: `NOT_IMPLEMENTED` and `PARTIALLY_IMPLEMENTED` gaps
+
+**4b. Find Applicable Assets**
+- Uses the same [Asset-to-Control Matching Logic](#asset-to-control-matching-logic) as gap analysis
+- Determines which assets need this control implemented
+- Returns asset list with:
+  - `assetId`: Unique asset identifier
+  - `name`: Asset name
+  - `criticalityLevel`: Asset criticality (1-4)
+
+**4c. Get Evidence Suggestions**
+- Retrieves pillar-specific evidence suggestions from predefined list
+- Evidence suggestions vary by DORA pillar:
+  - **ICT_RISK_MANAGEMENT**: Risk frameworks, assessments, registers, treatment plans
+  - **INCIDENT_MANAGEMENT**: Incident policies, procedures, logs, reports, reviews
+  - **RESILIENCE_TESTING**: Test schedules, results, penetration tests, vulnerability assessments
+  - **THIRD_PARTY_RISK**: Risk assessments, contracts, due diligence, monitoring reports
+  - **INFORMATION_SHARING**: Sharing agreements, certificates, threat intelligence
+
+**4d. Create Remediation Action**
+Each action includes:
+- `controlId`: Reference to the control
+- `action`: Action title (e.g., "Implement Access Control Policy")
+- `description`: Detailed description from gap analysis
+- `priority`: Inherited from gap analysis (LOW, MEDIUM, HIGH, CRITICAL)
+- `status`: Initial status (`NOT_STARTED`)
+- `dueDate`: Initially null (user can set)
+- `assignedTo`: Initially null (user can assign)
+- `evidenceIds`: Array of uploaded evidence references (initially empty)
+- `applicableAssets`: List of assets that need this control
+- `evidenceSuggestions`: Suggested evidence types for this pillar
+- `controlTitle`: Control name for display
+- `controlDescription`: Control description for context
+
+#### Step 5: Create Remediation Plan
+
+- Saves remediation plan to database with:
+  - `userId`: User identifier
+  - `pillar`: DORA pillar
+  - `actions`: Array of all remediation actions
+  - `startDate`: Current date/time
+  - `targetCompletionDate`: Initially null (user can set)
+
+#### Step 6: Format for Frontend
+
+- Converts actions to table format with:
+  - **ID**: Sequential remediation ID (RMD-0001, RMD-0002, etc.)
+  - **Pillar**: DORA pillar name
+  - **Control ID**: Control identifier
+  - **Control Title**: Control name
+  - **Control Needed**: Action description
+  - **Applicable Assets**: Truncated list of asset names (50 chars max, with tooltip for full text)
+  - **Asset Count**: Number of assets affected
+  - **Status**: Current remediation status
+  - **Priority**: Priority level
+  - **Evidence Submission**: "Submitted" or "Pending" based on evidence count
+  - **Evidence Count**: Number of evidence files uploaded
+  - **Evidence Suggestions**: Array of suggested evidence types
+  - **Comment**: Gap description
+  - **Due Date**: Target completion date
+  - **Assigned To**: Person responsible
+
+### Remediation Plan Summary
+
+The remediation plan includes summary statistics:
+- **Total Actions**: Total number of remediation actions
+- **Not Started**: Actions with status `NOT_STARTED`
+- **In Progress**: Actions with status `IN_PROGRESS`
+- **Completed**: Actions with status `COMPLETED`
+- **Critical**: Number of CRITICAL priority actions
+- **High**: Number of HIGH priority actions
+
+### Remediation Status Tracking
+
+Users can update remediation action status:
+- **NOT_STARTED**: Action not yet begun
+- **IN_PROGRESS**: Action is being worked on
+- **COMPLETED**: Action is finished
+- **BLOCKED**: Action is blocked (e.g., waiting on dependencies)
+
+When status is updated:
+- Remediation plan is saved with updated action
+- Summary statistics are recalculated
+- Dashboard KPIs are updated (compliance percentage, estimated max loss)
+
+### Evidence Integration
+
+Each remediation action can have:
+- **Evidence IDs**: References to uploaded evidence files
+- **Evidence Suggestions**: Recommended evidence types for the pillar
+- **Evidence Submission Status**: Shows if evidence has been uploaded
+
+Evidence can be uploaded via the Evidence Management API and linked to specific remediation actions.
+
+### Example Remediation Plan Flow
+
+1. **Gap Analysis** identifies 7 gaps for ICT_RISK_MANAGEMENT pillar
+2. **Remediation Plan Generation**:
+   - Creates 7 remediation actions (one per gap)
+   - For each action:
+     - Finds applicable assets (e.g., "Production Database", "Web Server")
+     - Sets priority based on gap priority
+     - Adds evidence suggestions (Risk Framework, Risk Assessment Reports, etc.)
+3. **Action Example**:
+   ```
+   ID: RMD-0001
+   Control: Access Control Policy
+   Priority: CRITICAL
+   Assets: Production Database (Level 4), Web Server (Level 3)
+   Status: NOT_STARTED
+   Evidence Suggestions: ICT Risk Management Framework, Risk Assessment Reports
+   ```
+4. **User Updates Status**:
+   - Marks RMD-0001 as `IN_PROGRESS`
+   - Uploads evidence: "Access Control Policy v2.0.pdf"
+   - Sets due date: 2025-06-30
+5. **Summary Updates**:
+   - Total: 7 actions
+   - Not Started: 6
+   - In Progress: 1
+   - Completed: 0
+
+### Best Practices
+
+1. **Generate After Gap Analysis**: Always run gap analysis first to ensure accurate remediation plan
+2. **Prioritize by Priority**: Focus on CRITICAL and HIGH priority actions first
+3. **Review Asset Lists**: Verify that the correct assets are listed for each action
+4. **Set Due Dates**: Assign realistic due dates based on priority and complexity
+5. **Assign Ownership**: Assign actions to team members for accountability
+6. **Upload Evidence**: Upload evidence as you complete actions to track progress
+7. **Update Status Regularly**: Keep status current to maintain accurate compliance metrics
+8. **Re-generate Periodically**: Re-generate remediation plan after implementing actions to see remaining gaps
+
+### Integration with Dashboard
+
+Remediation plan status affects:
+- **Compliance Percentage**: Completed actions increase compliance
+- **Estimated Max Loss**: Based on asset criticality and gap status
+- **Pillar Compliance**: Per-pillar compliance considers remediation progress
+
+---
+
 ## Knowledge Base: Requirements & Controls
 
 ### DORA Requirements
