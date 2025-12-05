@@ -15,12 +15,23 @@ interface Requirement {
   pillar: string;
   complianceStatus: string;
   notes?: string;
+  associatedControlsCount?: number;
   iso27001Mappings?: Array<{
     control: string;
     title: string;
     description: string;
     relevance: string;
   }>;
+}
+
+interface AssociatedControl {
+  _id: string;
+  controlId: string;
+  title: string;
+  description: string;
+  pillar: string;
+  controlType: string;
+  complianceStatus?: string;
 }
 
 const DORA_PILLARS = [
@@ -49,6 +60,9 @@ export default function RequirementsPage() {
   const [showISO27001, setShowISO27001] = useState(false);
   const [isoSuggestions, setIsoSuggestions] = useState<any[]>([]);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [expandedRequirements, setExpandedRequirements] = useState<Set<string>>(new Set());
+  const [associatedControls, setAssociatedControls] = useState<Record<string, AssociatedControl[]>>({});
+  const [loadingControls, setLoadingControls] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadRequirements();
@@ -60,12 +74,56 @@ export default function RequirementsPage() {
 
   const loadRequirements = async () => {
     try {
-      const response = await apiRequest<{ requirements: Requirement[] }>('/requirements');
+      const response = await apiRequest<{ requirements: Requirement[] }>('/requirements?includeCounts=true');
       setRequirements(response.requirements);
     } catch (error) {
       console.error('Failed to load requirements:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadAssociatedControls = async (requirementId: string) => {
+    if (associatedControls[requirementId]) {
+      // Already loaded, just toggle expansion
+      return;
+    }
+
+    setLoadingControls(prev => new Set(prev).add(requirementId));
+    try {
+      const response = await apiRequest<{ controls: AssociatedControl[] }>(
+        `/requirements/${requirementId}/controls`
+      );
+      setAssociatedControls(prev => ({
+        ...prev,
+        [requirementId]: response.controls,
+      }));
+    } catch (error) {
+      console.error('Failed to load associated controls:', error);
+      setAssociatedControls(prev => ({
+        ...prev,
+        [requirementId]: [],
+      }));
+    } finally {
+      setLoadingControls(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(requirementId);
+        return newSet;
+      });
+    }
+  };
+
+  const toggleControlsExpansion = (requirementId: string) => {
+    const isExpanded = expandedRequirements.has(requirementId);
+    if (isExpanded) {
+      setExpandedRequirements(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(requirementId);
+        return newSet;
+      });
+    } else {
+      setExpandedRequirements(prev => new Set(prev).add(requirementId));
+      loadAssociatedControls(requirementId);
     }
   };
 
@@ -223,45 +281,101 @@ export default function RequirementsPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredRequirements.map((requirement) => (
-              <div key={requirement._id} className="bg-white rounded-lg shadow p-6">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="text-lg font-semibold">{requirement.requirementId}</h3>
-                      {requirement.article && (
-                        <span className="text-sm text-gray-500">{requirement.article}</span>
+            {filteredRequirements.map((requirement) => {
+              const isExpanded = expandedRequirements.has(requirement.requirementId);
+              const controls = associatedControls[requirement.requirementId] || [];
+              const isLoading = loadingControls.has(requirement.requirementId);
+              const controlsCount = requirement.associatedControlsCount ?? 0;
+
+              return (
+                <div key={requirement._id} className="bg-white rounded-lg shadow p-6">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="text-lg font-semibold">{requirement.requirementId}</h3>
+                        {requirement.article && (
+                          <span className="text-sm text-gray-500">{requirement.article}</span>
+                        )}
+                      </div>
+                      <p className="text-gray-700 mb-2">{requirement.description}</p>
+                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                        {requirement.chapter && <span>{requirement.chapter}</span>}
+                        <span className="capitalize">{requirement.pillar.replace(/_/g, ' ')}</span>
+                        {controlsCount > 0 && (
+                          <button
+                            onClick={() => toggleControlsExpansion(requirement.requirementId)}
+                            className="flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium"
+                          >
+                            <span>{controlsCount} Control{controlsCount !== 1 ? 's' : ''}</span>
+                            <span className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                              ▼
+                            </span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={requirement.complianceStatus}
+                        onChange={(e) => handleComplianceChange(requirement.requirementId, e.target.value)}
+                        disabled={updating === requirement.requirementId}
+                        className={`px-3 py-1 rounded text-sm font-medium ${getStatusColor(requirement.complianceStatus)} border-0`}
+                      >
+                        {COMPLIANCE_STATUSES.map((status) => (
+                          <option key={status.value} value={status.value}>
+                            {status.label}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => loadISOSuggestions(requirement)}
+                        className="px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm hover:bg-blue-200"
+                      >
+                        ISO 27001
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Expandable Controls Section */}
+                  {isExpanded && (
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <h4 className="font-semibold text-sm text-gray-700 mb-3">
+                        Associated Controls ({controlsCount})
+                      </h4>
+                      {isLoading ? (
+                        <div className="text-sm text-gray-500 py-2">Loading controls...</div>
+                      ) : controls.length === 0 ? (
+                        <div className="text-sm text-gray-500 py-2">No controls associated with this requirement.</div>
+                      ) : (
+                        <div className="space-y-2">
+                          {controls.map((control) => (
+                            <div key={control._id} className="bg-gray-50 rounded p-3 border border-gray-200">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="font-medium text-sm">{control.controlId}</span>
+                                    <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-800 rounded">
+                                      {control.controlType}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-gray-700 mb-1">{control.title}</p>
+                                  <p className="text-xs text-gray-500">{control.description}</p>
+                                </div>
+                                {control.complianceStatus && (
+                                  <span className={`text-xs px-2 py-1 rounded ${getStatusColor(control.complianceStatus)}`}>
+                                    {control.complianceStatus.replace(/_/g, ' ')}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       )}
                     </div>
-                    <p className="text-gray-700 mb-2">{requirement.description}</p>
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                      {requirement.chapter && <span>{requirement.chapter}</span>}
-                      <span className="capitalize">{requirement.pillar.replace(/_/g, ' ')}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <select
-                      value={requirement.complianceStatus}
-                      onChange={(e) => handleComplianceChange(requirement.requirementId, e.target.value)}
-                      disabled={updating === requirement.requirementId}
-                      className={`px-3 py-1 rounded text-sm font-medium ${getStatusColor(requirement.complianceStatus)} border-0`}
-                    >
-                      {COMPLIANCE_STATUSES.map((status) => (
-                        <option key={status.value} value={status.value}>
-                          {status.label}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      onClick={() => loadISOSuggestions(requirement)}
-                      className="px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm hover:bg-blue-200"
-                    >
-                      ISO 27001
-                    </button>
-                  </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

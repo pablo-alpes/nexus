@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDBLocal } from '@/lib/mongodb-local';
 import Control from '@/models/Control';
+import DORARequirement from '@/models/DORARequirement';
 import { getAuthUser } from '@/lib/auth-helper';
 import { ensureControlsSetup } from '@/lib/auto-controls';
 
@@ -21,6 +22,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const pillar = searchParams.get('pillar');
     const controlType = searchParams.get('controlType');
+    const includeCounts = searchParams.get('includeCounts') === 'true';
     
     const query: any = {};
     if (pillar) query.pillar = pillar;
@@ -28,6 +30,23 @@ export async function GET(request: NextRequest) {
     
     // Local storage doesn't support populate, so we fetch directly
     const controls = await Control.find(query, { controlId: 1 });
+    
+    // If includeCounts is true, add requirement counts for each control
+    if (includeCounts) {
+      const controlsWithCounts = await Promise.all(
+        controls.map(async (control: any) => {
+          const requirementIds = control.requirementIds || [];
+          const requirementCount = requirementIds.length;
+          
+          return {
+            ...control.toObject ? control.toObject() : control,
+            associatedRequirementsCount: requirementCount,
+          };
+        })
+      );
+      
+      return NextResponse.json({ controls: controlsWithCounts });
+    }
     
     return NextResponse.json({ controls });
   } catch (error: any) {

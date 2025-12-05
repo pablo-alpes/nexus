@@ -122,6 +122,9 @@ export default function DashboardPage() {
               <Link href="/dashboard/remediation" className="text-gray-700 hover:text-primary-600">
                 Remediation
               </Link>
+              <Link href="/dashboard/roadmap" className="text-gray-700 hover:text-primary-600">
+                Roadmap
+              </Link>
               <Link href="/dashboard/requirements" className="text-gray-700 hover:text-primary-600">
                 Requirements
               </Link>

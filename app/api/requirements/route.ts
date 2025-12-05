@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDBLocal } from '@/lib/mongodb-local';
 import DORARequirement from '@/models/DORARequirement';
+import Control from '@/models/Control';
 import { ensureRequirementsImported } from '@/lib/auto-import';
 import * as XLSX from 'xlsx';
 
@@ -14,9 +15,40 @@ export async function GET(request: NextRequest) {
     
     const searchParams = request.nextUrl.searchParams;
     const pillar = searchParams.get('pillar');
+    const includeCounts = searchParams.get('includeCounts') === 'true';
     
     const query = pillar ? { pillar } : {};
     const requirements = await DORARequirement.find(query, { requirementId: 1 });
+    
+    // If includeCounts is true, add control counts for each requirement
+    if (includeCounts) {
+      const requirementsWithCounts = await Promise.all(
+        requirements.map(async (req: any) => {
+          const reqId = String(req._id || req.requirementId);
+          const reqRequirementId = req.requirementId;
+          
+          // Find controls that reference this requirement
+          // Check both _id and requirementId in the requirementIds array
+          const allControls = await Control.find({});
+          const matchingControls = allControls.filter((control: any) => {
+            if (!control.requirementIds || !Array.isArray(control.requirementIds)) {
+              return false;
+            }
+            return control.requirementIds.some((id: any) => {
+              const idStr = String(id);
+              return idStr === reqId || idStr === reqRequirementId;
+            });
+          });
+          
+          return {
+            ...req.toObject ? req.toObject() : req,
+            associatedControlsCount: matchingControls.length,
+          };
+        })
+      );
+      
+      return NextResponse.json({ requirements: requirementsWithCounts });
+    }
     
     return NextResponse.json({ requirements });
   } catch (error: any) {
