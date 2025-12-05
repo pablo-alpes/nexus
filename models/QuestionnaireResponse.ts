@@ -12,6 +12,7 @@ export interface IQuestionnaireResponse extends Document {
   userId: Types.ObjectId;
   answers: IAnswer[];
   applicableControls: Types.ObjectId[]; // Controls determined to be applicable
+  controlReasoning?: Record<string, string[]>; // Reasoning for each control (transparency)
   completedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -32,9 +33,13 @@ const QuestionnaireResponseSchema = new Schema<IQuestionnaireResponse>(
     },
     answers: [AnswerSchema],
     applicableControls: [{
-      type: Schema.Types.ObjectId,
+      type: Schema.Types.Mixed, // Mixed for local storage
       ref: 'Control',
     }],
+    controlReasoning: {
+      type: Map,
+      of: [String], // Array of reasoning strings per control ID
+    },
     completedAt: {
       type: Date,
     },

@@ -32,6 +32,7 @@ export default function QuestionnairePage() {
   const [submitting, setSubmitting] = useState(false);
   const [savedResponse, setSavedResponse] = useState<QuestionnaireResponse | null>(null);
   const [showResults, setShowResults] = useState(false);
+  const [acknowledgedDisclaimer, setAcknowledgedDisclaimer] = useState(false);
 
   useEffect(() => {
     loadQuestions();
@@ -261,6 +262,36 @@ export default function QuestionnairePage() {
             ))}
           </div>
 
+          {/* Results Disclaimer */}
+          <div className="bg-blue-50 border-l-4 border-blue-400 p-6 mt-6 rounded-lg">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-blue-800 mb-2">
+                  Next Steps - Review Required
+                </h3>
+                <p className="text-sm text-blue-700 mb-2">
+                  The controls identified above are based on your questionnaire responses and our rule engine logic. 
+                  <strong> This is not legal advice.</strong>
+                </p>
+                <ul className="list-disc list-inside text-sm text-blue-700 space-y-1">
+                  <li>Review all identified controls for accuracy and completeness</li>
+                  <li>Manually add or remove controls as needed based on your specific situation</li>
+                  <li>Consult with DORA compliance experts to validate your compliance approach</li>
+                  <li>Regularly update your compliance status as your organization evolves</li>
+                </ul>
+                <p className="text-xs text-blue-600 mt-3">
+                  By proceeding, you acknowledge that you understand these controls are recommendations based on automated analysis, 
+                  and you are responsible for ensuring compliance. See our <Link href="/terms-of-service" className="underline font-medium">Terms of Service</Link> for details.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="mt-6 text-center">
             <Link
               href="/dashboard/gap-analysis"
@@ -297,7 +328,58 @@ export default function QuestionnairePage() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="text-3xl font-bold mb-6">DORA Compliance Questionnaire</h1>
 
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        {/* Disclaimer and Acknowledgment */}
+        {!acknowledgedDisclaimer && (
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-6 mb-6 rounded-lg">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3 flex-1">
+                <h3 className="text-sm font-medium text-yellow-800 mb-2">
+                  Important Disclaimer
+                </h3>
+                <p className="text-sm text-yellow-700 mb-4">
+                  <strong>Nexus Cloud is a compliance management tool</strong> that assists organizations in identifying and managing DORA compliance requirements. 
+                  This questionnaire helps identify applicable controls but does <strong>not guarantee compliance</strong>.
+                </p>
+                <div className="bg-white p-4 rounded border border-yellow-200 mb-4">
+                  <p className="text-sm font-semibold text-gray-900 mb-2">You are responsible for:</p>
+                  <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+                    <li>Accurately answering all questions based on your organization's actual practices</li>
+                    <li>Reviewing and validating all identified controls for accuracy and completeness</li>
+                    <li>Ensuring full compliance with all applicable DORA requirements</li>
+                    <li>Consulting with legal and compliance experts as needed</li>
+                    <li>Regularly updating your compliance status as your organization evolves</li>
+                  </ul>
+                </div>
+                <div className="flex items-start">
+                  <input
+                    type="checkbox"
+                    id="acknowledge-disclaimer"
+                    checked={acknowledgedDisclaimer}
+                    onChange={(e) => setAcknowledgedDisclaimer(e.target.checked)}
+                    className="mt-1 mr-3 w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                  />
+                  <label htmlFor="acknowledge-disclaimer" className="text-sm text-yellow-800">
+                    I understand and acknowledge that:
+                    <ul className="list-disc list-inside mt-2 ml-4 space-y-1">
+                      <li>Nexus Cloud is a tool to assist with compliance management, not a guarantee of compliance</li>
+                      <li>I am solely responsible for ensuring my organization's compliance with DORA regulations</li>
+                      <li>I will review all identified controls and consult with compliance experts as needed</li>
+                      <li>I have read and agree to the <Link href="/terms-of-service" className="underline font-medium">Terms of Service</Link></li>
+                    </ul>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {acknowledgedDisclaimer && (
+          <div className="bg-white rounded-lg shadow p-6 mb-6">
           <div className="mb-4">
             <div className="flex justify-between text-sm text-gray-600 mb-2">
               <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
@@ -433,8 +515,8 @@ export default function QuestionnairePage() {
             {currentQuestionIndex === questions.length - 1 ? (
               <button
                 onClick={handleSubmit}
-                disabled={submitting}
-                className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+                disabled={submitting || !acknowledgedDisclaimer}
+                className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? 'Submitting...' : 'Submit'}
               </button>

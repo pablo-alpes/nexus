@@ -150,6 +150,7 @@ export async function POST(request: NextRequest) {
     
     // Step 4: Find controls that map to requirements from "no" answers
     const applicableControlIds = new Set<string>();
+    const controlReasoning = new Map<string, string[]>(); // Track reasoning for each control
     const requirementIdsArray = Array.from(requirementsFromNoAnswers);
     
     if (requirementIdsArray.length > 0) {
@@ -167,6 +168,22 @@ export async function POST(request: NextRequest) {
         if (control.controlId && String(control.controlId) !== controlId) {
           applicableControlIds.add(String(control.controlId));
         }
+        
+        // Track reasoning: which questions/requirements led to this control
+        const matchingReqs = Array.from(requirementsFromNoAnswers).filter(reqId => 
+          control.requirementIds && control.requirementIds.some((rid: any) => String(rid) === reqId)
+        );
+        const questionTexts = noAnswers
+          .filter(({ question }) => question.pillar === control.pillar)
+          .map(({ question }) => question.text)
+          .slice(0, 2);
+        
+        if (!controlReasoning.has(controlId)) {
+          controlReasoning.set(controlId, []);
+        }
+        controlReasoning.get(controlId)!.push(
+          `Included because: Answered "No" to questions about ${questionTexts.join(', ')} → Requirements ${matchingReqs.slice(0, 2).join(', ')} → Control ${control.controlId || controlId}`
+        );
       }
       
       // Also get controls by pillar if they map to requirements from "no" answers
@@ -186,6 +203,17 @@ export async function POST(request: NextRequest) {
               if (control.controlId && String(control.controlId) !== controlId) {
                 applicableControlIds.add(String(control.controlId));
               }
+              
+              // Track reasoning
+              const matchingReqs = Array.from(requirementsFromNoAnswers).filter(reqId => 
+                controlRequirementIds.includes(reqId)
+              );
+              if (!controlReasoning.has(controlId)) {
+                controlReasoning.set(controlId, []);
+              }
+              controlReasoning.get(controlId)!.push(
+                `Included via pillar mapping: Requirements ${matchingReqs.slice(0, 2).join(', ')} → Control ${control.controlId || controlId}`
+              );
             }
           }
         }
@@ -217,6 +245,14 @@ export async function POST(request: NextRequest) {
         if (control.controlId && String(control.controlId) !== controlId) {
           applicableControlIds.add(String(control.controlId));
         }
+        
+        // Track prudence reasoning
+        if (!controlReasoning.has(controlId)) {
+          controlReasoning.set(controlId, []);
+        }
+        controlReasoning.get(controlId)!.push(
+          `Included via prudence criteria: Requirement appears in both "Yes" and "No" answers → Conservative approach: include control ${control.controlId || controlId}`
+        );
       });
     }
     
@@ -229,6 +265,12 @@ export async function POST(request: NextRequest) {
     console.log(`   Conflicting requirements: ${conflictingRequirements.size}`);
     console.log(`   Final applicable controls: ${applicableControls.length}`);
     
+    // Convert reasoning map to object for storage
+    const reasoningObject: Record<string, string[]> = {};
+    controlReasoning.forEach((reasons, controlId) => {
+      reasoningObject[controlId] = reasons;
+    });
+    
     // Save or update response
     // Convert userId to string for local storage
     const responseData = {
@@ -239,6 +281,7 @@ export async function POST(request: NextRequest) {
         textValue: a.textValue,
       })),
       applicableControls: applicableControls.map((id: any) => String(id)),
+      controlReasoning: reasoningObject, // Store reasoning for transparency
       completedAt: new Date().toISOString(),
     };
     
@@ -251,6 +294,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       response,
       applicableControlsCount: applicableControls.length,
+      controlReasoning: reasoningObject, // Return reasoning for frontend display
     });
   } catch (error: any) {
     return NextResponse.json(

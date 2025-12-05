@@ -94,6 +94,35 @@ export default function GapAnalysisPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="text-3xl font-bold mb-6">Gap Analysis</h1>
 
+        {/* Disclaimer */}
+        <div className="bg-blue-50 border-l-4 border-blue-400 p-6 mb-6 rounded-lg">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-blue-800 mb-2">
+                Important: Gap Analysis Disclaimer
+              </h3>
+              <p className="text-sm text-blue-700 mb-2">
+                This gap analysis is generated based on your questionnaire responses, asset inventory, and our rule engine logic. 
+                <strong> It is a tool to assist with compliance management, not a guarantee of compliance.</strong>
+              </p>
+              <ul className="list-disc list-inside text-sm text-blue-700 space-y-1 mb-2">
+                <li>Review all identified gaps for accuracy and completeness</li>
+                <li>Manually verify control implementation status</li>
+                <li>Consult with DORA compliance experts to validate findings</li>
+                <li>You are solely responsible for ensuring compliance with DORA regulations</li>
+              </ul>
+              <p className="text-xs text-blue-600">
+                See our <Link href="/terms-of-service" className="underline font-medium">Terms of Service</Link> for complete details on liability and responsibilities.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4">Select DORA Pillar</h2>
           <div className="flex gap-4 items-end">
@@ -242,6 +271,17 @@ export default function GapAnalysisPage() {
                                 </span>
                               ))}
                             </div>
+                          </div>
+                        )}
+                        {/* Show reasoning for transparency */}
+                        {gap.reasoning && gap.reasoning.length > 0 && (
+                          <div className="mt-3 bg-gray-50 border-l-2 border-gray-300 pl-3 py-2 rounded">
+                            <p className="text-xs font-medium text-gray-500 mb-1">Why this control was included:</p>
+                            <ul className="list-disc list-inside text-xs text-gray-600 space-y-1">
+                              {gap.reasoning.map((reason: string, idx: number) => (
+                                <li key={idx}>{reason}</li>
+                              ))}
+                            </ul>
                           </div>
                         )}
                       </div>

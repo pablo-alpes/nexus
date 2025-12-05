@@ -295,6 +295,24 @@ export async function POST(request: NextRequest) {
       // Get control description
       const controlDescription = control.description || '';
       
+      // Get reasoning from questionnaire response if available
+      let reasoning: string[] = [];
+      if (questionnaireResponse && (questionnaireResponse as any).controlReasoning) {
+        const controlReasoning = (questionnaireResponse as any).controlReasoning;
+        reasoning = controlReasoning[controlId] || controlReasoning[String(control.controlId)] || [];
+      }
+      
+      // If no reasoning from questionnaire, generate basic reasoning
+      if (reasoning.length === 0) {
+        if (status === ControlStatus.NOT_APPLICABLE) {
+          reasoning.push('Not applicable: No assets match the control criteria (type and criticality)');
+        } else if (status === ControlStatus.NOT_IMPLEMENTED) {
+          reasoning.push(`Gap identified: Control not implemented for ${applicableAssets.length} applicable asset(s)`);
+        } else {
+          reasoning.push(`Control status: ${status}`);
+        }
+      }
+      
       gaps.push({
         controlId: controlId,
         controlTitle: controlTitle,
@@ -304,6 +322,7 @@ export async function POST(request: NextRequest) {
         status,
         gapDescription,
         priority,
+        reasoning: reasoning, // Add reasoning for transparency
       });
     }
     
@@ -341,6 +360,7 @@ export async function POST(request: NextRequest) {
         status: gap.status,
         gapDescription: gap.gapDescription,
         priority: gap.priority,
+        reasoning: gap.reasoning || [], // Include reasoning for transparency
       })),
       totalControls,
       implementedControls: Math.round(implementedCount),
