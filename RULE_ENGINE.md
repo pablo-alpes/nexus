@@ -534,3 +534,4 @@ Requirements are matched using:
 3. **Historical Analysis**: Track how controls change over time
 4. **Custom Rules**: Allow users to define custom matching rules
 5. **Multi-Regulation**: Extend to other regulations (GDPR, NIS2)
+

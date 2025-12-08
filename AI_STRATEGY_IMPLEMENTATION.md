@@ -175,3 +175,4 @@ To test the implementation:
 - Cost estimates are based on industry averages and can be customized
 - ROI calculations assume 50% average risk reduction
 - Resource allocation uses €100/hour average rate (configurable)
+

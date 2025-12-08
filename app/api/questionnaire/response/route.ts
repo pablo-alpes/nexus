@@ -6,6 +6,7 @@ import Question from '@/models/Question';
 import DORARequirement from '@/models/DORARequirement';
 import { getAuthUser } from '@/lib/auth-helper';
 import { ensureControlsSetup } from '@/lib/auto-controls';
+import { getPrecomputedMappings, getActiveRuleVersion } from '@/lib/services/precomputed-mappings';
 
 // GET user's questionnaire response
 export async function GET(request: NextRequest) {
@@ -101,51 +102,70 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // Step 3: For "no" answers, find requirements and map to controls
+    // Step 3: For "no" answers, find requirements using HYBRID APPROACH (Logic + NLP)
     const requirementsFromNoAnswers = new Set<string>();
     const requirementsFromYesAnswers = new Set<string>();
+    const ruleVersion = await getActiveRuleVersion();
     
-    // Process "no" answers: find requirements → include controls
+    // Process "no" answers: use precomputed mappings (control-based + NLP validated)
     for (const { question, answer } of noAnswers) {
-      // Find requirements related to this question
-      const allRequirements = await DORARequirement.find({ pillar: question.pillar });
-      const questionKeywords = question.text?.toLowerCase().split(' ').filter((w: string) => w.length > 3) || [];
+      // Try to get precomputed mappings first
+      const precomputed = await getPrecomputedMappings(question.questionId, ruleVersion);
       
-      // Find requirements that match the question's keywords
-      const matchingRequirements = allRequirements.filter((req: any) => {
-        const reqText = `${req.description || ''} ${req.title || ''}`.toLowerCase();
-        return questionKeywords.some((keyword: string) => reqText.includes(keyword));
-      });
-      
-      matchingRequirements.forEach((req: any) => {
-        requirementsFromNoAnswers.add(String(req._id || req.requirementId));
-      });
-      
-      // Also check if question has controls mapped via options
-      if (question.options) {
-        const noOption = question.options.find((opt: any) => opt.value === 'no');
-        if (noOption && noOption.applicableControls) {
-          // These are requirement IDs, add them
-          noOption.applicableControls.forEach((reqId: any) => {
-            requirementsFromNoAnswers.add(String(reqId));
-          });
-        }
+      if (precomputed && precomputed.controlBasedRequirements.length > 0) {
+        // Use precomputed control-based requirements (high confidence)
+        precomputed.controlBasedRequirements.forEach((reqId: string) => {
+          requirementsFromNoAnswers.add(reqId);
+        });
+        
+        // Also include high-confidence NLP suggestions (similarity > 0.75, not already in control-based)
+        const highConfidenceSuggestions = precomputed.nlpSimilarities
+          .filter(s => !s.isControlBased && s.confidence === 'high' && s.similarity >= 0.75)
+          .map(s => s.requirementId);
+        
+        highConfidenceSuggestions.forEach((reqId: string) => {
+          requirementsFromNoAnswers.add(reqId);
+        });
+      } else {
+        // Fallback: Use keyword matching if precomputed mappings not available
+        console.warn(`⚠️  No precomputed mappings for ${question.questionId}, using keyword fallback`);
+        const allRequirements = await DORARequirement.find({ pillar: question.pillar });
+        const questionKeywords = question.text?.toLowerCase().split(' ').filter((w: string) => w.length > 3) || [];
+        
+        const matchingRequirements = allRequirements.filter((req: any) => {
+          const reqText = `${req.description || ''} ${req.title || ''}`.toLowerCase();
+          return questionKeywords.some((keyword: string) => reqText.includes(keyword));
+        });
+        
+        matchingRequirements.forEach((req: any) => {
+          requirementsFromNoAnswers.add(String(req._id || req.requirementId));
+        });
       }
     }
     
-    // Process "yes" answers: find requirements (for conflict resolution)
+    // Process "yes" answers: use precomputed mappings for conflict detection
     for (const { question, answer } of yesAnswers) {
-      const allRequirements = await DORARequirement.find({ pillar: question.pillar });
-      const questionKeywords = question.text?.toLowerCase().split(' ').filter((w: string) => w.length > 3) || [];
+      const precomputed = await getPrecomputedMappings(question.questionId, ruleVersion);
       
-      const matchingRequirements = allRequirements.filter((req: any) => {
-        const reqText = `${req.description || ''} ${req.title || ''}`.toLowerCase();
-        return questionKeywords.some((keyword: string) => reqText.includes(keyword));
-      });
-      
-      matchingRequirements.forEach((req: any) => {
-        requirementsFromYesAnswers.add(String(req._id || req.requirementId));
-      });
+      if (precomputed && precomputed.controlBasedRequirements.length > 0) {
+        // Use precomputed control-based requirements
+        precomputed.controlBasedRequirements.forEach((reqId: string) => {
+          requirementsFromYesAnswers.add(reqId);
+        });
+      } else {
+        // Fallback: keyword matching
+        const allRequirements = await DORARequirement.find({ pillar: question.pillar });
+        const questionKeywords = question.text?.toLowerCase().split(' ').filter((w: string) => w.length > 3) || [];
+        
+        const matchingRequirements = allRequirements.filter((req: any) => {
+          const reqText = `${req.description || ''} ${req.title || ''}`.toLowerCase();
+          return questionKeywords.some((keyword: string) => reqText.includes(keyword));
+        });
+        
+        matchingRequirements.forEach((req: any) => {
+          requirementsFromYesAnswers.add(String(req._id || req.requirementId));
+        });
+      }
     }
     
     // Step 4: Find controls that map to requirements from "no" answers
@@ -291,10 +311,23 @@ export async function POST(request: NextRequest) {
       { upsert: true, new: true }
     );
     
+    // Get rule version and coherence metrics for response
+    let coherenceMetrics = null;
+    if (noAnswers.length > 0 && noAnswers[0].question) {
+      try {
+        const precomputed = await getPrecomputedMappings(noAnswers[0].question.questionId, ruleVersion);
+        coherenceMetrics = precomputed?.coherenceMetrics || null;
+      } catch (error) {
+        console.warn('Could not fetch coherence metrics:', error);
+      }
+    }
+    
     return NextResponse.json({
       response,
       applicableControlsCount: applicableControls.length,
       controlReasoning: reasoningObject, // Return reasoning for frontend display
+      ruleVersion, // Include rule version used
+      coherenceMetrics, // Include coherence metrics if available
     });
   } catch (error: any) {
     return NextResponse.json(

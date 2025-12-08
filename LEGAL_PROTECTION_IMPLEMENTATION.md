@@ -168,3 +168,4 @@ Stores reasoning for each control ID, allowing transparency into why controls we
 - User acknowledgment is required before critical actions
 - Reasoning provides transparency without exposing liability
 - Legal language is clear but not overly complex
+

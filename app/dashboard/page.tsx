@@ -131,6 +131,9 @@ export default function DashboardPage() {
               <Link href="/dashboard/controls" className="text-gray-700 hover:text-primary-600">
                 Controls
               </Link>
+              <Link href="/dashboard/rule-engine" className="text-gray-700 hover:text-primary-600">
+                Rule Engine
+              </Link>
             </div>
             <button
               onClick={handleLogout}

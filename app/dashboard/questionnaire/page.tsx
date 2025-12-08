@@ -23,6 +23,21 @@ interface QuestionnaireResponse {
   completedAt?: string;
 }
 
+interface CoherenceMetrics {
+  averageRelevance: number;
+  highConfidenceCount: number;
+  mediumConfidenceCount: number;
+  lowConfidenceCount: number;
+  overallCoherence: number;
+}
+
+interface RuleVersionInfo {
+  version: string;
+  status: string;
+  effectiveDate: string;
+  precomputedAt?: string;
+}
+
 export default function QuestionnairePage() {
   const router = useRouter();
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -33,10 +48,14 @@ export default function QuestionnairePage() {
   const [savedResponse, setSavedResponse] = useState<QuestionnaireResponse | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [acknowledgedDisclaimer, setAcknowledgedDisclaimer] = useState(false);
+  const [ruleVersion, setRuleVersion] = useState<RuleVersionInfo | null>(null);
+  const [coherenceMetrics, setCoherenceMetrics] = useState<CoherenceMetrics | null>(null);
+  const [overallMetrics, setOverallMetrics] = useState<any>(null);
 
   useEffect(() => {
     loadQuestions();
     loadSavedResponse();
+    loadRuleVersion();
   }, []);
 
   const loadSavedResponse = async () => {
@@ -57,6 +76,19 @@ export default function QuestionnairePage() {
       }
     } catch (error) {
       console.error('Failed to load saved response:', error);
+    }
+  };
+
+  const loadRuleVersion = async () => {
+    try {
+      const response = await apiRequest<{
+        ruleVersion: RuleVersionInfo;
+        coherenceMetrics: CoherenceMetrics;
+      }>('/rule-version');
+      setRuleVersion(response.ruleVersion);
+      setOverallMetrics(response.coherenceMetrics);
+    } catch (error) {
+      console.error('Failed to load rule version:', error);
     }
   };
 
@@ -96,12 +128,24 @@ export default function QuestionnairePage() {
         value,
       }));
 
-      const response = await apiRequest<{ response: QuestionnaireResponse; applicableControlsCount: number }>('/questionnaire/response', {
+      const response = await apiRequest<{ 
+        response: QuestionnaireResponse; 
+        applicableControlsCount: number;
+        ruleVersion?: string;
+        coherenceMetrics?: CoherenceMetrics;
+      }>('/questionnaire/response', {
         method: 'POST',
         body: JSON.stringify({ answers: answerArray }),
       });
 
       setSavedResponse(response.response);
+      if (response.coherenceMetrics) {
+        setCoherenceMetrics(response.coherenceMetrics);
+      }
+      if (response.ruleVersion) {
+        // Update rule version if provided
+        loadRuleVersion();
+      }
       setShowResults(true);
       
       // Don't redirect - show results on same page
@@ -205,6 +249,68 @@ export default function QuestionnairePage() {
             </div>
           </div>
 
+          {/* Rule Version & Coherence Quality Banner */}
+          {(ruleVersion || overallMetrics) && (
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow p-6 mb-6 border-l-4 border-blue-500">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Rule Engine Version & Quality Metrics
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">Rule Version</p>
+                      <p className="text-xl font-bold text-blue-600">
+                        v{ruleVersion?.version || 'N/A'}
+                      </p>
+                      {ruleVersion?.precomputedAt && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Precomputed: {new Date(ruleVersion.precomputedAt).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                    {overallMetrics && (
+                      <div>
+                        <p className="text-sm text-gray-600 mb-1">Overall Coherence</p>
+                        <p className="text-xl font-bold text-indigo-600">
+                          {overallMetrics.averageCoherence?.toFixed(1) || '0'}%
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Avg Relevance: {(overallMetrics.averageRelevance * 100)?.toFixed(1) || '0'}%
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  {overallMetrics && (
+                    <div className="mt-4 pt-4 border-t border-blue-200">
+                      <p className="text-sm font-medium text-gray-700 mb-2">Confidence Distribution</p>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="text-center">
+                          <p className="text-xs text-gray-600">High</p>
+                          <p className="text-lg font-bold text-green-600">
+                            {overallMetrics.highConfidencePercentage?.toFixed(1) || '0'}%
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xs text-gray-600">Medium</p>
+                          <p className="text-lg font-bold text-yellow-600">
+                            {overallMetrics.mediumConfidencePercentage?.toFixed(1) || '0'}%
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xs text-gray-600">Low</p>
+                          <p className="text-lg font-bold text-red-600">
+                            {overallMetrics.lowConfidencePercentage?.toFixed(1) || '0'}%
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="bg-white rounded-lg shadow p-6 mb-6">
             <h2 className="text-xl font-semibold mb-4">Summary</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -227,6 +333,37 @@ export default function QuestionnairePage() {
               <p className="text-sm text-gray-500 mt-4">
                 Completed: {new Date(savedResponse.completedAt).toLocaleString()}
               </p>
+            )}
+            {coherenceMetrics && (
+              <div className="mt-4 pt-4 border-t">
+                <p className="text-sm font-medium text-gray-700 mb-2">Question Coherence Quality</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div>
+                    <p className="text-xs text-gray-600">Overall Coherence</p>
+                    <p className="text-lg font-bold text-indigo-600">
+                      {coherenceMetrics.overallCoherence?.toFixed(1) || '0'}%
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600">Avg Relevance</p>
+                    <p className="text-lg font-bold text-blue-600">
+                      {(coherenceMetrics.averageRelevance * 100)?.toFixed(1) || '0'}%
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600">High Confidence</p>
+                    <p className="text-lg font-bold text-green-600">
+                      {coherenceMetrics.highConfidenceCount || 0}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600">Low Confidence</p>
+                    <p className="text-lg font-bold text-red-600">
+                      {coherenceMetrics.lowConfidenceCount || 0}
+                    </p>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
 

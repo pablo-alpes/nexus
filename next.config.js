@@ -1,10 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  api: {
-    bodyParser: {
-      sizeLimit: '50mb',
-    },
+  webpack: (config) => {
+    config.externals = config.externals || [];
+    config.externals.push({
+      'onnxruntime-node': 'commonjs onnxruntime-node',
+    });
+    return config;
   },
 }
 
