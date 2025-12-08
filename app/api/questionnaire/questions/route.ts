@@ -82,3 +82,70 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// PUT - Update question
+export async function PUT(request: NextRequest) {
+  try {
+    await connectDBLocal();
+    
+    const body = await request.json();
+    const { _id, questionId, ...updateData } = body;
+    
+    const query = _id ? { _id } : { questionId };
+    const question = await Question.findOneAndUpdate(
+      query,
+      updateData,
+      { new: true }
+    );
+    
+    if (!question) {
+      return NextResponse.json(
+        { error: 'Question not found' },
+        { status: 404 }
+      );
+    }
+    
+    return NextResponse.json({ question });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE - Delete question
+export async function DELETE(request: NextRequest) {
+  try {
+    await connectDBLocal();
+    
+    const searchParams = request.nextUrl.searchParams;
+    const id = searchParams.get('id');
+    const questionId = searchParams.get('questionId');
+    
+    const query = id ? { _id: id } : questionId ? { questionId } : null;
+    
+    if (!query) {
+      return NextResponse.json(
+        { error: 'ID or questionId required' },
+        { status: 400 }
+      );
+    }
+    
+    const result = await Question.deleteOne(query);
+    
+    if (result.deletedCount === 0) {
+      return NextResponse.json(
+        { error: 'Question not found' },
+        { status: 404 }
+      );
+    }
+    
+    return NextResponse.json({ message: 'Question deleted successfully' });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    );
+  }
+}

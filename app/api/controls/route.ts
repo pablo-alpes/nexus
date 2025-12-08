@@ -87,3 +87,40 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// PUT - Update control
+export async function PUT(request: NextRequest) {
+  try {
+    await connectDBLocal();
+    
+    const body = await request.json();
+    const { controlId, ...updateData } = body;
+    
+    if (!controlId) {
+      return NextResponse.json(
+        { error: 'controlId is required' },
+        { status: 400 }
+      );
+    }
+    
+    const control = await Control.findOneAndUpdate(
+      { controlId },
+      updateData,
+      { new: true }
+    );
+    
+    if (!control) {
+      return NextResponse.json(
+        { error: 'Control not found' },
+        { status: 404 }
+      );
+    }
+    
+    return NextResponse.json({ control });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    );
+  }
+}
+

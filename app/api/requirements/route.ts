@@ -119,3 +119,40 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// PUT - Update requirement
+export async function PUT(request: NextRequest) {
+  try {
+    await connectDBLocal();
+    
+    const body = await request.json();
+    const { requirementId, ...updateData } = body;
+    
+    if (!requirementId) {
+      return NextResponse.json(
+        { error: 'requirementId is required' },
+        { status: 400 }
+      );
+    }
+    
+    const requirement = await DORARequirement.findOneAndUpdate(
+      { requirementId },
+      updateData,
+      { new: true }
+    );
+    
+    if (!requirement) {
+      return NextResponse.json(
+        { error: 'Requirement not found' },
+        { status: 404 }
+      );
+    }
+    
+    return NextResponse.json({ requirement });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    );
+  }
+}
+
