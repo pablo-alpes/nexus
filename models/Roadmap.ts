@@ -24,6 +24,9 @@ export interface IRoadmapTask {
 
 export interface IRoadmap extends Document {
   userId: Types.ObjectId;
+  organizationId?: Types.ObjectId | string; // Reference to Organization
+  affiliateId?: Types.ObjectId | string; // Reference to Affiliate
+  legalFramework?: string; // e.g., 'DORA', 'GDPR', 'NIS2', etc.
   name: string;
   description?: string;
   startDate: Date;

@@ -15,7 +15,8 @@
     "test:coherence": "node scripts/analyze-matching-coherence.js",
     "precompute:mappings": "tsx scripts/precompute-mappings.ts",
     "promote:superadmin": "node scripts/promote-to-superadmin.js",
-    "create:superadmin": "node scripts/create-superadmin.js"
+    "create:superadmin": "node scripts/create-superadmin.js",
+    "migrate:multi-tenant": "tsx scripts/migrate-multi-tenant.ts"
   },
   "dependencies": {
     "@azure/storage-blob": "^12.17.0",

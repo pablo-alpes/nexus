@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest } from '@/lib/api';
+import { useApiParams } from '@/hooks/useApiParams';
 import UserContextBar from '@/components/UserContextBar';
 
 interface Question {
@@ -41,6 +42,7 @@ interface RuleVersionInfo {
 
 export default function QuestionnairePage() {
   const router = useRouter();
+  const { getApiUrl } = useApiParams();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
@@ -55,14 +57,23 @@ export default function QuestionnairePage() {
 
   useEffect(() => {
     loadQuestions();
-    loadSavedResponse();
     loadRuleVersion();
   }, []);
 
-  const loadSavedResponse = async () => {
+  // Memoize loadSavedResponse to prevent unnecessary re-renders
+  const loadSavedResponse = useCallback(async () => {
     try {
-      const response = await apiRequest<{ response: QuestionnaireResponse | null }>('/questionnaire/response');
+      const url = getApiUrl('/questionnaire/response');
+      console.log('📋 Loading saved response from URL:', url);
+      const response = await apiRequest<{ response: QuestionnaireResponse | null }>(url);
+      console.log('📋 Response received:', response.response ? 'Found response' : 'No response');
       if (response.response) {
+        console.log('📋 Response details:', {
+          _id: response.response._id,
+          affiliateId: (response.response as any).affiliateId,
+          organizationId: (response.response as any).organizationId,
+          userId: (response.response as any).userId,
+        });
         setSavedResponse(response.response);
         // Pre-populate answers from saved response
         const answerMap: Record<string, any> = {};
@@ -74,11 +85,23 @@ export default function QuestionnairePage() {
         if (response.response.completedAt) {
           setShowResults(true);
         }
+      } else {
+        setSavedResponse(null);
+        setAnswers({});
+        setShowResults(false);
       }
     } catch (error) {
       console.error('Failed to load saved response:', error);
+      setSavedResponse(null);
+      setAnswers({});
+      setShowResults(false);
     }
-  };
+  }, [getApiUrl]);
+
+  // Reload saved response when affiliate/organization changes
+  useEffect(() => {
+    loadSavedResponse();
+  }, [loadSavedResponse]); // Re-load when loadSavedResponse changes (which happens when getApiUrl changes)
 
   const loadRuleVersion = async () => {
     try {
@@ -129,12 +152,13 @@ export default function QuestionnairePage() {
         value,
       }));
 
+      const url = getApiUrl('/questionnaire/response');
       const response = await apiRequest<{ 
         response: QuestionnaireResponse; 
         applicableControlsCount: number;
         ruleVersion?: string;
         coherenceMetrics?: CoherenceMetrics;
-      }>('/questionnaire/response', {
+      }>(url, {
         method: 'POST',
         body: JSON.stringify({ answers: answerArray }),
       });
@@ -163,7 +187,8 @@ export default function QuestionnairePage() {
     }
 
     try {
-      await apiRequest('/questionnaire/response', {
+      const url = getApiUrl('/questionnaire/response');
+      await apiRequest(url, {
         method: 'DELETE',
       });
 

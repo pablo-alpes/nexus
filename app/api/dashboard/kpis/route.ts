@@ -3,9 +3,12 @@ import { connectDBLocal } from '@/lib/mongodb-local';
 import GapAnalysis from '@/models/GapAnalysis';
 import Asset from '@/models/Asset';
 import RemediationPlan from '@/models/RemediationPlan';
-import { getAuthUser } from '@/lib/auth-helper';
+import User from '@/models/User';
+import { getAuthUser, getAuthUserContext } from '@/lib/auth-helper';
+import { UserRole } from '@/models/Organization';
 import { DORAPillar } from '@/models/DORARequirement';
 import { ControlStatus } from '@/models/Control';
+import { buildDataQuery, extractFilterParams } from '@/lib/query-helpers';
 
 const DORA_PILLARS: DORAPillar[] = [
   'ICT_RISK_MANAGEMENT',
@@ -35,19 +38,32 @@ export async function GET(request: NextRequest) {
   try {
     await connectDBLocal();
     
-    // Check auth (bypassed in test mode)
-    const user = getAuthUser(request);
-    if (!user) {
+    // Check auth
+    const userContext = await getAuthUserContext(request);
+    if (!userContext) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const userId = String(user.userId);
+    // Use buildDataQuery for consistent multi-tenant filtering
+    const filterParams = extractFilterParams(request);
+    const { query: baseQuery } = await buildDataQuery(userContext, filterParams);
     
-    // Get all gap analyses for this user
-    const gapAnalyses = await GapAnalysis.find({ userId });
+    // Log the query for debugging
+    console.log('📊 KPIs Query:', JSON.stringify(baseQuery, null, 2));
+    console.log('📊 Filter Params:', JSON.stringify(filterParams, null, 2));
     
-    // Get all remediation plans for this user
-    const remediationPlans = await RemediationPlan.find({ userId });
+    // Build queries for each data type (all use the same base filter)
+    const gapAnalysisQuery = { ...baseQuery };
+    const remediationQuery = { ...baseQuery };
+    const assetQuery = { ...baseQuery };
+    
+    // Get all gap analyses for the selected organization/affiliate
+    const gapAnalyses = await GapAnalysis.find(gapAnalysisQuery);
+    console.log(`📊 Found ${gapAnalyses.length} gap analyses`);
+    
+    // Get all remediation plans for the selected organization/affiliate
+    const remediationPlans = await RemediationPlan.find(remediationQuery);
+    console.log(`📊 Found ${remediationPlans.length} remediation plans`);
     
     // Create a map of controlId -> remediation status for quick lookup
     const remediationStatusMap = new Map<string, string>();
@@ -60,8 +76,9 @@ export async function GET(request: NextRequest) {
       }
     });
     
-    // Get all assets for this user
-    const assets = await Asset.find({ userId });
+    // Get all assets for the selected organization/affiliate
+    const assets = await Asset.find(assetQuery);
+    console.log(`📊 Found ${assets.length} assets`);
     
     // Calculate compliance per pillar
     const pillarCompliance: Record<string, {

@@ -23,6 +23,9 @@ export interface IRemediationAction {
 
 export interface IRemediationPlan extends Document {
   userId: Types.ObjectId;
+  organizationId?: Types.ObjectId | string; // Reference to Organization
+  affiliateId?: Types.ObjectId | string; // Reference to Affiliate
+  legalFramework?: string; // e.g., 'DORA', 'GDPR', 'NIS2', etc.
   pillar: DORAPillar;
   actions: IRemediationAction[];
   startDate: Date;
@@ -48,6 +51,18 @@ const RemediationPlanSchema = new Schema<IRemediationPlan>(
       type: Schema.Types.Mixed, // Mixed for local storage
       ref: 'User',
       required: true,
+    },
+    organizationId: {
+      type: Schema.Types.Mixed, // Mixed for local storage compatibility
+      ref: 'Organization',
+    },
+    affiliateId: {
+      type: Schema.Types.Mixed, // Mixed for local storage compatibility
+      ref: 'Affiliate',
+    },
+    legalFramework: {
+      type: String,
+      default: 'DORA', // Default to DORA, extensible for future frameworks
     },
     pillar: {
       type: String,

@@ -7,18 +7,36 @@ import DORARequirement from '@/models/DORARequirement';
 import { getAuthUser, getAuthUserContext } from '@/lib/auth-helper';
 import { DORAPillar } from '@/models/DORARequirement';
 import { canManageRoadmap } from '@/lib/permissions';
+import { buildDataQuery, extractFilterParams } from '@/lib/query-helpers';
 
 // GET roadmap for user
 export async function GET(request: NextRequest) {
   try {
     await connectDBLocal();
     
-    const user = getAuthUser(request);
-    if (!user) {
+    const userContext = await getAuthUserContext(request);
+    if (!userContext) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const roadmap = await Roadmap.findOne({ userId: String(user.userId) });
+    const filterParams = extractFilterParams(request);
+    let query: any;
+    try {
+      const result = await buildDataQuery(userContext, filterParams);
+      query = result.query;
+    } catch (error: any) {
+      console.error('Error building data query:', error);
+      return NextResponse.json(
+        { error: 'Failed to build query: ' + error.message },
+        { status: 500 }
+      );
+    }
+    
+    console.log('🗺️  Loading roadmap with query:', JSON.stringify(query, null, 2));
+    
+    const roadmap = await Roadmap.findOne(query);
+    
+    console.log(`🗺️  Found roadmap: ${roadmap ? 'YES' : 'NO'}`);
     
     return NextResponse.json({ roadmap });
   } catch (error: any) {
@@ -49,16 +67,15 @@ export async function POST(request: NextRequest) {
       }, { status: 403 });
     }
 
-    const user = getAuthUser(request);
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    
+    const filterParams = extractFilterParams(request);
     const body = await request.json();
     const { regenerate } = body;
     
+    // Build query for remediation plans
+    const { query: remediationQuery } = await buildDataQuery(userContext, filterParams);
+    
     // Get all remediation plans for the user
-    const remediationPlans = await RemediationPlan.find({ userId: String(user.userId) });
+    const remediationPlans = await RemediationPlan.find(remediationQuery);
     
     if (remediationPlans.length === 0) {
       return NextResponse.json(
@@ -67,8 +84,11 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Build query for roadmap
+    const { query: roadmapQuery } = await buildDataQuery(userContext, filterParams);
+    
     // Check if roadmap already exists
-    let roadmap = await Roadmap.findOne({ userId: String(user.userId) });
+    let roadmap = await Roadmap.findOne(roadmapQuery);
     
     if (roadmap && !regenerate) {
       return NextResponse.json({ roadmap });
@@ -134,8 +154,13 @@ export async function POST(request: NextRequest) {
     }
     
     // Create or update roadmap
-    const roadmapData = {
-      userId: String(user.userId),
+    const organizationId = filterParams?.organizationId || userContext.organizationId;
+    const affiliateId = filterParams?.affiliateId || userContext.affiliateId;
+    const legalFramework = filterParams?.legalFramework || 'DORA';
+    
+    const roadmapData: any = {
+      userId: String(userContext.userId),
+      legalFramework,
       name: 'DORA Implementation Roadmap',
       description: 'Implementation roadmap based on remediation plans',
       startDate: earliestStart.toISOString(),
@@ -143,8 +168,23 @@ export async function POST(request: NextRequest) {
       tasks,
     };
     
+    // Always add organizationId/affiliateId from user context or filter params
+    if (organizationId) {
+      roadmapData.organizationId = String(organizationId);
+    }
+    if (affiliateId) {
+      roadmapData.affiliateId = String(affiliateId);
+    }
+    
+    console.log('💾 Saving roadmap with:', {
+      userId: roadmapData.userId,
+      organizationId: roadmapData.organizationId,
+      affiliateId: roadmapData.affiliateId,
+      legalFramework: roadmapData.legalFramework,
+    });
+    
     roadmap = await Roadmap.findOneAndUpdate(
-      { userId: String(user.userId) },
+      roadmapQuery,
       roadmapData,
       { upsert: true, new: true }
     );
@@ -204,7 +244,10 @@ export async function PUT(request: NextRequest) {
       );
     }
     
-    const roadmap = await Roadmap.findOne({ userId: String(user.userId) });
+    const filterParams = extractFilterParams(request);
+    const { query: roadmapQuery } = await buildDataQuery(userContext, filterParams);
+    
+    const roadmap = await Roadmap.findOne(roadmapQuery);
     
     if (!roadmap) {
       return NextResponse.json(
@@ -245,9 +288,12 @@ export async function PUT(request: NextRequest) {
     roadmap.startDate = new Date(Math.min(...allStartDates));
     roadmap.endDate = new Date(Math.max(...allEndDates));
     
+    // Build query for roadmap
+    const { query: roadmapUpdateQuery } = await buildDataQuery(userContext, filterParams);
+    
     // Update the roadmap
     const updatedRoadmap = await Roadmap.findOneAndUpdate(
-      { userId: String(user.userId) },
+      roadmapUpdateQuery,
       {
         tasks: roadmap.tasks,
         startDate: roadmap.startDate,

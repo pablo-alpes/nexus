@@ -4,10 +4,11 @@ import RemediationPlan from '@/models/RemediationPlan';
 import GapAnalysis from '@/models/GapAnalysis';
 import Control from '@/models/Control';
 import Asset from '@/models/Asset';
-import { getAuthUser } from '@/lib/auth-helper';
+import { getAuthUser, getAuthUserContext } from '@/lib/auth-helper';
 import { DORAPillar } from '@/models/DORARequirement';
 import { ensureControlsSetup } from '@/lib/auto-controls';
 import { generateAIStrategy } from '@/lib/services/ai-strategy';
+import { buildDataQuery, extractFilterParams } from '@/lib/query-helpers';
 
 // Evidence suggestions based on control type and pillar
 const EVIDENCE_SUGGESTIONS: { [key: string]: string[] } = {
@@ -57,18 +58,34 @@ export async function GET(request: NextRequest) {
   try {
     await connectDBLocal();
     
-    const user = getAuthUser(request);
-    if (!user) {
+    const userContext = await getAuthUserContext(request);
+    if (!userContext) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    const filterParams = extractFilterParams(request);
+    let query: any;
+    try {
+      const result = await buildDataQuery(userContext, filterParams);
+      query = result.query;
+    } catch (error: any) {
+      console.error('Error building data query:', error);
+      return NextResponse.json(
+        { error: 'Failed to build query: ' + error.message },
+        { status: 500 }
+      );
     }
     
     const searchParams = request.nextUrl.searchParams;
     const pillar = searchParams.get('pillar') as DORAPillar;
     
-    const query: any = { userId: String(user.userId) };
     if (pillar) query.pillar = pillar;
     
+    console.log('🔧 Loading remediation plans with query:', JSON.stringify(query, null, 2));
+    
     const remediationPlans = await RemediationPlan.find(query, { createdAt: -1 });
+    
+    console.log(`🔧 Found ${remediationPlans.length} remediation plans`);
     
     return NextResponse.json({ remediationPlans });
   } catch (error: any) {
@@ -87,11 +104,12 @@ export async function POST(request: NextRequest) {
     // Ensure controls are created
     await ensureControlsSetup();
     
-    const user = getAuthUser(request);
-    if (!user) {
+    const userContext = await getAuthUserContext(request);
+    if (!userContext) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
+    const filterParams = extractFilterParams(request);
     const body = await request.json();
     const { pillar } = body;
     
@@ -102,11 +120,12 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Build query for gap analysis
+    const { query: gapQuery } = await buildDataQuery(userContext, filterParams);
+    gapQuery.pillar = pillar;
+    
     // Get gap analysis for this pillar
-    const gapAnalysis = await GapAnalysis.findOne({
-      userId: String(user.userId),
-      pillar,
-    });
+    const gapAnalysis = await GapAnalysis.findOne(gapQuery);
     
     if (!gapAnalysis) {
       return NextResponse.json(
@@ -116,7 +135,8 @@ export async function POST(request: NextRequest) {
     }
     
     // Get user's assets
-    const assets = await Asset.find({ userId: String(user.userId) });
+    const { query: assetQuery } = await buildDataQuery(userContext, filterParams);
+    const assets = await Asset.find(assetQuery);
     
     // Get all controls
     const allControls = await Control.find({ pillar });
@@ -186,16 +206,44 @@ export async function POST(request: NextRequest) {
       actions.push(action);
     }
     
+    // Build query for remediation plan
+    const { query: remediationQuery } = await buildDataQuery(userContext, filterParams);
+    remediationQuery.pillar = pillar;
+    
+    // Prepare remediation plan data
+    const organizationId = filterParams?.organizationId || userContext.organizationId;
+    const affiliateId = filterParams?.affiliateId || userContext.affiliateId;
+    const legalFramework = filterParams?.legalFramework || 'DORA';
+    
+    const remediationPlanData: any = {
+      userId: String(userContext.userId),
+      legalFramework,
+      pillar,
+      actions,
+      startDate: new Date().toISOString(),
+      targetCompletionDate: null,
+    };
+    
+    // Always add organizationId/affiliateId from user context or filter params
+    if (organizationId) {
+      remediationPlanData.organizationId = String(organizationId);
+    }
+    if (affiliateId) {
+      remediationPlanData.affiliateId = String(affiliateId);
+    }
+    
+    console.log('💾 Saving remediation plan with:', {
+      userId: remediationPlanData.userId,
+      organizationId: remediationPlanData.organizationId,
+      affiliateId: remediationPlanData.affiliateId,
+      legalFramework: remediationPlanData.legalFramework,
+      pillar: remediationPlanData.pillar,
+    });
+    
     // Create remediation plan
     const remediationPlan = await RemediationPlan.findOneAndUpdate(
-      { userId: String(user.userId), pillar },
-      {
-        userId: String(user.userId),
-        pillar,
-        actions,
-        startDate: new Date().toISOString(),
-        targetCompletionDate: null,
-      },
+      remediationQuery,
+      remediationPlanData,
       { upsert: true, new: true }
     );
     
@@ -310,11 +358,12 @@ export async function PUT(request: NextRequest) {
   try {
     await connectDBLocal();
     
-    const user = getAuthUser(request);
-    if (!user) {
+    const userContext = await getAuthUserContext(request);
+    if (!userContext) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
+    const filterParams = extractFilterParams(request);
     const body = await request.json();
     const { pillar, actionIndex, updates } = body;
     
@@ -325,10 +374,11 @@ export async function PUT(request: NextRequest) {
       );
     }
     
-    const remediationPlan = await RemediationPlan.findOne({
-      userId: String(user.userId),
-      pillar,
-    });
+    // Build query for remediation plan
+    const { query: remediationQuery } = await buildDataQuery(userContext, filterParams);
+    remediationQuery.pillar = pillar;
+    
+    const remediationPlan = await RemediationPlan.findOne(remediationQuery);
     
     if (!remediationPlan) {
       return NextResponse.json(
@@ -345,7 +395,7 @@ export async function PUT(request: NextRequest) {
       };
       
       await RemediationPlan.findOneAndUpdate(
-        { userId: String(user.userId), pillar },
+        remediationQuery,
         { actions: remediationPlan.actions },
         { new: true }
       );

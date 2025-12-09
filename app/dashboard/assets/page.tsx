@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest } from '@/lib/api';
 import UserContextBar from '@/components/UserContextBar';
+import { useApiParams } from '@/hooks/useApiParams';
 
 interface Asset {
   _id: string;
@@ -20,6 +21,7 @@ interface Asset {
 
 export default function AssetsPage() {
   const router = useRouter();
+  const { getApiUrl } = useApiParams();
   const [assets, setAssets] = useState<Asset[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -35,11 +37,12 @@ export default function AssetsPage() {
 
   useEffect(() => {
     loadAssets();
-  }, []);
+  }, [getApiUrl]);
 
   const loadAssets = async () => {
     try {
-      const response = await apiRequest<{ assets: Asset[] }>('/assets');
+      const url = getApiUrl('/assets');
+      const response = await apiRequest<{ assets: Asset[] }>(url);
       setAssets(response.assets);
     } catch (error) {
       console.error('Failed to load assets:', error);
@@ -53,7 +56,8 @@ export default function AssetsPage() {
     setSubmitting(true);
 
     try {
-      await apiRequest('/assets', {
+      const url = getApiUrl('/assets');
+      await apiRequest(url, {
         method: 'POST',
         body: JSON.stringify(formData),
       });

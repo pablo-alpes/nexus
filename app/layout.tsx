@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import ViewProviderWrapper from '@/components/ViewProviderWrapper'
 
 export const metadata: Metadata = {
   title: 'Nexus Cloud - DORA Compliance',
@@ -13,7 +14,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <ViewProviderWrapper>
+          {children}
+        </ViewProviderWrapper>
+      </body>
     </html>
   )
 }

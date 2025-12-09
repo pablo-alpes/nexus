@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { apiRequest } from '@/lib/api';
+import { useViewContext } from '@/contexts/ViewContext';
 
 interface DashboardNavProps {
   user?: any;
@@ -11,6 +12,8 @@ interface DashboardNavProps {
 
 export default function DashboardNav({ user }: DashboardNavProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { selectedOrganizationId, selectedAffiliateId, setSelectedOrganization, setSelectedAffiliate, clearSelection } = useViewContext();
   const [organizations, setOrganizations] = useState<any[]>([]);
   const [affiliates, setAffiliates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -178,7 +181,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
                       : ''
                   }`}
                 >
-                  Vue
+                  View
                   <svg 
                     className={`ml-1 h-4 w-4 transition-transform ${openDropdown === 'view' ? 'rotate-180' : ''}`} 
                     fill="none" 
@@ -207,57 +210,72 @@ export default function DashboardNav({ user }: DashboardNavProps) {
                               {orgAffiliates.length > 0 && (
                                 <div className="pl-4">
                       {orgAffiliates.map((aff) => (
-                        <Link
+                        <button
                           key={String(aff._id)}
-                          href={`/dashboard/compliance-overview?organizationId=${org._id}&affiliateId=${aff._id}`}
-                          className={`block px-4 py-2 text-sm ${
-                            pathname === '/dashboard/compliance-overview'
+                          onClick={() => {
+                            setSelectedOrganization(String(org._id));
+                            setSelectedAffiliate(String(aff._id));
+                            setOpenDropdown(null);
+                            // Stay on current page, just update the view context
+                          }}
+                          className={`w-full text-left block px-4 py-2 text-sm ${
+                            selectedOrganizationId === String(org._id) && selectedAffiliateId === String(aff._id)
                               ? 'bg-primary-50 text-primary-700 font-medium'
                               : 'text-gray-700 hover:bg-gray-100'
                           }`}
                         >
                           └─ {aff.name}
-                        </Link>
+                        </button>
                       ))}
                     </div>
                   )}
-                  <Link
-                    href={`/dashboard/compliance-overview?organizationId=${org._id}`}
-                    className={`block px-4 py-2 text-sm ${
-                      pathname === '/dashboard/compliance-overview'
+                  <button
+                    onClick={() => {
+                      setSelectedOrganization(String(org._id));
+                      setSelectedAffiliate(null);
+                      setOpenDropdown(null);
+                    }}
+                    className={`w-full text-left block px-4 py-2 text-sm ${
+                      selectedOrganizationId === String(org._id) && !selectedAffiliateId
                         ? 'bg-primary-50 text-primary-700 font-medium'
                         : 'text-gray-700 hover:bg-gray-100'
                     }`}
                   >
                     └─ Organization Overview
-                  </Link>
+                  </button>
                             </div>
                           );
                         })}
                         <div className="border-t border-gray-100 mt-1">
-                          <Link
-                            href="/dashboard/compliance-overview"
-                            className={`block px-4 py-2 text-sm ${
-                              isActive('/dashboard/compliance-overview')
+                          <button
+                            onClick={() => {
+                              clearSelection();
+                              setOpenDropdown(null);
+                            }}
+                            className={`w-full text-left block px-4 py-2 text-sm ${
+                              !selectedOrganizationId && !selectedAffiliateId
                                 ? 'bg-primary-50 text-primary-700 font-medium'
                                 : 'text-gray-700 hover:bg-gray-100'
                             }`}
                           >
                             🌐 All Organizations Overview
-                          </Link>
+                          </button>
                         </div>
                       </>
                     ) : (
-                      <Link
-                        href="/dashboard/compliance-overview"
-                        className={`block px-4 py-2 text-sm ${
-                          isActive('/dashboard/compliance-overview')
+                      <button
+                        onClick={() => {
+                          clearSelection();
+                          setOpenDropdown(null);
+                        }}
+                        className={`w-full text-left block px-4 py-2 text-sm ${
+                          !selectedOrganizationId && !selectedAffiliateId
                             ? 'bg-primary-50 text-primary-700 font-medium'
                             : 'text-gray-700 hover:bg-gray-100'
                         }`}
                       >
                         Organization Overview
-                      </Link>
+                      </button>
                     )}
                   </div>
                 )}

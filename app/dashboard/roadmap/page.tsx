@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest } from '@/lib/api';
 import UserContextBar from '@/components/UserContextBar';
+import { useApiParams } from '@/hooks/useApiParams';
 
 const DORA_PILLARS = [
   { value: 'ICT_RISK_MANAGEMENT', label: 'ICT Risk Management', color: 'bg-blue-500' },
@@ -44,6 +45,7 @@ interface Roadmap {
 
 export default function RoadmapPage() {
   const router = useRouter();
+  const { getApiUrl } = useApiParams();
   const [roadmap, setRoadmap] = useState<Roadmap | null>(null);
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -53,12 +55,13 @@ export default function RoadmapPage() {
 
   useEffect(() => {
     loadRoadmap();
-  }, []);
+  }, [getApiUrl]);
 
   const loadRoadmap = async () => {
     setLoading(true);
     try {
-      const response = await apiRequest<{ roadmap: Roadmap }>('/roadmap');
+      const url = getApiUrl('/roadmap');
+      const response = await apiRequest<{ roadmap: Roadmap }>(url);
       if (response.roadmap) {
         setRoadmap(response.roadmap);
       }
@@ -72,12 +75,14 @@ export default function RoadmapPage() {
   const generateRoadmap = async () => {
     setGenerating(true);
     try {
-      const response = await apiRequest<{ roadmap: Roadmap; summary: any }>('/roadmap', {
+      const url = getApiUrl('/roadmap');
+      const response = await apiRequest<{ roadmap: Roadmap; summary: any }>(url, {
         method: 'POST',
         body: JSON.stringify({ regenerate: true }),
       });
       setRoadmap(response.roadmap);
       alert(`Roadmap generated with ${response.summary?.totalTasks || 0} tasks.`);
+      loadRoadmap();
     } catch (error: any) {
       alert(`Error: ${error.message}`);
     } finally {
@@ -97,7 +102,8 @@ export default function RoadmapPage() {
       // Extract only the changed fields (excluding taskId)
       const { taskId, ...updates } = editingTask;
       
-      await apiRequest('/roadmap', {
+      const url = getApiUrl('/roadmap');
+      await apiRequest(url, {
         method: 'PUT',
         body: JSON.stringify({
           taskId: editingTask.taskId,

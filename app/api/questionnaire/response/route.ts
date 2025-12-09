@@ -9,22 +9,52 @@ import { ensureControlsSetup } from '@/lib/auto-controls';
 import { getPrecomputedMappings, getActiveRuleVersion } from '@/lib/services/precomputed-mappings';
 import { createApprovalIfNeeded } from '@/lib/approval-helper';
 import { ChangeType } from '@/models/ApprovalWorkflow';
+import { buildDataQuery, extractFilterParams } from '@/lib/query-helpers';
 
 // GET user's questionnaire response
 export async function GET(request: NextRequest) {
   try {
     await connectDBLocal();
     
-    // Check auth (bypassed in test mode)
-    const user = getAuthUser(request);
-    if (!user) {
+    // Check auth
+    const userContext = await getAuthUserContext(request);
+    if (!userContext) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const payload = user;
+    const filterParams = extractFilterParams(request);
+    const { query } = await buildDataQuery(userContext, filterParams);
+    
+    console.log('📋 Loading questionnaire response with query:', JSON.stringify(query, null, 2));
+    console.log('📋 Filter params:', JSON.stringify(filterParams, null, 2));
+    
+    // CRITICAL: Verify that the query includes affiliateId if we're filtering by affiliate
+    // AND remove any userId filter that might interfere with affiliate isolation
+    if (filterParams?.affiliateId && filterParams.affiliateId !== 'all' && filterParams.affiliateId !== 'null') {
+      // Force the affiliateId in the query (this is the PRIMARY filter)
+      query.affiliateId = String(filterParams.affiliateId);
+      
+      // CRITICAL: Remove userId filter when filtering by affiliateId to ensure strict isolation
+      if (query.userId) {
+        console.warn('⚠️  Removing userId filter to ensure strict affiliate isolation in GET');
+        delete query.userId;
+      }
+      
+      console.log(`🔒 Final query for GET (affiliateId only):`, JSON.stringify(query, null, 2));
+    }
     
     // Local storage doesn't support populate
-    const response = await QuestionnaireResponse.findOne({ userId: String(payload.userId) });
+    const response = await QuestionnaireResponse.findOne(query);
+    
+    console.log(`📋 Found questionnaire response: ${response ? 'YES' : 'NO'}`);
+    if (response) {
+      console.log('📋 Response details:', {
+        _id: response._id,
+        affiliateId: (response as any).affiliateId,
+        organizationId: (response as any).organizationId,
+        userId: (response as any).userId,
+      });
+    }
     
     if (!response) {
       return NextResponse.json({ response: null });
@@ -44,22 +74,91 @@ export async function DELETE(request: NextRequest) {
   try {
     await connectDBLocal();
     
-    // Check auth (bypassed in test mode)
-    const user = getAuthUser(request);
-    if (!user) {
+    // Check auth
+    const userContext = await getAuthUserContext(request);
+    if (!userContext) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const payload = user;
+    const filterParams = extractFilterParams(request);
+    const { query } = await buildDataQuery(userContext, filterParams);
     
-    // Delete the questionnaire response
-    await QuestionnaireResponse.deleteOne({ userId: String(payload.userId) });
+    console.log('🗑️  Deleting questionnaire response with query:', JSON.stringify(query, null, 2));
+    console.log('🗑️  Filter params:', JSON.stringify(filterParams, null, 2));
+    console.log('🗑️  User context:', {
+      userId: userContext.userId,
+      role: userContext.role,
+      organizationId: userContext.organizationId,
+      affiliateId: userContext.affiliateId,
+    });
+    
+    // First, check how many responses match this query (for debugging)
+    const matchingResponses = await QuestionnaireResponse.find(query);
+    console.log(`🗑️  Found ${matchingResponses.length} matching response(s) to delete`);
+    
+    if (matchingResponses.length > 1) {
+      console.warn('⚠️  WARNING: Multiple responses match the query. This should not happen with proper filtering.');
+      // Log details of all matching responses for debugging
+      matchingResponses.forEach((resp: any, index: number) => {
+        console.log(`   Response ${index + 1}:`, {
+          _id: resp._id,
+          userId: resp.userId,
+          organizationId: resp.organizationId,
+          affiliateId: resp.affiliateId,
+          legalFramework: resp.legalFramework,
+        });
+      });
+    }
+    
+    // CRITICAL: Verify that the query includes affiliateId if we're filtering by affiliate
+    // AND remove any userId filter that might interfere with affiliate isolation
+    if (filterParams?.affiliateId && filterParams.affiliateId !== 'all' && filterParams.affiliateId !== 'null') {
+      // Force the affiliateId in the query (this is the PRIMARY filter)
+      query.affiliateId = String(filterParams.affiliateId);
+      
+      // CRITICAL: Remove userId filter when filtering by affiliateId to ensure strict isolation
+      // The affiliateId filter alone is sufficient and more reliable
+      if (query.userId) {
+        console.warn('⚠️  Removing userId filter to ensure strict affiliate isolation');
+        delete query.userId;
+      }
+      
+      console.log(`🔒 Final query for deletion (affiliateId only):`, JSON.stringify(query, null, 2));
+    }
+    
+    // Verify the query one more time before deletion
+    console.log('🗑️  Final deletion query:', JSON.stringify(query, null, 2));
+    
+    // Delete the questionnaire response(s) matching the query
+    // Note: deleteOne now returns { deletedCount: number }
+    const result = await QuestionnaireResponse.deleteOne(query);
+    
+    console.log(`🗑️  Deletion result: ${result.deletedCount} response(s) deleted`);
+    
+    if (result.deletedCount === 0) {
+      console.warn('⚠️  No responses were deleted. Query might not match any existing responses.');
+      // Try to find what responses exist
+      const allResponses = await QuestionnaireResponse.find({});
+      console.log(`   Total responses in database: ${allResponses.length}`);
+      if (allResponses.length > 0) {
+        allResponses.slice(0, 3).forEach((resp: any, i: number) => {
+          console.log(`   Sample response ${i + 1}:`, {
+            _id: resp._id,
+            userId: resp.userId,
+            organizationId: resp.organizationId,
+            affiliateId: resp.affiliateId,
+          });
+        });
+      }
+    }
     
     return NextResponse.json({ 
       success: true,
-      message: 'Questionnaire response cleared successfully' 
+      message: 'Questionnaire response cleared successfully',
+      deletedCount: result.deletedCount,
     });
   } catch (error: any) {
+    console.error('❌ Error deleting questionnaire response:', error);
     return NextResponse.json(
       { error: error.message },
       { status: 500 }
@@ -75,13 +174,13 @@ export async function POST(request: NextRequest) {
     // Ensure controls are created before processing questionnaire
     await ensureControlsSetup();
     
-    // Check auth (bypassed in test mode)
-    const user = getAuthUser(request);
-    if (!user) {
+    // Check auth
+    const userContext = await getAuthUserContext(request);
+    if (!userContext) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const payload = user;
+    const filterParams = extractFilterParams(request);
     const body = await request.json();
     
     // NEW LOGIC: Calculate controls at the end after processing all answers
@@ -293,10 +392,18 @@ export async function POST(request: NextRequest) {
       reasoningObject[controlId] = reasons;
     });
     
+    // Build query for questionnaire response
+    const { query: responseQuery } = await buildDataQuery(userContext, filterParams);
+    
     // Save or update response
     // Convert userId to string for local storage
-    const responseData = {
-      userId: String(payload.userId),
+    const organizationId = filterParams?.organizationId || userContext.organizationId;
+    const affiliateId = filterParams?.affiliateId || userContext.affiliateId;
+    const legalFramework = filterParams?.legalFramework || 'DORA';
+    
+    const responseData: any = {
+      userId: String(userContext.userId),
+      legalFramework,
       answers: body.answers.map((a: any) => ({
         questionId: String(a.questionId),
         value: a.value,
@@ -307,12 +414,24 @@ export async function POST(request: NextRequest) {
       completedAt: new Date().toISOString(),
     };
     
-    // Check if this is an update (existing response)
-    const existingResponse = await QuestionnaireResponse.findOne({ userId: String(payload.userId) });
-    const isUpdate = !!existingResponse;
+    // Always add organizationId/affiliateId from user context or filter params
+    if (organizationId) {
+      responseData.organizationId = String(organizationId);
+    }
+    if (affiliateId) {
+      responseData.affiliateId = String(affiliateId);
+    }
     
-    // Get user context for approval workflow
-    const userContext = await getAuthUserContext(request);
+    console.log('💾 Saving questionnaire response with:', {
+      userId: responseData.userId,
+      organizationId: responseData.organizationId,
+      affiliateId: responseData.affiliateId,
+      legalFramework: responseData.legalFramework,
+    });
+    
+    // Check if this is an update (existing response)
+    const existingResponse = await QuestionnaireResponse.findOne(responseQuery);
+    const isUpdate = !!existingResponse;
     
     // Create approval workflow if needed (for material changes)
     let approvalWorkflow = null;
@@ -343,7 +462,7 @@ export async function POST(request: NextRequest) {
           approvalWorkflow = await createApprovalIfNeeded(
             userContext,
             ChangeType.QUESTIONNAIRE_RESPONSE,
-            String(existingResponse._id || payload.userId),
+            String(existingResponse._id || userContext.userId),
             'QuestionnaireResponse',
             changeDetails,
             'Questionnaire response updated'
@@ -355,7 +474,7 @@ export async function POST(request: NextRequest) {
     }
     
     const response = await QuestionnaireResponse.findOneAndUpdate(
-      { userId: String(payload.userId) },
+      responseQuery,
       responseData,
       { upsert: true, new: true }
     );

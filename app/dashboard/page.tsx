@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { apiRequest } from '@/lib/api';
 import UserContextBar from '@/components/UserContextBar';
 import DashboardNav from '@/components/DashboardNav';
+import { useApiParams } from '@/hooks/useApiParams';
+import { useViewContext } from '@/contexts/ViewContext';
 
 const DORA_PILLARS = [
   { value: 'ICT_RISK_MANAGEMENT', label: 'ICT Risk Management', short: 'Risk Mgmt' },
@@ -34,6 +36,7 @@ interface KPIData {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { selectedOrganizationId, selectedAffiliateId } = useViewContext();
   const [user, setUser] = useState<any>(null);
   const [kpis, setKpis] = useState<KPIData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -82,10 +85,32 @@ export default function DashboardPage() {
     };
   }, [router]);
 
+  // Reload KPIs when view selection changes (for SuperAdmin)
+  useEffect(() => {
+    if (user?.role === 'SUPER_ADMIN') {
+      loadKPIs();
+    }
+  }, [selectedOrganizationId, selectedAffiliateId, user]);
+
   const loadKPIs = async () => {
     try {
       setLoading(true);
-      const response = await apiRequest<KPIData>('/dashboard/kpis');
+      // Build query params based on ViewContext selection (for SuperAdmin)
+      // For non-SuperAdmin, the API will use their assigned organization/affiliate
+      const params = new URLSearchParams();
+      if (user?.role === 'SUPER_ADMIN') {
+        if (selectedOrganizationId && selectedOrganizationId !== 'all' && selectedOrganizationId !== 'null') {
+          params.append('organizationId', selectedOrganizationId);
+        }
+        if (selectedAffiliateId && selectedAffiliateId !== 'all' && selectedAffiliateId !== 'null') {
+          params.append('affiliateId', selectedAffiliateId);
+        }
+      }
+      const queryString = params.toString();
+      const url = `/api/dashboard/kpis${queryString ? `?${queryString}` : ''}`;
+      console.log('📊 Loading KPIs from:', url);
+      const response = await apiRequest<KPIData>(url);
+      console.log('📊 KPIs loaded:', response);
       setKpis(response);
     } catch (error) {
       console.error('Failed to load KPIs:', error);

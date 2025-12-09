@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { apiRequest } from '@/lib/api';
 import Link from 'next/link';
 import UserContextBar from '@/components/UserContextBar';
 import DashboardNav from '@/components/DashboardNav';
+import { useViewContext } from '@/contexts/ViewContext';
 
 const DORA_PILLARS = [
   { value: 'ICT_RISK_MANAGEMENT', label: 'ICT Risk Management', color: 'blue' },
@@ -41,6 +43,48 @@ interface ComplianceOverview {
   pillarBreakdown: PillarMetrics[];
 }
 
+interface AffiliateDetail {
+  affiliateId: string;
+  affiliateName: string;
+  totalUsers: number;
+  overallCompliance: number;
+  overallCompleteness: number;
+  totalRequirements: number;
+  requirementsWithControls: number;
+  totalControls: number;
+  implementedControls: number;
+  totalGaps: number;
+  criticalGaps: number;
+  pillarBreakdown: PillarMetrics[];
+  roadmapStatus: {
+    totalTasks: number;
+    completedTasks: number;
+    inProgressTasks: number;
+    overdueTasks: number;
+    overdueTasksDetails: Array<{
+      taskId: string;
+      title: string;
+      endDate: string;
+      daysOverdue: number;
+      assignedTo?: string;
+      assignedToName?: string;
+      priority: string;
+      pillar: string;
+    }>;
+    tasksByPillar: Record<string, number>;
+  };
+}
+
+interface OrganizationOverview {
+  organizationId: string;
+  organizationName: string;
+  totalAffiliates: number;
+  totalUsers: number;
+  overallCompliance: number;
+  overallCompleteness: number;
+  affiliates: AffiliateDetail[];
+}
+
 interface Organization {
   _id: string;
   name: string;
@@ -55,6 +99,8 @@ interface Affiliate {
 }
 
 export default function ComplianceOverviewPage() {
+  const router = useRouter();
+  const { selectedOrganizationId: viewOrgId, selectedAffiliateId: viewAffId, setSelectedOrganization, setSelectedAffiliate } = useViewContext();
   const [overview, setOverview] = useState<ComplianceOverview | null>(null);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
@@ -63,8 +109,23 @@ export default function ComplianceOverviewPage() {
   const [selectedAffiliateId, setSelectedAffiliateId] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'affiliates'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'affiliates' | 'organization'>('overview');
   const [affiliatesOverview, setAffiliatesOverview] = useState<ComplianceOverview[]>([]);
+  const [organizationOverview, setOrganizationOverview] = useState<OrganizationOverview | null>(null);
+
+  // Sync with ViewContext
+  useEffect(() => {
+    if (viewOrgId) {
+      setSelectedOrganizationId(viewOrgId);
+    } else {
+      setSelectedOrganizationId('all');
+    }
+    if (viewAffId) {
+      setSelectedAffiliateId(viewAffId);
+    } else {
+      setSelectedAffiliateId('all');
+    }
+  }, [viewOrgId, viewAffId]);
 
   useEffect(() => {
     loadData();
@@ -87,7 +148,14 @@ export default function ComplianceOverviewPage() {
   useEffect(() => {
     if (organizations.length > 0 && affiliates.length > 0) {
       if (activeTab === 'overview') {
-        loadOverview();
+        // If organization selected but no affiliate, show organization overview
+        if (selectedOrganizationId !== 'all' && selectedAffiliateId === 'all') {
+          loadOrganizationOverview();
+        } else {
+          loadOverview();
+        }
+      } else if (activeTab === 'organization') {
+        loadOrganizationOverview();
       } else {
         loadAffiliatesOverview();
       }
@@ -141,10 +209,10 @@ export default function ComplianceOverviewPage() {
         params.append('affiliateId', selectedAffiliateId);
       }
       
-      const response = await apiRequest<ComplianceOverview>(
+      const response = await apiRequest<{ overview: ComplianceOverview }>(
         `/dashboard/compliance-overview?${params.toString()}`
       );
-      setOverview(response);
+      setOverview(response.overview || response);
     } catch (error) {
       console.error('Error loading compliance overview:', error);
       setOverview(null);
@@ -158,13 +226,30 @@ export default function ComplianceOverviewPage() {
         params.append('organizationId', selectedOrganizationId);
       }
       
-      const response = await apiRequest<ComplianceOverview[]>(
+      const response = await apiRequest<{ affiliates: ComplianceOverview[] }>(
         `/dashboard/affiliates-overview?${params.toString()}`
       );
-      setAffiliatesOverview(Array.isArray(response) ? response : []);
+      setAffiliatesOverview(Array.isArray(response.affiliates) ? response.affiliates : Array.isArray(response) ? response : []);
     } catch (error) {
       console.error('Error loading affiliates overview:', error);
       setAffiliatesOverview([]);
+    }
+  };
+
+  const loadOrganizationOverview = async () => {
+    try {
+      if (selectedOrganizationId === 'all') {
+        setOrganizationOverview(null);
+        return;
+      }
+      
+      const response = await apiRequest<OrganizationOverview>(
+        `/dashboard/organization-overview?organizationId=${selectedOrganizationId}`
+      );
+      setOrganizationOverview(response);
+    } catch (error) {
+      console.error('Error loading organization overview:', error);
+      setOrganizationOverview(null);
     }
   };
 
@@ -328,6 +413,18 @@ export default function ComplianceOverviewPage() {
                   console.log('Selection changed:', { orgId, affId });
                   setSelectedOrganizationId(orgId);
                   setSelectedAffiliateId(affId || 'all');
+                  // Update ViewContext to persist selection across pages
+                  if (orgId === 'all') {
+                    setSelectedOrganization(null);
+                    setSelectedAffiliate(null);
+                  } else {
+                    setSelectedOrganization(orgId);
+                    if (affId && affId !== 'all') {
+                      setSelectedAffiliate(affId);
+                    } else {
+                      setSelectedAffiliate(null);
+                    }
+                  }
                 }}
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed text-base font-medium"
                 disabled={loading}
@@ -371,7 +468,193 @@ export default function ComplianceOverviewPage() {
           </div>
         </div>
 
-        {activeTab === 'overview' && overview && (
+        {activeTab === 'overview' && selectedOrganizationId !== 'all' && selectedAffiliateId === 'all' && organizationOverview && (
+          <>
+            {/* Organization Overview */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{organizationOverview.organizationName}</h1>
+              <p className="text-gray-600">Complete organization overview with breakdown by affiliate</p>
+            </div>
+
+            {/* Overall Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+              <div className="bg-white p-6 rounded-lg shadow">
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Overall Compliance</h3>
+                <div className={`text-3xl font-bold ${getComplianceColor(organizationOverview.overallCompliance)}`}>
+                  {organizationOverview.overallCompliance}%
+                </div>
+                <p className="text-sm text-gray-600 mt-2">Average across affiliates</p>
+              </div>
+
+              <div className="bg-white p-6 rounded-lg shadow">
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Completeness</h3>
+                <div className={`text-3xl font-bold ${getComplianceColor(organizationOverview.overallCompleteness)}`}>
+                  {organizationOverview.overallCompleteness}%
+                </div>
+                <p className="text-sm text-gray-600 mt-2">Average across affiliates</p>
+              </div>
+
+              <div className="bg-white p-6 rounded-lg shadow">
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Total Affiliates</h3>
+                <div className="text-3xl font-bold text-gray-900">
+                  {organizationOverview.totalAffiliates}
+                </div>
+                <p className="text-sm text-gray-600 mt-2">{organizationOverview.totalUsers} total users</p>
+              </div>
+
+              <div className="bg-white p-6 rounded-lg shadow">
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Total Users</h3>
+                <div className="text-3xl font-bold text-gray-900">
+                  {organizationOverview.totalUsers}
+                </div>
+                <p className="text-sm text-gray-600 mt-2">Across all affiliates</p>
+              </div>
+            </div>
+
+            {/* Affiliates Breakdown */}
+            <div className="space-y-6">
+              {organizationOverview.affiliates.map((affiliate) => (
+                <div key={affiliate.affiliateId} className="bg-white rounded-lg shadow overflow-hidden">
+                  <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">{affiliate.affiliateName}</h3>
+                        <p className="text-sm text-gray-600">Affiliate ID: {affiliate.affiliateId}</p>
+                      </div>
+                      <div className="text-right">
+                        <div className={`text-2xl font-bold ${getComplianceColor(affiliate.overallCompliance)}`}>
+                          {affiliate.overallCompliance}%
+                        </div>
+                        <p className="text-xs text-gray-500">Compliance</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="px-6 py-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                      <div>
+                        <p className="text-xs text-gray-500">Users</p>
+                        <p className="text-lg font-semibold">{affiliate.totalUsers}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Completeness</p>
+                        <p className={`text-lg font-semibold ${getComplianceColor(affiliate.overallCompleteness)}`}>
+                          {affiliate.overallCompleteness}%
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Controls</p>
+                        <p className="text-lg font-semibold">
+                          {affiliate.implementedControls} / {affiliate.totalControls}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Gaps</p>
+                        <p className={`text-lg font-semibold ${affiliate.totalGaps > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                          {affiliate.totalGaps} {affiliate.criticalGaps > 0 && `(${affiliate.criticalGaps} critical)`}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Roadmap Status */}
+                    <div className="mb-6 border-t border-gray-200 pt-4">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-3">📅 Roadmap Status</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                        <div className="bg-gray-50 p-3 rounded">
+                          <p className="text-xs text-gray-500">Total Tasks</p>
+                          <p className="text-lg font-semibold">{affiliate.roadmapStatus.totalTasks}</p>
+                        </div>
+                        <div className="bg-green-50 p-3 rounded">
+                          <p className="text-xs text-gray-500">Completed</p>
+                          <p className="text-lg font-semibold text-green-700">{affiliate.roadmapStatus.completedTasks}</p>
+                        </div>
+                        <div className="bg-yellow-50 p-3 rounded">
+                          <p className="text-xs text-gray-500">In Progress</p>
+                          <p className="text-lg font-semibold text-yellow-700">{affiliate.roadmapStatus.inProgressTasks}</p>
+                        </div>
+                        <div className={`p-3 rounded ${affiliate.roadmapStatus.overdueTasks > 0 ? 'bg-red-50' : 'bg-gray-50'}`}>
+                          <p className="text-xs text-gray-500">Overdue</p>
+                          <p className={`text-lg font-semibold ${affiliate.roadmapStatus.overdueTasks > 0 ? 'text-red-700' : 'text-gray-700'}`}>
+                            {affiliate.roadmapStatus.overdueTasks}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Overdue Tasks Details */}
+                      {affiliate.roadmapStatus.overdueTasks > 0 && (
+                        <div className="mt-4">
+                          <h5 className="text-sm font-semibold text-red-700 mb-2">⚠️ Overdue Tasks ({affiliate.roadmapStatus.overdueTasks})</h5>
+                          <div className="space-y-2 max-h-48 overflow-y-auto">
+                            {affiliate.roadmapStatus.overdueTasksDetails.map((task) => (
+                              <div key={task.taskId} className="bg-red-50 border border-red-200 rounded p-3">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <p className="text-sm font-medium text-gray-900">{task.title}</p>
+                                    <div className="flex items-center space-x-4 mt-1 text-xs text-gray-600">
+                                      <span>📅 {new Date(task.endDate).toLocaleDateString()}</span>
+                                      <span className={`px-2 py-0.5 rounded ${
+                                        task.priority === 'CRITICAL' ? 'bg-red-200 text-red-800' :
+                                        task.priority === 'HIGH' ? 'bg-orange-200 text-orange-800' :
+                                        'bg-yellow-200 text-yellow-800'
+                                      }`}>
+                                        {task.priority}
+                                      </span>
+                                      <span className="text-red-700 font-semibold">
+                                        {task.daysOverdue} days overdue
+                                      </span>
+                                    </div>
+                                  </div>
+                                  {task.assignedToName && (
+                                    <div className="text-right ml-4">
+                                      <p className="text-xs text-gray-500">Assigned to</p>
+                                      <p className="text-sm font-medium text-gray-900">{task.assignedToName}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Pillar Breakdown */}
+                    <div className="border-t border-gray-200 pt-4">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-3">📊 Compliance by Pillar</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+                        {affiliate.pillarBreakdown.map((pillar) => (
+                          <div key={pillar.pillar} className="bg-gray-50 p-3 rounded">
+                            <p className="text-xs font-medium text-gray-700 mb-1">
+                              {getPillarLabel(pillar.pillar)}
+                            </p>
+                            <div className="flex items-center justify-between">
+                              <span className={`text-lg font-semibold ${getComplianceColor(pillar.compliancePercentage)}`}>
+                                {pillar.compliancePercentage}%
+                              </span>
+                              {pillar.gaps > 0 && (
+                                <span className="text-xs text-red-600">
+                                  {pillar.gaps} gaps
+                                </span>
+                              )}
+                            </div>
+                            <div className="mt-1 bg-gray-200 rounded-full h-1.5">
+                              <div
+                                className={`h-1.5 rounded-full ${getComplianceBgColor(pillar.compliancePercentage)}`}
+                                style={{ width: `${pillar.compliancePercentage}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {activeTab === 'overview' && !(selectedOrganizationId !== 'all' && selectedAffiliateId === 'all') && overview && (
           <>
             {/* Overall Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">

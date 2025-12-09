@@ -58,7 +58,23 @@ export class LocalStorage {
     
     // Apply filters
     if (Object.keys(query).length > 0) {
+      // Check if query has organizationId or affiliateId filter
+      const hasOrgFilter = 'organizationId' in query;
+      const hasAffFilter = 'affiliateId' in query;
+      
       data = data.filter(item => {
+        // CRITICAL: If query filters by organizationId/affiliateId, exclude items without these fields
+        // This ensures strict data isolation
+        if (hasOrgFilter && !item.organizationId) {
+          return false;
+        }
+        if (hasAffFilter && !item.affiliateId) {
+          return false;
+        }
+        
+        // Track if all query conditions match
+        let allConditionsMatch = true;
+        
         for (const [key, value] of Object.entries(query)) {
           // Handle MongoDB-style $in operator
           if (value && typeof value === 'object' && '$in' in value) {
@@ -74,29 +90,72 @@ export class LocalStorage {
                   return itemValStr === vStr || itemVal === v;
                 });
               });
-              if (!matches) return false;
+              if (!matches) {
+                allConditionsMatch = false;
+                break; // Exit early, this item doesn't match
+              }
             } else {
               // If itemValue is not an array, check direct match
-              const itemValueStr = itemValue ? itemValue.toString() : '';
+              const itemValueStr = itemValue ? String(itemValue) : '';
               const matches = inArray.some((v: any) => {
-                const vStr = v ? v.toString() : '';
+                const vStr = String(v);
                 return itemValueStr === vStr || itemValue === v;
               });
-              if (!matches) return false;
+              if (!matches) {
+                allConditionsMatch = false;
+                break; // Exit early, this item doesn't match
+              }
             }
           }
           // Handle userId comparison (can be string or ObjectId-like)
           else if (key === 'userId' && typeof value === 'object' && value.toString) {
             if (item[key] !== value.toString()) {
-              return false;
+              allConditionsMatch = false;
+              break; // Exit early, this item doesn't match
             }
           }
-          // Handle direct equality
-          else if (item[key] !== value) {
-            return false;
+          // Handle userId as string
+          else if (key === 'userId' && typeof value === 'string') {
+            const itemValue = String(item[key] || '');
+            if (itemValue !== value) {
+              allConditionsMatch = false;
+              break; // Exit early, this item doesn't match
+            }
+          }
+          // Handle organizationId/affiliateId with string conversion
+          else if (key === 'organizationId' || key === 'affiliateId') {
+            const itemValue = item[key];
+            const queryValue = value;
+            
+            // Convert both to strings for comparison
+            const itemValueStr = itemValue ? String(itemValue) : '';
+            const queryValueStr = queryValue ? String(queryValue) : '';
+            
+            // CRITICAL: Must match exactly - this is the primary isolation mechanism
+            // If item doesn't have the field and query requires it, exclude the item
+            if (!itemValue && queryValueStr && queryValueStr !== 'null') {
+              allConditionsMatch = false;
+              break; // Exit early, this item doesn't match
+            }
+            
+            // Must match exactly (already excluded items without the field above)
+            if (itemValueStr !== queryValueStr && itemValue !== queryValue) {
+              allConditionsMatch = false;
+              break; // Exit early, this item doesn't match
+            }
+          }
+          // Handle direct equality for other fields
+          else {
+            const itemValue = item[key];
+            if (itemValue !== value) {
+              allConditionsMatch = false;
+              break; // Exit early, this item doesn't match
+            }
           }
         }
-        return true;
+        
+        // Only return true if all conditions matched
+        return allConditionsMatch;
       });
     }
     
@@ -148,12 +207,47 @@ export class LocalStorage {
     const data = readCollection<any>(this.collectionName);
     const index = data.findIndex(item => {
       for (const [key, value] of Object.entries(query)) {
+        // Handle MongoDB-style $in operator
+        if (value && typeof value === 'object' && '$in' in value) {
+          const itemValue = item[key];
+          const inArray = value.$in || [];
+          
+          if (Array.isArray(itemValue)) {
+            const matches = itemValue.some((itemVal: any) => {
+              const itemValStr = String(itemVal);
+              return inArray.some((v: any) => {
+                const vStr = String(v);
+                return itemValStr === vStr || itemVal === v;
+              });
+            });
+            if (!matches) return false;
+          } else {
+            const itemValueStr = itemValue ? String(itemValue) : '';
+            const matches = inArray.some((v: any) => {
+              const vStr = String(v);
+              return itemValueStr === vStr || itemValue === v;
+            });
+            if (!matches) return false;
+          }
+        }
         // Handle userId comparison (can be string or ObjectId-like)
-        if (key === 'userId' && typeof value === 'object' && value.toString) {
+        else if (key === 'userId' && typeof value === 'object' && value.toString) {
           if (item[key] !== value.toString()) {
             return false;
           }
-        } else if (item[key] !== value) {
+        }
+        // Handle organizationId/affiliateId with string conversion
+        else if (key === 'organizationId' || key === 'affiliateId') {
+          const itemValue = item[key];
+          const queryValue = value;
+          const itemValueStr = itemValue ? String(itemValue) : '';
+          const queryValueStr = queryValue ? String(queryValue) : '';
+          if (itemValueStr !== queryValueStr && itemValue !== queryValue) {
+            return false;
+          }
+        }
+        // Handle direct equality
+        else if (item[key] !== value) {
           return false;
         }
       }
@@ -271,17 +365,25 @@ export class LocalStorage {
     return newItem;
   }
 
-  async deleteOne(query: any): Promise<void> {
+  async deleteOne(query: any): Promise<{ deletedCount: number }> {
+    // Use find() to get items matching the query (reuses the same filtering logic)
+    const itemsToDelete = await this.find(query);
+    
+    if (itemsToDelete.length === 0) {
+      return { deletedCount: 0 };
+    }
+    
+    // Get IDs of items to delete
+    const idsToDelete = new Set(itemsToDelete.map(item => item._id));
+    
+    // Read all data and filter out items with matching IDs
     const data = readCollection<any>(this.collectionName);
-    const filtered = data.filter(item => {
-      for (const [key, value] of Object.entries(query)) {
-        if (item[key] === value) {
-          return false;
-        }
-      }
-      return true;
-    });
+    const filtered = data.filter(item => !idsToDelete.has(item._id));
+    
+    const deletedCount = data.length - filtered.length;
     writeCollection(this.collectionName, filtered);
+    
+    return { deletedCount };
   }
 
   async countDocuments(query: any = {}): Promise<number> {

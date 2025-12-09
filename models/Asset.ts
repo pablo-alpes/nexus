@@ -29,6 +29,9 @@ export interface IAsset extends Document {
   owner?: string;
   location?: string;
   userId: Types.ObjectId; // Reference to User
+  organizationId?: Types.ObjectId | string; // Reference to Organization
+  affiliateId?: Types.ObjectId | string; // Reference to Affiliate
+  legalFramework?: string; // e.g., 'DORA', 'GDPR', 'NIS2', etc.
   controls: Types.ObjectId[]; // References to applicable Controls
   createdAt: Date;
   updatedAt: Date;
@@ -68,6 +71,18 @@ const AssetSchema = new Schema<IAsset>(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
+    },
+    organizationId: {
+      type: Schema.Types.Mixed, // Mixed for local storage compatibility
+      ref: 'Organization',
+    },
+    affiliateId: {
+      type: Schema.Types.Mixed, // Mixed for local storage compatibility
+      ref: 'Affiliate',
+    },
+    legalFramework: {
+      type: String,
+      default: 'DORA', // Default to DORA, extensible for future frameworks
     },
     controls: [{
       type: Schema.Types.ObjectId,

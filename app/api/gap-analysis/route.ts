@@ -6,31 +6,47 @@ import Asset from '@/models/Asset';
 import QuestionnaireResponse from '@/models/QuestionnaireResponse';
 import DORARequirement from '@/models/DORARequirement';
 import Question from '@/models/Question';
-import { getAuthUser } from '@/lib/auth-helper';
+import { getAuthUser, getAuthUserContext } from '@/lib/auth-helper';
 import { DORAPillar } from '@/models/DORARequirement';
 import { ControlStatus } from '@/models/Control';
 import { ensureControlsSetup } from '@/lib/auto-controls';
+import { buildDataQuery, extractFilterParams } from '@/lib/query-helpers';
 
 // GET gap analysis for user
 export async function GET(request: NextRequest) {
   try {
     await connectDBLocal();
     
-    // Check auth (bypassed in test mode)
-    const user = getAuthUser(request);
-    if (!user) {
+    // Check auth
+    const userContext = await getAuthUserContext(request);
+    if (!userContext) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const payload = user;
+    const filterParams = extractFilterParams(request);
+    let query: any;
+    try {
+      const result = await buildDataQuery(userContext, filterParams);
+      query = result.query;
+    } catch (error: any) {
+      console.error('Error building data query:', error);
+      return NextResponse.json(
+        { error: 'Failed to build query: ' + error.message },
+        { status: 500 }
+      );
+    }
+    
     const searchParams = request.nextUrl.searchParams;
     const pillar = searchParams.get('pillar') as DORAPillar;
     
-    const query: any = { userId: payload.userId };
     if (pillar) query.pillar = pillar;
+    
+    console.log('🔍 Loading gap analyses with query:', JSON.stringify(query, null, 2));
     
     // Local storage doesn't support populate
     const gapAnalyses = await GapAnalysis.find(query, { createdAt: -1 });
+    
+    console.log(`🔍 Found ${gapAnalyses.length} gap analyses`);
     
     return NextResponse.json({ gapAnalyses });
   } catch (error: any) {
@@ -49,13 +65,13 @@ export async function POST(request: NextRequest) {
     // Ensure controls are created before gap analysis
     await ensureControlsSetup();
     
-    // Check auth (bypassed in test mode)
-    const user = getAuthUser(request);
-    if (!user) {
+    // Check auth
+    const userContext = await getAuthUserContext(request);
+    if (!userContext) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const payload = user;
+    const filterParams = extractFilterParams(request);
     const body = await request.json();
     const { pillar } = body;
     
@@ -66,11 +82,15 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Build query for assets and questionnaire
+    const { query: assetQuery } = await buildDataQuery(userContext, filterParams);
+    
     // Step 1: Get user's assets
-    const assets = await Asset.find({ userId: String(payload.userId) });
+    const assets = await Asset.find(assetQuery);
     
     // Step 2: Get questionnaire response to determine applicable controls
-    const questionnaireResponse = await QuestionnaireResponse.findOne({ userId: String(payload.userId) });
+    const { query: questionnaireQuery } = await buildDataQuery(userContext, filterParams);
+    const questionnaireResponse = await QuestionnaireResponse.findOne(questionnaireQuery);
     
     // Step 3: Get all requirements for this pillar
     const allRequirements = await DORARequirement.find({ pillar });
@@ -348,8 +368,13 @@ export async function POST(request: NextRequest) {
     
     // Step 8: Save gap analysis
     // Ensure all data is properly formatted for local storage
-    const gapAnalysisData = {
-      userId: String(payload.userId), // Always convert to string for local storage
+    const organizationId = filterParams?.organizationId || userContext.organizationId;
+    const affiliateId = filterParams?.affiliateId || userContext.affiliateId;
+    const legalFramework = filterParams?.legalFramework || 'DORA';
+    
+    const gapAnalysisData: any = {
+      userId: String(userContext.userId), // Always convert to string for local storage
+      legalFramework,
       pillar,
       gaps: gaps.map((gap: any) => ({
         controlId: String(gap.controlId), // Ensure controlId is string
@@ -367,9 +392,29 @@ export async function POST(request: NextRequest) {
       compliancePercentage,
     };
     
+    // Always add organizationId/affiliateId from user context or filter params
+    if (organizationId) {
+      gapAnalysisData.organizationId = String(organizationId);
+    }
+    if (affiliateId) {
+      gapAnalysisData.affiliateId = String(affiliateId);
+    }
+    
+    console.log('💾 Saving gap analysis with:', {
+      userId: gapAnalysisData.userId,
+      organizationId: gapAnalysisData.organizationId,
+      affiliateId: gapAnalysisData.affiliateId,
+      legalFramework: gapAnalysisData.legalFramework,
+      pillar: gapAnalysisData.pillar,
+    });
+    
+    // Build query for finding existing gap analysis
+    const { query: findQuery } = await buildDataQuery(userContext, filterParams);
+    findQuery.pillar = pillar;
+    
     // Save to database (local storage will handle string conversion)
     const gapAnalysis = await GapAnalysis.findOneAndUpdate(
-      { userId: String(payload.userId), pillar },
+      findQuery,
       gapAnalysisData,
       { upsert: true, new: true }
     );

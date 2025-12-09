@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest, uploadFile } from '@/lib/api';
 import UserContextBar from '@/components/UserContextBar';
+import { useApiParams } from '@/hooks/useApiParams';
 
 const DORA_PILLARS = [
   { value: 'ICT_RISK_MANAGEMENT', label: 'ICT Risk Management' },
@@ -16,6 +17,7 @@ const DORA_PILLARS = [
 
 export default function RemediationPage() {
   const router = useRouter();
+  const { getApiUrl } = useApiParams();
   const [selectedPillar, setSelectedPillar] = useState<string>('ICT_RISK_MANAGEMENT');
   const [tableData, setTableData] = useState<any[]>([]);
   const [remediationPlan, setRemediationPlan] = useState<any>(null);
@@ -26,43 +28,8 @@ export default function RemediationPage() {
   const [strategy, setStrategy] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'actions' | 'strategy'>('actions');
 
-  useEffect(() => {
-    // Clear previous data when pillar changes
-    setTableData([]);
-    setRemediationPlan(null);
-    setSummary(null);
-    
-    if (selectedPillar) {
-      loadRemediationPlan();
-    }
-  }, [selectedPillar]);
-
-  const handleGenerate = async () => {
-    if (!selectedPillar) {
-      alert('Please select a DORA pillar');
-      return;
-    }
-
-    setGenerating(true);
-    try {
-      const response = await apiRequest('/remediation', {
-        method: 'POST',
-        body: JSON.stringify({ pillar: selectedPillar }),
-      });
-
-      setRemediationPlan(response.remediationPlan);
-      setTableData(response.tableData || []);
-      setSummary(response.summary || null);
-      setStrategy(response.strategy || null);
-      alert(`Remediation plan generated with ${response.summary?.totalActions || 0} actions.`);
-    } catch (error: any) {
-      alert(`Error: ${error.message}`);
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  const loadRemediationPlan = async () => {
+  // Declare loadRemediationPlan BEFORE useEffect to avoid "Cannot access uninitialized variable" error
+  const loadRemediationPlan = useCallback(async () => {
     if (!selectedPillar) {
       // Clear data if no pillar selected
       setTableData([]);
@@ -73,7 +40,9 @@ export default function RemediationPage() {
 
     setLoading(true);
     try {
-      const response = await apiRequest<{ remediationPlans: any[] }>(`/remediation?pillar=${selectedPillar}`);
+      const baseUrl = getApiUrl('/remediation');
+      const url = `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}pillar=${selectedPillar}`;
+      const response = await apiRequest<{ remediationPlans: any[] }>(url);
       
       if (response.remediationPlans && response.remediationPlans.length > 0) {
         const plan = response.remediationPlans[0];
@@ -138,13 +107,53 @@ export default function RemediationPage() {
     } finally {
       setLoading(false);
     }
+  }, [selectedPillar, getApiUrl]);
+
+  // useEffect must come AFTER loadRemediationPlan is declared
+  useEffect(() => {
+    // Clear previous data when pillar changes
+    setTableData([]);
+    setRemediationPlan(null);
+    setSummary(null);
+    
+    if (selectedPillar) {
+      loadRemediationPlan();
+    }
+  }, [selectedPillar, loadRemediationPlan]); // loadRemediationPlan is now memoized
+
+  const handleGenerate = async () => {
+    if (!selectedPillar) {
+      alert('Please select a DORA pillar');
+      return;
+    }
+
+    setGenerating(true);
+    try {
+      const url = getApiUrl('/remediation');
+      const response = await apiRequest(url, {
+        method: 'POST',
+        body: JSON.stringify({ pillar: selectedPillar }),
+      });
+
+      setRemediationPlan(response.remediationPlan);
+      setTableData(response.tableData || []);
+      setSummary(response.summary || null);
+      setStrategy(response.strategy || null);
+      alert(`Remediation plan generated with ${response.summary?.totalActions || 0} actions.`);
+      loadRemediationPlan();
+    } catch (error: any) {
+      alert(`Error: ${error.message}`);
+    } finally {
+      setGenerating(false);
+    }
   };
 
   const handleStatusChange = async (index: number, newStatus: string) => {
     if (!remediationPlan) return;
 
     try {
-      await apiRequest('/remediation', {
+      const url = getApiUrl('/remediation');
+      await apiRequest(url, {
         method: 'PUT',
         body: JSON.stringify({
           pillar: selectedPillar,

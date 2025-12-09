@@ -10,6 +10,9 @@ export interface IAnswer {
 
 export interface IQuestionnaireResponse extends Document {
   userId: Types.ObjectId;
+  organizationId?: Types.ObjectId | string; // Reference to Organization
+  affiliateId?: Types.ObjectId | string; // Reference to Affiliate
+  legalFramework?: string; // e.g., 'DORA', 'GDPR', 'NIS2', etc.
   answers: IAnswer[];
   applicableControls: Types.ObjectId[]; // Controls determined to be applicable
   controlReasoning?: Record<string, string[]>; // Reasoning for each control (transparency)
@@ -30,6 +33,18 @@ const QuestionnaireResponseSchema = new Schema<IQuestionnaireResponse>(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
+    },
+    organizationId: {
+      type: Schema.Types.Mixed, // Mixed for local storage compatibility
+      ref: 'Organization',
+    },
+    affiliateId: {
+      type: Schema.Types.Mixed, // Mixed for local storage compatibility
+      ref: 'Affiliate',
+    },
+    legalFramework: {
+      type: String,
+      default: 'DORA', // Default to DORA, extensible for future frameworks
     },
     answers: [AnswerSchema],
     applicableControls: [{

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { apiRequest } from '@/lib/api';
 import Control from '@/models/Control';
 import UserContextBar from '@/components/UserContextBar';
+import { useApiParams } from '@/hooks/useApiParams';
 
 const DORA_PILLARS = [
   { value: 'ICT_RISK_MANAGEMENT', label: 'ICT Risk Management' },
@@ -17,6 +18,7 @@ const DORA_PILLARS = [
 
 export default function GapAnalysisPage() {
   const router = useRouter();
+  const { getApiUrl } = useApiParams();
   const [selectedPillar, setSelectedPillar] = useState<string>('');
   const [gapAnalysis, setGapAnalysis] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -30,7 +32,8 @@ export default function GapAnalysisPage() {
 
     setGenerating(true);
     try {
-      const response = await apiRequest('/gap-analysis', {
+      const url = getApiUrl('/gap-analysis');
+      const response = await apiRequest(url, {
         method: 'POST',
         body: JSON.stringify({ pillar: selectedPillar }),
       });
@@ -38,6 +41,7 @@ export default function GapAnalysisPage() {
       setGapAnalysis(response.gapAnalysis);
       const summary = response.summary || {};
       alert(`Gap analysis generated! Found ${summary.gaps || 0} gaps. Compliance: ${summary.compliancePercentage || 0}%`);
+      loadGapAnalysis();
     } catch (error: any) {
       alert(`Error: ${error.message}`);
     } finally {
@@ -50,7 +54,9 @@ export default function GapAnalysisPage() {
 
     setLoading(true);
     try {
-      const response = await apiRequest<{ gapAnalyses: any[] }>(`/gap-analysis?pillar=${selectedPillar}`);
+      const baseUrl = getApiUrl('/gap-analysis');
+      const url = `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}pillar=${selectedPillar}`;
+      const response = await apiRequest<{ gapAnalyses: any[] }>(url);
       if (response.gapAnalyses && response.gapAnalyses.length > 0) {
         setGapAnalysis(response.gapAnalyses[0]);
       }
@@ -63,7 +69,7 @@ export default function GapAnalysisPage() {
 
   useEffect(() => {
     loadGapAnalysis();
-  }, [selectedPillar]);
+  }, [selectedPillar, getApiUrl]);
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {

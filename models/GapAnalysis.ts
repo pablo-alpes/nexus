@@ -13,6 +13,9 @@ export interface IGap {
 
 export interface IGapAnalysis extends Document {
   userId: Types.ObjectId;
+  organizationId?: Types.ObjectId | string; // Reference to Organization
+  affiliateId?: Types.ObjectId | string; // Reference to Affiliate
+  legalFramework?: string; // e.g., 'DORA', 'GDPR', 'NIS2', etc.
   gaps: IGap[];
   pillar: DORAPillar;
   totalControls: number;
@@ -41,6 +44,18 @@ const GapAnalysisSchema = new Schema<IGapAnalysis>(
       type: Schema.Types.Mixed, // Allow both ObjectId and string for local storage
       ref: 'User',
       required: true,
+    },
+    organizationId: {
+      type: Schema.Types.Mixed, // Mixed for local storage compatibility
+      ref: 'Organization',
+    },
+    affiliateId: {
+      type: Schema.Types.Mixed, // Mixed for local storage compatibility
+      ref: 'Affiliate',
+    },
+    legalFramework: {
+      type: String,
+      default: 'DORA', // Default to DORA, extensible for future frameworks
     },
     gaps: [GapSchema],
     pillar: {

@@ -219,7 +219,7 @@ export async function GET(request: NextRequest) {
       pillarBreakdown,
     };
 
-    return NextResponse.json({ overview });
+    return NextResponse.json(overview);
   } catch (error: any) {
     console.error('Error fetching compliance overview:', error);
     return NextResponse.json(
