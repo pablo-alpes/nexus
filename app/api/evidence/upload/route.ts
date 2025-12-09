@@ -1,19 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
+import { connectDBLocal } from '@/lib/mongodb-local';
 import Evidence from '@/models/Evidence';
-import { verifyToken } from '@/lib/auth';
+import { getAuthUserContext } from '@/lib/auth-helper';
 import { uploadEvidence } from '@/lib/azure-storage';
+import { canUploadEvidence } from '@/lib/permissions';
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB();
+    await connectDBLocal();
     
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    if (!token) {
+    const userContext = await getAuthUserContext(request);
+    if (!userContext) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
-    const payload = verifyToken(token);
+
+    // Check permission to upload evidence
+    const permissionCheck = canUploadEvidence(userContext);
+    if (!permissionCheck.allowed) {
+      return NextResponse.json({ 
+        error: permissionCheck.reason || 'Access denied',
+        requiresPermission: 'canUploadEvidence'
+      }, { status: 403 });
+    }
+
     const formData = await request.formData();
     
     const file = formData.get('file') as File;
@@ -69,7 +78,7 @@ export async function POST(request: NextRequest) {
       file.name,
       file.type,
       {
-        userId: payload.userId,
+        userId: userContext.userId,
         controlId: controlId || '',
         requirementId: requirementId || '',
         evidenceType: evidenceType || 'OTHER',
@@ -78,9 +87,10 @@ export async function POST(request: NextRequest) {
     );
     
     // Save evidence record
-    const evidence = new Evidence({
+    const evidence = await Evidence.create({
       evidenceId: `EVID-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      userId: payload.userId,
+      userId: userContext.userId,
+      affiliateId: userContext.affiliateId,
       controlId: controlId || undefined,
       requirementId: requirementId || undefined,
       remediationActionId: remediationActionId || undefined,
@@ -92,8 +102,6 @@ export async function POST(request: NextRequest) {
       description,
       complianceStatus: complianceStatus || undefined,
     });
-    
-    await evidence.save();
     
     return NextResponse.json({
       evidence,

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { apiRequest } from '@/lib/api';
 import * as XLSX from 'xlsx';
+import UserContextBar from '@/components/UserContextBar';
 
 interface Mapping {
   questionId: string;
@@ -970,6 +971,9 @@ export default function RuleEnginePage() {
           </div>
         </div>
       </nav>
+
+      {/* User Context Bar */}
+      <UserContextBar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Statistics Dashboard */}

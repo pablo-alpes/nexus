@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest } from '@/lib/api';
+import UserContextBar from '@/components/UserContextBar';
 
 interface Asset {
   _id: string;
@@ -110,6 +111,9 @@ export default function AssetsPage() {
           </div>
         </div>
       </nav>
+
+      {/* User Context Bar */}
+      <UserContextBar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-6">

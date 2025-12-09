@@ -14,6 +14,7 @@ export enum EvidenceType {
 export interface IEvidence extends Document {
   evidenceId: string;
   userId: Types.ObjectId;
+  affiliateId?: Types.ObjectId; // Affiliate this evidence belongs to
   controlId?: Types.ObjectId; // Control this evidence supports
   requirementId?: Types.ObjectId; // Requirement this evidence supports
   remediationActionId?: Types.ObjectId; // Optional: if linked to remediation
@@ -24,6 +25,10 @@ export interface IEvidence extends Document {
   evidenceType: EvidenceType;
   description?: string;
   complianceStatus?: string; // Compliance status this evidence supports
+  validated?: boolean; // Validation status
+  validatedAt?: Date;
+  validatedBy?: Types.ObjectId; // User who validated
+  validationComments?: string;
   uploadedAt: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -40,6 +45,10 @@ const EvidenceSchema = new Schema<IEvidence>(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
+    },
+    affiliateId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Affiliate',
     },
     controlId: {
       type: Schema.Types.ObjectId,
@@ -78,6 +87,19 @@ const EvidenceSchema = new Schema<IEvidence>(
       type: String,
     },
     complianceStatus: {
+      type: String,
+    },
+    validated: {
+      type: Boolean,
+    },
+    validatedAt: {
+      type: Date,
+    },
+    validatedBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    validationComments: {
       type: String,
     },
     uploadedAt: {

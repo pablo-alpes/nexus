@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest } from '@/lib/api';
 import Control from '@/models/Control';
+import UserContextBar from '@/components/UserContextBar';
 
 const DORA_PILLARS = [
   { value: 'ICT_RISK_MANAGEMENT', label: 'ICT Risk Management' },
@@ -90,6 +91,9 @@ export default function GapAnalysisPage() {
           </div>
         </div>
       </nav>
+
+      {/* User Context Bar */}
+      <UserContextBar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="text-3xl font-bold mb-6">Gap Analysis</h1>

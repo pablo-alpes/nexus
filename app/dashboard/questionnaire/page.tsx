@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest } from '@/lib/api';
+import UserContextBar from '@/components/UserContextBar';
 
 interface Question {
   _id: string;
@@ -229,6 +230,9 @@ export default function QuestionnairePage() {
             </div>
           </div>
         </nav>
+
+        {/* User Context Bar */}
+        <UserContextBar />
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex justify-between items-center mb-6">
@@ -461,6 +465,9 @@ export default function QuestionnairePage() {
           </div>
         </div>
       </nav>
+
+      {/* User Context Bar */}
+      <UserContextBar />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="text-3xl font-bold mb-6">DORA Compliance Questionnaire</h1>

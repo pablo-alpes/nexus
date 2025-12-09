@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDBLocal } from '@/lib/mongodb-local';
 import Control from '@/models/Control';
+import { getAuthUserContext } from '@/lib/auth-helper';
+import { canEditRuleEngine } from '@/lib/permissions';
 
 // DELETE - Delete control
 export async function DELETE(
@@ -9,6 +11,19 @@ export async function DELETE(
 ) {
   try {
     await connectDBLocal();
+    
+    const userContext = await getAuthUserContext(request);
+    if (!userContext) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const permissionCheck = canEditRuleEngine(userContext);
+    if (!permissionCheck.allowed) {
+      return NextResponse.json({ 
+        error: permissionCheck.reason || 'Access denied',
+        requiresPermission: 'canEditRuleEngine'
+      }, { status: 403 });
+    }
     
     const { controlId } = params;
     
@@ -37,6 +52,19 @@ export async function PUT(
 ) {
   try {
     await connectDBLocal();
+    
+    const userContext = await getAuthUserContext(request);
+    if (!userContext) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const permissionCheck = canEditRuleEngine(userContext);
+    if (!permissionCheck.allowed) {
+      return NextResponse.json({ 
+        error: permissionCheck.reason || 'Access denied',
+        requiresPermission: 'canEditRuleEngine'
+      }, { status: 403 });
+    }
     
     const { controlId } = params;
     const body = await request.json();

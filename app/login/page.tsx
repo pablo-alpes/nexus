@@ -18,30 +18,26 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // Try test login first if in test mode
-      try {
-        const testResponse = await apiRequest<{ token: string; user: any; message?: string }>('/auth/test-login', {
-          method: 'POST',
-        });
-        
-        if (testResponse.token) {
-          localStorage.setItem('token', testResponse.token);
-          router.push('/dashboard');
-          return;
-        }
-      } catch (testErr) {
-        // Test login not available, continue with normal login
-      }
-
       const response = await apiRequest<{ token: string; user: any }>('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       });
 
+      if (!response.token) {
+        setError('No token received from server');
+        return;
+      }
+
       localStorage.setItem('token', response.token);
+      
+      // Store user info in localStorage for quick access
+      if (response.user) {
+        localStorage.setItem('user', JSON.stringify(response.user));
+      }
+      
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Login failed');
     } finally {
       setLoading(false);
     }

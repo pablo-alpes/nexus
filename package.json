@@ -13,7 +13,9 @@
     "test:controls-fallback": "node scripts/test-controls-requirements-fallback.js",
     "test:matching-comparison": "node scripts/compare-matching-approaches.js",
     "test:coherence": "node scripts/analyze-matching-coherence.js",
-    "precompute:mappings": "tsx scripts/precompute-mappings.ts"
+    "precompute:mappings": "tsx scripts/precompute-mappings.ts",
+    "promote:superadmin": "node scripts/promote-to-superadmin.js",
+    "create:superadmin": "node scripts/create-superadmin.js"
   },
   "dependencies": {
     "@azure/storage-blob": "^12.17.0",

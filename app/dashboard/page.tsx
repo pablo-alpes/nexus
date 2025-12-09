@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest } from '@/lib/api';
+import UserContextBar from '@/components/UserContextBar';
+import DashboardNav from '@/components/DashboardNav';
 
 const DORA_PILLARS = [
   { value: 'ICT_RISK_MANAGEMENT', label: 'ICT Risk Management', short: 'Risk Mgmt' },
@@ -43,8 +45,19 @@ export default function DashboardPage() {
       return;
     }
 
-    // In a real app, fetch user data
-    setUser({ name: 'User' });
+    // Load user data
+    const loadUser = async () => {
+      try {
+        const userRes = await apiRequest<{ user: any }>('/auth/me');
+        if (userRes?.user) {
+          setUser(userRes.user);
+        }
+      } catch (error) {
+        console.error('Failed to load user:', error);
+      }
+    };
+
+    loadUser();
     loadKPIs();
     
     // Refresh KPIs when page becomes visible (e.g., returning from remediation page)
@@ -102,48 +115,24 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm">
+      <DashboardNav user={user} />
+      
+      {/* Logout button in a separate bar */}
+      <div className="bg-gray-50 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center space-x-8">
-              <h1 className="text-2xl font-bold text-primary-600">Nexus Cloud</h1>
-              <Link href="/dashboard" className="text-gray-700 hover:text-primary-600">
-                Dashboard
-              </Link>
-              <Link href="/dashboard/questionnaire" className="text-gray-700 hover:text-primary-600">
-                Questionnaire
-              </Link>
-              <Link href="/dashboard/assets" className="text-gray-700 hover:text-primary-600">
-                Assets
-              </Link>
-              <Link href="/dashboard/gap-analysis" className="text-gray-700 hover:text-primary-600">
-                Gap Analysis
-              </Link>
-              <Link href="/dashboard/remediation" className="text-gray-700 hover:text-primary-600">
-                Remediation
-              </Link>
-              <Link href="/dashboard/roadmap" className="text-gray-700 hover:text-primary-600">
-                Roadmap
-              </Link>
-              <Link href="/dashboard/requirements" className="text-gray-700 hover:text-primary-600">
-                Requirements
-              </Link>
-              <Link href="/dashboard/controls" className="text-gray-700 hover:text-primary-600">
-                Controls
-              </Link>
-              <Link href="/dashboard/rule-engine" className="text-gray-700 hover:text-primary-600">
-                Rule Engine
-              </Link>
-            </div>
+          <div className="flex justify-end py-2">
             <button
               onClick={handleLogout}
-              className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700"
+              className="text-sm text-gray-700 hover:text-primary-600"
             >
               Logout
             </button>
           </div>
         </div>
-      </nav>
+      </div>
+
+      {/* User Context Bar */}
+      <UserContextBar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="text-3xl font-bold mb-6">Dashboard</h1>

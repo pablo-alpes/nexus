@@ -4,8 +4,9 @@ import Roadmap from '@/models/Roadmap';
 import RemediationPlan from '@/models/RemediationPlan';
 import Control from '@/models/Control';
 import DORARequirement from '@/models/DORARequirement';
-import { getAuthUser } from '@/lib/auth-helper';
+import { getAuthUser, getAuthUserContext } from '@/lib/auth-helper';
 import { DORAPillar } from '@/models/DORARequirement';
+import { canManageRoadmap } from '@/lib/permissions';
 
 // GET roadmap for user
 export async function GET(request: NextRequest) {
@@ -34,6 +35,20 @@ export async function POST(request: NextRequest) {
   try {
     await connectDBLocal();
     
+    const userContext = await getAuthUserContext(request);
+    if (!userContext) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check permission to manage roadmap
+    const permissionCheck = canManageRoadmap(userContext);
+    if (!permissionCheck.allowed) {
+      return NextResponse.json({ 
+        error: permissionCheck.reason || 'Access denied',
+        requiresPermission: 'canManageRoadmap'
+      }, { status: 403 });
+    }
+
     const user = getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -160,6 +175,20 @@ export async function PUT(request: NextRequest) {
   try {
     await connectDBLocal();
     
+    const userContext = await getAuthUserContext(request);
+    if (!userContext) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check permission to manage roadmap
+    const permissionCheck = canManageRoadmap(userContext);
+    if (!permissionCheck.allowed) {
+      return NextResponse.json({ 
+        error: permissionCheck.reason || 'Access denied',
+        requiresPermission: 'canManageRoadmap'
+      }, { status: 403 });
+    }
+
     const user = getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

@@ -11,22 +11,8 @@ export async function apiRequest<T>(
     ...options.headers,
   };
   
-  // In test mode, use test token if no token exists
-  if (!token && process.env.NEXT_PUBLIC_TEST_MODE === 'true') {
-    // Try to get test token
-    try {
-      const testResponse = await fetch(`${API_URL}/auth/test-login`, { method: 'POST' });
-      if (testResponse.ok) {
-        const testData = await testResponse.json();
-        if (testData.token) {
-          localStorage.setItem('token', testData.token);
-          headers['Authorization'] = `Bearer ${testData.token}`;
-        }
-      }
-    } catch (e) {
-      // Ignore test login errors
-    }
-  }
+  // Note: Removed automatic test login to avoid issues with user context
+  // Users should login normally with their credentials
   
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
@@ -38,8 +24,16 @@ export async function apiRequest<T>(
   });
   
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'An error occurred');
+    // Check if the response is JSON before parsing
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      const error = await response.json();
+      throw new Error(error.error || 'An error occurred');
+    } else {
+      // If not JSON, it might be an HTML error page or plain text
+      const errorText = await response.text();
+      throw new Error(`Server error: ${response.status} ${response.statusText} - ${errorText.substring(0, 100)}...`);
+    }
   }
   
   return response.json();
@@ -60,8 +54,16 @@ export async function uploadFile(
   });
   
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'An error occurred');
+    // Check if the response is JSON before parsing
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      const error = await response.json();
+      throw new Error(error.error || 'An error occurred');
+    } else {
+      // If not JSON, it might be an HTML error page or plain text
+      const errorText = await response.text();
+      throw new Error(`Server error: ${response.status} ${response.statusText} - ${errorText.substring(0, 100)}...`);
+    }
   }
   
   return response.json();

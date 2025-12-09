@@ -38,9 +38,10 @@ export async function ensureMockDataSetup(): Promise<void> {
   }
 }
 
-async function createMockAssets(): Promise<void> {
-  const testUser = getTestUser();
-  
+/**
+ * Create mock assets for a specific user
+ */
+export async function createMockAssetsForUser(userId: string): Promise<{ created: number; errors: number }> {
   const mockAssets = [
     // Critical Assets (Level 4)
     {
@@ -188,29 +189,46 @@ async function createMockAssets(): Promise<void> {
 
   for (const assetData of mockAssets) {
     try {
-      // Check if asset already exists
-      const existing = await Asset.findOne({ assetId: assetData.assetId });
+      // Generate unique assetId for this user (using timestamp to ensure uniqueness)
+      const timestamp = Date.now();
+      const randomId = Math.random().toString(36).substr(2, 6);
+      const uniqueAssetId = `${assetData.assetId}-${timestamp}-${randomId}`;
+
+      // Check if asset with similar name already exists for this user
+      const existing = await Asset.findOne({ 
+        name: assetData.name,
+        userId: userId 
+      });
       if (existing) {
+        console.log(`⏭️  Asset "${assetData.name}" already exists for user, skipping...`);
         continue;
       }
 
       const asset = await Asset.create({
         ...assetData,
-        userId: testUser.userId,
+        assetId: uniqueAssetId,
+        userId: userId,
         controls: [], // Controls will be mapped when controls are created
       });
 
-      created.push(asset.assetId || assetData.assetId);
+      created.push(asset.assetId || uniqueAssetId);
     } catch (error: any) {
       errors.push({ assetId: assetData.assetId, error: error.message });
       console.error(`Failed to create asset ${assetData.assetId}:`, error.message);
     }
   }
 
-  console.log(`✅ Created ${created.length} mock assets`);
+  console.log(`✅ Created ${created.length} mock assets for user ${userId}`);
   
   if (errors.length > 0) {
     console.warn(`⚠️  ${errors.length} assets failed to create`);
   }
+
+  return { created: created.length, errors: errors.length };
+}
+
+async function createMockAssets(): Promise<void> {
+  const testUser = getTestUser();
+  await createMockAssetsForUser(testUser.userId);
 }
 

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDBLocal } from '@/lib/mongodb-local';
 import Question from '@/models/Question';
+import { getAuthUserContext } from '@/lib/auth-helper';
+import { canEditRuleEngine } from '@/lib/permissions';
 import { ensureQuestionnaireSetup } from '@/lib/auto-questionnaire';
 
 // GET all questions (ordered)
@@ -88,6 +90,19 @@ export async function PUT(request: NextRequest) {
   try {
     await connectDBLocal();
     
+    const userContext = await getAuthUserContext(request);
+    if (!userContext) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const permissionCheck = canEditRuleEngine(userContext);
+    if (!permissionCheck.allowed) {
+      return NextResponse.json({ 
+        error: permissionCheck.reason || 'Access denied',
+        requiresPermission: 'canEditRuleEngine'
+      }, { status: 403 });
+    }
+    
     const body = await request.json();
     const { _id, questionId, ...updateData } = body;
     
@@ -118,6 +133,19 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     await connectDBLocal();
+    
+    const userContext = await getAuthUserContext(request);
+    if (!userContext) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const permissionCheck = canEditRuleEngine(userContext);
+    if (!permissionCheck.allowed) {
+      return NextResponse.json({ 
+        error: permissionCheck.reason || 'Access denied',
+        requiresPermission: 'canEditRuleEngine'
+      }, { status: 403 });
+    }
     
     const searchParams = request.nextUrl.searchParams;
     const id = searchParams.get('id');

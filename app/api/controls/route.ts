@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDBLocal } from '@/lib/mongodb-local';
 import Control from '@/models/Control';
+import { getAuthUserContext } from '@/lib/auth-helper';
+import { canEditRuleEngine } from '@/lib/permissions';
 import DORARequirement from '@/models/DORARequirement';
 import { getAuthUser } from '@/lib/auth-helper';
 import { ensureControlsSetup } from '@/lib/auto-controls';
@@ -91,6 +93,19 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     await connectDBLocal();
+    
+    const userContext = await getAuthUserContext(request);
+    if (!userContext) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const permissionCheck = canEditRuleEngine(userContext);
+    if (!permissionCheck.allowed) {
+      return NextResponse.json({ 
+        error: permissionCheck.reason || 'Access denied',
+        requiresPermission: 'canEditRuleEngine'
+      }, { status: 403 });
+    }
     
     const body = await request.json();
     const { controlId, ...updateData } = body;

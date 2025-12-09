@@ -4,9 +4,11 @@ import QuestionnaireResponse from '@/models/QuestionnaireResponse';
 import Control from '@/models/Control';
 import Question from '@/models/Question';
 import DORARequirement from '@/models/DORARequirement';
-import { getAuthUser } from '@/lib/auth-helper';
+import { getAuthUser, getAuthUserContext } from '@/lib/auth-helper';
 import { ensureControlsSetup } from '@/lib/auto-controls';
 import { getPrecomputedMappings, getActiveRuleVersion } from '@/lib/services/precomputed-mappings';
+import { createApprovalIfNeeded } from '@/lib/approval-helper';
+import { ChangeType } from '@/models/ApprovalWorkflow';
 
 // GET user's questionnaire response
 export async function GET(request: NextRequest) {
@@ -305,6 +307,53 @@ export async function POST(request: NextRequest) {
       completedAt: new Date().toISOString(),
     };
     
+    // Check if this is an update (existing response)
+    const existingResponse = await QuestionnaireResponse.findOne({ userId: String(payload.userId) });
+    const isUpdate = !!existingResponse;
+    
+    // Get user context for approval workflow
+    const userContext = await getAuthUserContext(request);
+    
+    // Create approval workflow if needed (for material changes)
+    let approvalWorkflow = null;
+    if (isUpdate && userContext) {
+      // Compare old and new answers to detect material changes
+      const changeDetails: Array<{ field: string; oldValue: any; newValue: any }> = [];
+      
+      if (existingResponse.answers) {
+        const oldAnswersMap = new Map(
+          (existingResponse.answers as any[]).map((a: any) => [String(a.questionId), a.value])
+        );
+        
+        body.answers.forEach((newAnswer: any) => {
+          const oldValue = oldAnswersMap.get(String(newAnswer.questionId));
+          if (oldValue !== newAnswer.value) {
+            changeDetails.push({
+              field: `answer_${newAnswer.questionId}`,
+              oldValue,
+              newValue: newAnswer.value,
+            });
+          }
+        });
+      }
+      
+      // If there are material changes, create approval workflow
+      if (changeDetails.length > 0 && userContext) {
+        try {
+          approvalWorkflow = await createApprovalIfNeeded(
+            userContext,
+            ChangeType.QUESTIONNAIRE_RESPONSE,
+            String(existingResponse._id || payload.userId),
+            'QuestionnaireResponse',
+            changeDetails,
+            'Questionnaire response updated'
+          );
+        } catch (error) {
+          console.warn('Failed to create approval workflow:', error);
+        }
+      }
+    }
+    
     const response = await QuestionnaireResponse.findOneAndUpdate(
       { userId: String(payload.userId) },
       responseData,
@@ -328,6 +377,11 @@ export async function POST(request: NextRequest) {
       controlReasoning: reasoningObject, // Return reasoning for frontend display
       ruleVersion, // Include rule version used
       coherenceMetrics, // Include coherence metrics if available
+      approvalWorkflow: approvalWorkflow ? {
+        workflowId: approvalWorkflow.workflowId,
+        status: approvalWorkflow.status,
+      } : null,
+      requiresApproval: !!approvalWorkflow,
     });
   } catch (error: any) {
     return NextResponse.json(
