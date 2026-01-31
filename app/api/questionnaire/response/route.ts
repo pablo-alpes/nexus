@@ -174,68 +174,101 @@ export async function POST(request: NextRequest) {
     const requirementIdsArray = Array.from(requirementsFromNoAnswers);
     
     if (requirementIdsArray.length > 0) {
-      // Find all controls that map to these requirements
-      const allControls = await Control.find({
-        requirementIds: { $in: requirementIdsArray }
+      // Normalize requirement IDs - create a set with all possible ID formats
+      // Precomputed mappings return requirementId strings, but controls might have _id or requirementId
+      const normalizedReqIds = new Set<string>();
+      const reqIdMap = new Map<string, string>(); // Maps any ID format to canonical requirementId
+      
+      // Get all requirements to build ID mapping (more efficient than per-control lookups)
+      // Works with both MongoDB and local storage (local storage now supports $or)
+      const allReqs = await DORARequirement.find({
+        $or: [
+          { requirementId: { $in: requirementIdsArray } },
+          { _id: { $in: requirementIdsArray } },
+        ],
       });
       
-      // Also search by pillar for controls that might not have explicit requirement mapping
-      const pillarsFromNoAnswers = new Set(noAnswers.map(({ question }) => question.pillar).filter(Boolean));
-      
-      for (const control of allControls) {
-        const controlId = String(control._id || control.controlId);
-        applicableControlIds.add(controlId);
-        if (control.controlId && String(control.controlId) !== controlId) {
-          applicableControlIds.add(String(control.controlId));
-        }
-        
-        // Track reasoning: which questions/requirements led to this control
-        const matchingReqs = Array.from(requirementsFromNoAnswers).filter(reqId => 
-          control.requirementIds && control.requirementIds.some((rid: any) => String(rid) === reqId)
+      // Build normalized ID set and mapping
+      for (const reqId of requirementIdsArray) {
+        normalizedReqIds.add(reqId);
+        const req = allReqs.find(r => 
+          String(r._id) === reqId || r.requirementId === reqId
         );
-        const questionTexts = noAnswers
-          .filter(({ question }) => question.pillar === control.pillar)
-          .map(({ question }) => question.text)
-          .slice(0, 2);
-        
-        if (!controlReasoning.has(controlId)) {
-          controlReasoning.set(controlId, []);
+        if (req) {
+          const reqIdStr = String(req._id);
+          const reqRequirementId = req.requirementId || '';
+          normalizedReqIds.add(reqIdStr);
+          if (reqRequirementId) {
+            normalizedReqIds.add(reqRequirementId);
+            reqIdMap.set(reqIdStr, reqRequirementId);
+            reqIdMap.set(reqRequirementId, reqRequirementId);
+            reqIdMap.set(reqId, reqRequirementId);
+          }
         }
-        controlReasoning.get(controlId)!.push(
-          `Included because: Answered "No" to questions about ${questionTexts.join(', ')} → Requirements ${matchingReqs.slice(0, 2).join(', ')} → Control ${control.controlId || controlId}`
-        );
       }
       
-      // Also get controls by pillar if they map to requirements from "no" answers
-      for (const pillar of pillarsFromNoAnswers) {
-        const pillarControls = await Control.find({ pillar });
-        for (const control of pillarControls) {
-          // Check if control maps to any requirement from "no" answers
-          if (control.requirementIds && Array.isArray(control.requirementIds)) {
-            const controlRequirementIds = control.requirementIds.map((id: any) => String(id));
-            const hasMatchingRequirement = controlRequirementIds.some((reqId: string) => 
-              requirementsFromNoAnswers.has(reqId)
+      // Get controls only from pillars that have "no" answers (more efficient)
+      const pillarsFromNoAnswers = new Set(noAnswers.map(({ question }) => question.pillar).filter(Boolean));
+      const allControls = await Control.find({
+        pillar: { $in: Array.from(pillarsFromNoAnswers) },
+      });
+      
+      // Match controls to requirements
+      for (const control of allControls) {
+        if (!control.requirementIds || !Array.isArray(control.requirementIds)) {
+          continue;
+        }
+        
+        // Check if control maps to any requirement from "no" answers
+        const matchingReqs: string[] = [];
+        
+        for (const controlReqId of control.requirementIds) {
+          const controlReqIdStr = String(controlReqId);
+          
+          // Direct match
+          if (normalizedReqIds.has(controlReqIdStr)) {
+            const canonicalId = reqIdMap.get(controlReqIdStr) || controlReqIdStr;
+            if (!matchingReqs.includes(canonicalId)) {
+              matchingReqs.push(canonicalId);
+            }
+          } else {
+            // Try to find requirement by this ID
+            const req = allReqs.find(r => 
+              String(r._id) === controlReqIdStr || r.requirementId === controlReqIdStr
             );
-            
-            if (hasMatchingRequirement) {
-              const controlId = String(control._id || control.controlId);
-              applicableControlIds.add(controlId);
-              if (control.controlId && String(control.controlId) !== controlId) {
-                applicableControlIds.add(String(control.controlId));
+            if (req) {
+              const reqIdStr = String(req._id);
+              const reqRequirementId = req.requirementId || '';
+              if (normalizedReqIds.has(reqIdStr) || normalizedReqIds.has(reqRequirementId)) {
+                const canonicalId = reqRequirementId || reqIdStr;
+                if (!matchingReqs.includes(canonicalId)) {
+                  matchingReqs.push(canonicalId);
+                }
               }
-              
-              // Track reasoning
-              const matchingReqs = Array.from(requirementsFromNoAnswers).filter(reqId => 
-                controlRequirementIds.includes(reqId)
-              );
-              if (!controlReasoning.has(controlId)) {
-                controlReasoning.set(controlId, []);
-              }
-              controlReasoning.get(controlId)!.push(
-                `Included via pillar mapping: Requirements ${matchingReqs.slice(0, 2).join(', ')} → Control ${control.controlId || controlId}`
-              );
             }
           }
+        }
+        
+        // If control matches any requirement, include it
+        if (matchingReqs.length > 0) {
+          const controlId = String(control._id || control.controlId);
+          applicableControlIds.add(controlId);
+          if (control.controlId && String(control.controlId) !== controlId) {
+            applicableControlIds.add(String(control.controlId));
+          }
+          
+          // Track reasoning: which questions/requirements led to this control
+          const questionTexts = noAnswers
+            .filter(({ question }) => question.pillar === control.pillar)
+            .map(({ question }) => question.text)
+            .slice(0, 2);
+          
+          if (!controlReasoning.has(controlId)) {
+            controlReasoning.set(controlId, []);
+          }
+          controlReasoning.get(controlId)!.push(
+            `Included because: Answered "No" to questions about ${questionTexts.join(', ')} → Requirements ${matchingReqs.slice(0, 3).join(', ')} → Control ${control.controlId || controlId}`
+          );
         }
       }
     }
@@ -291,6 +324,43 @@ export async function POST(request: NextRequest) {
       reasoningObject[controlId] = reasons;
     });
     
+    // Calculate mapping completeness for ALL questions in the questionnaire
+    // This gives a true picture of mapping coverage, not just for "No" answers
+    const allQuestionIds = new Set(body.answers.map((a: any) => String(a.questionId)));
+    const mappingCompleteness = {
+      totalQuestions: allQuestionIds.size,
+      questionsProcessed: noAnswers.length, // Keep for reference (No answers that were processed)
+      questionsWithMappings: 0,
+      questionsWithoutMappings: 0,
+      questionsWithEmptyMappings: 0,
+      totalRequirementsFound: requirementsFromNoAnswers.size,
+      mappingCoverage: 0,
+    };
+
+    // Check ALL questions in the questionnaire, not just "No" answers
+    // This ensures the percentage reflects the true coverage across all questions
+    const allQuestions = await Question.find({ 
+      _id: { $in: Array.from(allQuestionIds) } 
+    });
+    
+    for (const question of allQuestions) {
+      const precomputed = await getPrecomputedMappings(question.questionId, ruleVersion);
+      if (precomputed) {
+        if (precomputed.controlBasedRequirements.length > 0) {
+          mappingCompleteness.questionsWithMappings++;
+        } else {
+          mappingCompleteness.questionsWithEmptyMappings++;
+        }
+      } else {
+        mappingCompleteness.questionsWithoutMappings++;
+      }
+    }
+
+    // Calculate coverage based on ALL questions, not just "No" answers
+    mappingCompleteness.mappingCoverage = mappingCompleteness.totalQuestions > 0
+      ? (mappingCompleteness.questionsWithMappings / mappingCompleteness.totalQuestions) * 100
+      : 0;
+    
     // Save or update response
     // Convert userId to string for local storage
     const responseData = {
@@ -328,6 +398,7 @@ export async function POST(request: NextRequest) {
       controlReasoning: reasoningObject, // Return reasoning for frontend display
       ruleVersion, // Include rule version used
       coherenceMetrics, // Include coherence metrics if available
+      mappingCompleteness, // Include mapping completeness metrics
     });
   } catch (error: any) {
     return NextResponse.json(

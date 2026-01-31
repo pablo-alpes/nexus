@@ -13,6 +13,11 @@
     "test:controls-fallback": "node scripts/test-controls-requirements-fallback.js",
     "test:matching-comparison": "node scripts/compare-matching-approaches.js",
     "test:coherence": "node scripts/analyze-matching-coherence.js",
+    "test:matching-suite": "node scripts/test-matching-engine-suite.js",
+    "test:matching-integration": "node scripts/test-matching-integration.js",
+    "test:matching-flow": "node scripts/test-matching-engine-flow.js",
+    "test:question-mapping": "node scripts/test-question-requirement-mapping.js",
+    "test:matching-completeness": "node scripts/test-matching-completeness.js",
     "precompute:mappings": "tsx scripts/precompute-mappings.ts"
   },
   "dependencies": {

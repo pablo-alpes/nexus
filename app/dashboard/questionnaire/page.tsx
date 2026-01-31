@@ -133,6 +133,14 @@ export default function QuestionnairePage() {
         applicableControlsCount: number;
         ruleVersion?: string;
         coherenceMetrics?: CoherenceMetrics;
+        mappingCompleteness?: {
+          questionsProcessed: number;
+          questionsWithMappings: number;
+          questionsWithoutMappings: number;
+          questionsWithEmptyMappings: number;
+          totalRequirementsFound: number;
+          mappingCoverage: number;
+        };
       }>('/questionnaire/response', {
         method: 'POST',
         body: JSON.stringify({ answers: answerArray }),
@@ -141,6 +149,10 @@ export default function QuestionnairePage() {
       setSavedResponse(response.response);
       if (response.coherenceMetrics) {
         setCoherenceMetrics(response.coherenceMetrics);
+      }
+      // Store mapping completeness in response for display
+      if (response.mappingCompleteness) {
+        (response.response as any).mappingCompleteness = response.mappingCompleteness;
       }
       if (response.ruleVersion) {
         // Update rule version if provided
@@ -362,6 +374,35 @@ export default function QuestionnairePage() {
                       {coherenceMetrics.lowConfidenceCount || 0}
                     </p>
                   </div>
+                </div>
+              </div>
+            )}
+            {(savedResponse as any)?.mappingCompleteness && (
+              <div className="mt-4 pt-4 border-t">
+                <p className="text-sm font-medium text-gray-700 mb-2">Mapping Completeness</p>
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full ${
+                          (savedResponse as any).mappingCompleteness.mappingCoverage >= 80 
+                            ? 'bg-green-600' 
+                            : (savedResponse as any).mappingCompleteness.mappingCoverage >= 50
+                            ? 'bg-yellow-600'
+                            : 'bg-red-600'
+                        }`}
+                        style={{ width: `${(savedResponse as any).mappingCompleteness.mappingCoverage}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {(savedResponse as any).mappingCompleteness.mappingCoverage.toFixed(1)}% of questions have mappings
+                    </p>
+                  </div>
+                  {(savedResponse as any).mappingCompleteness.questionsWithEmptyMappings > 0 && (
+                    <div className="text-xs text-yellow-600 whitespace-nowrap">
+                      ⚠️ {(savedResponse as any).mappingCompleteness.questionsWithEmptyMappings} need review
+                    </div>
+                  )}
                 </div>
               </div>
             )}

@@ -180,22 +180,20 @@ export async function precomputeQuestionMapping(
   
   console.log(`Precomputing mappings for ${question.questionId}...`);
   
-  // Step 1: Get control-based requirements
-  const controlBasedReqs = await getRequirementsFromControls(question);
-  const controlBasedSet = new Set(controlBasedReqs);
+  // Configuration: Similarity thresholds and limits
+  const MIN_SIMILARITY_THRESHOLD = 0.5; // Only include medium/high confidence (>= 0.5)
+  const MAX_REQUIREMENTS_PER_QUESTION = 20; // Maximum requirements to include
+  const PRIORITY_BOOST_FOR_CONTROL_BASED = 0.05; // Boost similarity for control-based requirements
   
-  // Step 2: Get all requirements for this pillar
+  // Step 1: Get all requirements for this pillar
   const allRequirements = await DORARequirement.find({ pillar: question.pillar });
   
-  // Step 3: Generate question embedding (use provided or compute)
+  // Step 2: Generate question embedding (use provided or compute)
   const questionText = `${question.pillar || ''} ${question.text}`;
   const qEmbedding = questionEmbedding || await generateEmbedding(questionText);
   
-  // Step 4: Generate embeddings for all requirements and calculate similarities
+  // Step 3: Calculate NLP similarities for all requirements
   const nlpSimilarities = [];
-  let totalSimilarity = 0;
-  let controlBasedSimilaritySum = 0;
-  let controlBasedCount = 0;
   
   for (const req of allRequirements) {
     const reqText = `${req.pillar || ''} ${req.title || ''} ${req.description || ''}`;
@@ -208,44 +206,74 @@ export async function precomputeQuestionMapping(
     }
     
     // Calculate cosine similarity
-    const similarity = cosineSimilarity(qEmbedding, reqEmbedding);
-    const isControlBased = controlBasedSet.has(req.requirementId);
+    let similarity = cosineSimilarity(qEmbedding, reqEmbedding);
     const confidence = getConfidenceLevel(similarity);
+    
+    // Check if this requirement is control-based (we'll determine this after getting control mappings)
+    // For now, we'll calculate all similarities first
     
     nlpSimilarities.push({
       requirementId: req.requirementId,
       similarity,
-      isControlBased,
+      isControlBased: false, // Will be updated later
       confidence,
     });
-    
-    totalSimilarity += similarity;
-    
-    if (isControlBased) {
-      controlBasedSimilaritySum += similarity;
-      controlBasedCount++;
-    }
   }
   
-  // Step 5: Calculate coherence metrics
-  const averageRelevance = controlBasedCount > 0 
-    ? controlBasedSimilaritySum / controlBasedCount 
+  // Step 4: Get control-based requirements (for reference, but we'll filter by NLP similarity)
+  const allControlBasedReqs = await getRequirementsFromControls(question);
+  const controlBasedSet = new Set(allControlBasedReqs);
+  
+  // Step 5: Mark control-based requirements and apply priority boost
+  let controlBasedSimilaritySum = 0;
+  let controlBasedCount = 0;
+  
+  nlpSimilarities.forEach(sim => {
+    if (controlBasedSet.has(sim.requirementId)) {
+      sim.isControlBased = true;
+      // Apply small boost to control-based requirements to prioritize them
+      sim.similarity = Math.min(1.0, sim.similarity + PRIORITY_BOOST_FOR_CONTROL_BASED);
+      sim.confidence = getConfidenceLevel(sim.similarity);
+      
+      controlBasedSimilaritySum += sim.similarity;
+      controlBasedCount++;
+    }
+  });
+  
+  // Step 6: Filter and rank requirements
+  // Priority order:
+  // 1. Control-based with high similarity (>= 0.7)
+  // 2. Control-based with medium similarity (>= 0.5)
+  // 3. Non-control-based with high similarity (>= 0.7)
+  // 4. Non-control-based with medium similarity (>= 0.5)
+  
+  const filteredSimilarities = nlpSimilarities
+    .filter(s => s.similarity >= MIN_SIMILARITY_THRESHOLD) // Only medium/high confidence
+    .sort((a, b) => {
+      // Sort by: control-based first, then by similarity
+      if (a.isControlBased && !b.isControlBased) return -1;
+      if (!a.isControlBased && b.isControlBased) return 1;
+      return b.similarity - a.similarity; // Higher similarity first
+    })
+    .slice(0, MAX_REQUIREMENTS_PER_QUESTION); // Take top N
+  
+  // Step 7: Get final control-based requirements (only those that passed filtering)
+  const finalControlBasedReqs = filteredSimilarities
+    .filter(s => s.isControlBased)
+    .map(s => s.requirementId);
+  
+  // Step 8: Calculate coherence metrics based on filtered results
+  const filteredControlBased = filteredSimilarities.filter(s => s.isControlBased);
+  const averageRelevance = filteredControlBased.length > 0
+    ? filteredControlBased.reduce((sum, s) => sum + s.similarity, 0) / filteredControlBased.length
     : 0;
   
-  const highConfidenceCount = nlpSimilarities.filter(
-    s => s.isControlBased && s.confidence === 'high'
-  ).length;
+  const highConfidenceCount = filteredControlBased.filter(s => s.confidence === 'high').length;
+  const mediumConfidenceCount = filteredControlBased.filter(s => s.confidence === 'medium').length;
+  const lowConfidenceCount = filteredControlBased.filter(s => s.confidence === 'low').length;
   
-  const mediumConfidenceCount = nlpSimilarities.filter(
-    s => s.isControlBased && s.confidence === 'medium'
-  ).length;
-  
-  const lowConfidenceCount = nlpSimilarities.filter(
-    s => s.isControlBased && s.confidence === 'low'
-  ).length;
-  
-  const overallCoherence = controlBasedCount > 0
-    ? (highConfidenceCount / controlBasedCount) * 100
+  const overallCoherence = filteredControlBased.length > 0
+    ? (highConfidenceCount / filteredControlBased.length) * 100
     : 0;
   
   const coherenceMetrics = {
@@ -256,14 +284,14 @@ export async function precomputeQuestionMapping(
     overallCoherence,
   };
   
-  // Step 6: Save to database
+  // Step 9: Save to database (store filtered results)
   await QuestionMapping.findOneAndUpdate(
     { questionId: question.questionId, ruleVersion },
     {
       questionId: question.questionId,
       ruleVersion,
-      controlBasedRequirements: controlBasedReqs,
-      nlpSimilarities,
+      controlBasedRequirements: finalControlBasedReqs, // Only filtered, high-confidence control-based requirements
+      nlpSimilarities: filteredSimilarities, // Store filtered similarities
       coherenceMetrics,
       computedAt: new Date(),
       version: ruleVersion,
@@ -271,10 +299,14 @@ export async function precomputeQuestionMapping(
     { upsert: true, new: true }
   );
   
+  console.log(`   ✅ ${finalControlBasedReqs.length} control-based requirements (filtered from ${allControlBasedReqs.length})`);
+  console.log(`   ✅ ${filteredSimilarities.length} total requirements (filtered from ${nlpSimilarities.length})`);
+  console.log(`   ✅ Coherence: ${overallCoherence.toFixed(2)}%`);
+  
   return {
     questionId: question.questionId,
-    controlBasedRequirements: controlBasedReqs,
-    nlpSimilarities,
+    controlBasedRequirements: finalControlBasedReqs,
+    nlpSimilarities: filteredSimilarities,
     coherenceMetrics,
   };
 }

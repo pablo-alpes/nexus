@@ -56,83 +56,131 @@ export class LocalStorage {
   async find(query: any = {}, sort?: any): Promise<any[]> {
     let data = readCollection<any>(this.collectionName);
     
+    // Handle top-level $or operator
+    if (query.$or && Array.isArray(query.$or)) {
+      const orResults = new Set<string>(); // Use string IDs to avoid duplicates
+      const allData = readCollection<any>(this.collectionName);
+      
+      for (const orCondition of query.$or) {
+        // Create a sub-query without $or
+        const subQuery = { ...query };
+        delete subQuery.$or;
+        Object.assign(subQuery, orCondition);
+        
+        // Filter data with sub-query
+        const filtered = allData.filter(item => {
+          return this.matchesQuery(item, subQuery);
+        });
+        
+        // Add to results (using _id as unique key)
+        filtered.forEach(item => {
+          const itemId = String(item._id || JSON.stringify(item));
+          orResults.add(itemId);
+        });
+      }
+      
+      // Convert back to items
+      const resultItems = Array.from(orResults).map(id => {
+        return allData.find(item => String(item._id || JSON.stringify(item)) === id);
+      }).filter(Boolean);
+      
+      // Apply sorting if needed
+      if (sort) {
+        return this.applySort(resultItems, sort);
+      }
+      return resultItems;
+    }
+    
     // Apply filters
     if (Object.keys(query).length > 0) {
       data = data.filter(item => {
-        for (const [key, value] of Object.entries(query)) {
-          // Handle MongoDB-style $in operator
-          if (value && typeof value === 'object' && '$in' in value) {
-            const itemValue = item[key];
-            const inArray = value.$in || [];
-            
-            // If itemValue is an array (e.g., requirementIds), check if any element matches
-            if (Array.isArray(itemValue)) {
-              const matches = itemValue.some((itemVal: any) => {
-                const itemValStr = String(itemVal);
-                return inArray.some((v: any) => {
-                  const vStr = String(v);
-                  return itemValStr === vStr || itemVal === v;
-                });
-              });
-              if (!matches) return false;
-            } else {
-              // If itemValue is not an array, check direct match
-              const itemValueStr = itemValue ? itemValue.toString() : '';
-              const matches = inArray.some((v: any) => {
-                const vStr = v ? v.toString() : '';
-                return itemValueStr === vStr || itemValue === v;
-              });
-              if (!matches) return false;
-            }
-          }
-          // Handle userId comparison (can be string or ObjectId-like)
-          else if (key === 'userId' && typeof value === 'object' && value.toString) {
-            if (item[key] !== value.toString()) {
-              return false;
-            }
-          }
-          // Handle direct equality
-          else if (item[key] !== value) {
-            return false;
-          }
-        }
-        return true;
+        return this.matchesQuery(item, query);
       });
     }
     
     // Apply sorting
     if (sort) {
-      const sortKeys = Object.keys(sort);
-      data.sort((a, b) => {
-        for (const key of sortKeys) {
-          const order = sort[key] === 1 ? 1 : -1;
-          let aVal = a[key];
-          let bVal = b[key];
-          
-          // Handle dates and timestamps
-          if (aVal instanceof Date) aVal = aVal.getTime();
-          if (bVal instanceof Date) bVal = bVal.getTime();
-          if (typeof aVal === 'string' && (aVal.match(/^\d{4}-\d{2}-\d{2}/) || aVal.includes('T'))) {
-            const dateVal = new Date(aVal).getTime();
-            aVal = isNaN(dateVal) ? 0 : dateVal;
-          }
-          if (typeof bVal === 'string' && (bVal.match(/^\d{4}-\d{2}-\d{2}/) || bVal.includes('T'))) {
-            const dateVal = new Date(bVal).getTime();
-            bVal = isNaN(dateVal) ? 0 : dateVal;
-          }
-          
-          // Handle null/undefined
-          if (aVal == null) aVal = 0;
-          if (bVal == null) bVal = 0;
-          
-          if (aVal < bVal) return -1 * order;
-          if (aVal > bVal) return 1 * order;
-        }
-        return 0;
-      });
+      data = this.applySort(data, sort);
     }
     
     return data;
+  }
+
+  // Helper method to check if an item matches a query
+  private matchesQuery(item: any, query: any): boolean {
+    for (const [key, value] of Object.entries(query)) {
+      // Skip $or as it's handled at top level
+      if (key === '$or') continue;
+      
+      // Handle MongoDB-style $in operator
+      if (value && typeof value === 'object' && '$in' in value) {
+        const itemValue = item[key];
+        const inArray = value.$in || [];
+        
+        // If itemValue is an array (e.g., requirementIds), check if any element matches
+        if (Array.isArray(itemValue)) {
+          const matches = itemValue.some((itemVal: any) => {
+            const itemValStr = String(itemVal);
+            return inArray.some((v: any) => {
+              const vStr = String(v);
+              return itemValStr === vStr || itemVal === v;
+            });
+          });
+          if (!matches) return false;
+        } else {
+          // If itemValue is not an array, check direct match
+          const itemValueStr = itemValue ? itemValue.toString() : '';
+          const matches = inArray.some((v: any) => {
+            const vStr = v ? v.toString() : '';
+            return itemValueStr === vStr || itemValue === v;
+          });
+          if (!matches) return false;
+        }
+      }
+      // Handle userId comparison (can be string or ObjectId-like)
+      else if (key === 'userId' && typeof value === 'object' && value.toString) {
+        if (item[key] !== value.toString()) {
+          return false;
+        }
+      }
+      // Handle direct equality
+      else if (item[key] !== value) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // Helper method to apply sorting
+  private applySort(data: any[], sort: any): any[] {
+    const sortKeys = Object.keys(sort);
+    return data.sort((a, b) => {
+      for (const key of sortKeys) {
+        const order = sort[key] === 1 ? 1 : -1;
+        let aVal = a[key];
+        let bVal = b[key];
+        
+        // Handle dates and timestamps
+        if (aVal instanceof Date) aVal = aVal.getTime();
+        if (bVal instanceof Date) bVal = bVal.getTime();
+        if (typeof aVal === 'string' && (aVal.match(/^\d{4}-\d{2}-\d{2}/) || aVal.includes('T'))) {
+          const dateVal = new Date(aVal).getTime();
+          aVal = isNaN(dateVal) ? 0 : dateVal;
+        }
+        if (typeof bVal === 'string' && (bVal.match(/^\d{4}-\d{2}-\d{2}/) || bVal.includes('T'))) {
+          const dateVal = new Date(bVal).getTime();
+          bVal = isNaN(dateVal) ? 0 : dateVal;
+        }
+        
+        // Handle null/undefined
+        if (aVal == null) aVal = 0;
+        if (bVal == null) bVal = 0;
+        
+        if (aVal < bVal) return -1 * order;
+        if (aVal > bVal) return 1 * order;
+      }
+      return 0;
+    });
   }
 
   async findOne(query: any): Promise<any | null> {

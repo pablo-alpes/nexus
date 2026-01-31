@@ -237,6 +237,142 @@ export default function RuleEnginePage() {
     ? (stats.controlsWithRequirements / stats.totalControls) * 100
     : 0;
 
+  // Calculate mapping completeness metrics
+  const mappingCompleteness = (() => {
+    const questionsWithMappings = mappings.filter(m => m.controlBasedRequirements && m.controlBasedRequirements.length > 0).length;
+    const questionsWithEmptyMappings = mappings.filter(m => m.controlBasedRequirements && m.controlBasedRequirements.length === 0).length;
+    const questionsWithoutMappings = stats.totalQuestions - mappings.length;
+    
+    const totalReqs = mappings.reduce((sum, m) => sum + (m.controlBasedRequirements?.length || 0), 0);
+    const averageRequirementsPerQuestion = mappings.length > 0 
+      ? totalReqs / mappings.length 
+      : 0;
+    
+    const mappingCoverage = stats.totalQuestions > 0
+      ? ((questionsWithMappings / stats.totalQuestions) * 100)
+      : 0;
+
+    // Find questions needing review (0% mappings)
+    const questionsNeedingReview = mappings
+      .filter(m => !m.controlBasedRequirements || m.controlBasedRequirements.length === 0)
+      .map(m => {
+        const question = questions.find(q => q.questionId === m.questionId);
+        return {
+          questionId: m.questionId,
+          text: question?.text || m.questionId,
+          reqCount: 0,
+        };
+      });
+
+    return {
+      questionsWithMappings,
+      questionsWithoutMappings,
+      questionsWithEmptyMappings,
+      questionsNeedingReview,
+      averageRequirementsPerQuestion,
+      mappingCoverage,
+    };
+  })();
+
+  // Calculate pillar-level mapping completeness
+  const pillarCompleteness = (() => {
+    const pillars = ['ICT_RISK_MANAGEMENT', 'INCIDENT_MANAGEMENT', 'RESILIENCE_TESTING', 'THIRD_PARTY_RISK', 'INFORMATION_SHARING'];
+    const pillarStats: Record<string, {
+      pillar: string;
+      totalQuestions: number;
+      questionsWithMappings: number;
+      questionsWithEmptyMappings: number;
+      questionsWithoutMappings: number;
+      questionsNeedingReview: Array<{ questionId: string; text: string }>;
+      mappingCoverage: number;
+      priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+    }> = {};
+
+    // Initialize all pillars
+    pillars.forEach(pillar => {
+      pillarStats[pillar] = {
+        pillar,
+        totalQuestions: 0,
+        questionsWithMappings: 0,
+        questionsWithEmptyMappings: 0,
+        questionsWithoutMappings: 0,
+        questionsNeedingReview: [],
+        mappingCoverage: 0,
+        priority: 'LOW',
+      };
+    });
+
+    // Process all questions by pillar
+    questions.forEach(question => {
+      const pillar = question.pillar || 'UNKNOWN';
+      if (!pillarStats[pillar]) {
+        pillarStats[pillar] = {
+          pillar,
+          totalQuestions: 0,
+          questionsWithMappings: 0,
+          questionsWithEmptyMappings: 0,
+          questionsWithoutMappings: 0,
+          questionsNeedingReview: [],
+          mappingCoverage: 0,
+          priority: 'LOW',
+        };
+      }
+
+      pillarStats[pillar].totalQuestions++;
+      const mapping = mappings.find(m => m.questionId === question.questionId);
+      
+      if (!mapping) {
+        pillarStats[pillar].questionsWithoutMappings++;
+        pillarStats[pillar].questionsNeedingReview.push({
+          questionId: question.questionId,
+          text: question.text || question.questionId,
+        });
+      } else if (!mapping.controlBasedRequirements || mapping.controlBasedRequirements.length === 0) {
+        pillarStats[pillar].questionsWithEmptyMappings++;
+        pillarStats[pillar].questionsNeedingReview.push({
+          questionId: question.questionId,
+          text: question.text || question.questionId,
+        });
+      } else {
+        pillarStats[pillar].questionsWithMappings++;
+      }
+    });
+
+    // Calculate coverage and priority for each pillar
+    Object.values(pillarStats).forEach(stats => {
+      stats.mappingCoverage = stats.totalQuestions > 0
+        ? (stats.questionsWithMappings / stats.totalQuestions) * 100
+        : 0;
+
+      // Determine priority based on gaps
+      const totalGaps = stats.questionsWithEmptyMappings + stats.questionsWithoutMappings;
+      const gapPercentage = stats.totalQuestions > 0
+        ? (totalGaps / stats.totalQuestions) * 100
+        : 0;
+
+      if (gapPercentage >= 50 || stats.questionsNeedingReview.length >= 5) {
+        stats.priority = 'CRITICAL';
+      } else if (gapPercentage >= 30 || stats.questionsNeedingReview.length >= 3) {
+        stats.priority = 'HIGH';
+      } else if (gapPercentage >= 15 || stats.questionsNeedingReview.length >= 1) {
+        stats.priority = 'MEDIUM';
+      } else {
+        stats.priority = 'LOW';
+      }
+    });
+
+    return Object.values(pillarStats).sort((a, b) => {
+      // Sort by priority (CRITICAL first), then by gap count
+      const priorityOrder = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
+      if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
+        return priorityOrder[a.priority] - priorityOrder[b.priority];
+      }
+      const aGaps = a.questionsWithEmptyMappings + a.questionsWithoutMappings;
+      const bGaps = b.questionsWithEmptyMappings + b.questionsWithoutMappings;
+      return bGaps - aGaps;
+    });
+  })();
+
   // Find shared items
   const findSharedControls = (reqId: string) => {
     const controls = controlsByRequirement[String(reqId)] || [];
@@ -1015,6 +1151,188 @@ export default function RuleEnginePage() {
               <div className="text-2xl font-bold text-red-600">{stats.totalQuestions - stats.questionsWithMappings}</div>
               <div className="text-xs text-gray-500">Questions without mappings</div>
             </div>
+          </div>
+        </div>
+
+        {/* Mapping Completeness Dashboard */}
+        <div className="bg-white shadow rounded-lg p-6 mb-6">
+          <h2 className="text-xl font-bold mb-4">Mapping Completeness</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Shows the completeness of question-to-requirement mappings. Questions with 0% mappings need expert review.
+          </p>
+          
+          {/* Overview Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+              <div className="text-sm text-gray-600">Questions with Mappings</div>
+              <div className="text-2xl font-bold text-green-600">
+                {mappingCompleteness.questionsWithMappings}
+              </div>
+              <div className="text-xs text-gray-500">
+                {mappingCompleteness.mappingCoverage.toFixed(1)}% coverage
+              </div>
+            </div>
+            
+            <div className="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500">
+              <div className="text-sm text-gray-600">Empty Mappings (0%)</div>
+              <div className="text-2xl font-bold text-yellow-600">
+                {mappingCompleteness.questionsWithEmptyMappings}
+              </div>
+              <div className="text-xs text-gray-500">Needs expert review</div>
+            </div>
+            
+            <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
+              <div className="text-sm text-gray-600">No Mappings</div>
+              <div className="text-2xl font-bold text-red-600">
+                {mappingCompleteness.questionsWithoutMappings}
+              </div>
+              <div className="text-xs text-gray-500">Not precomputed</div>
+            </div>
+            
+            <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+              <div className="text-sm text-gray-600">Avg Reqs/Question</div>
+              <div className="text-2xl font-bold text-blue-600">
+                {mappingCompleteness.averageRequirementsPerQuestion.toFixed(1)}
+              </div>
+              <div className="text-xs text-gray-500">Per mapped question</div>
+            </div>
+          </div>
+          
+          {/* Questions Needing Review */}
+          {mappingCompleteness.questionsNeedingReview.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <h3 className="text-lg font-semibold mb-2 text-yellow-700">
+                ⚠️ Questions Needing Expert Review ({mappingCompleteness.questionsNeedingReview.length})
+              </h3>
+              <p className="text-sm text-gray-600 mb-3">
+                These questions have 0% requirement mappings. Expert curation is needed to bridge the gap.
+              </p>
+              <div className="bg-yellow-50 rounded-lg p-4 max-h-64 overflow-y-auto">
+                <ul className="space-y-2">
+                  {mappingCompleteness.questionsNeedingReview.slice(0, 10).map((q) => (
+                    <li key={q.questionId} className="text-sm text-gray-700 flex items-start gap-2">
+                      <span className="font-medium text-gray-900 min-w-[120px]">{q.questionId}:</span>
+                      <span className="flex-1">{q.text.substring(0, 100)}{q.text.length > 100 ? '...' : ''}</span>
+                    </li>
+                  ))}
+                </ul>
+                {mappingCompleteness.questionsNeedingReview.length > 10 && (
+                  <p className="text-xs text-gray-500 mt-2 italic">
+                    ... and {mappingCompleteness.questionsNeedingReview.length - 10} more question(s) need review
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Pillar-Level Breakdown */}
+        <div className="bg-white shadow rounded-lg p-6 mb-6">
+          <h2 className="text-xl font-bold mb-4">Pillar-Level Mapping Completeness</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Focus on pillars with CRITICAL or HIGH priority to improve mapping quality. Questions with 0 requirements can't link to controls.
+          </p>
+          
+          <div className="space-y-4">
+            {pillarCompleteness.map((pillarStats) => {
+              const pillarLabel = pillarStats.pillar.replace(/_/g, ' ');
+              const totalGaps = pillarStats.questionsWithEmptyMappings + pillarStats.questionsWithoutMappings;
+              const priorityColors = {
+                CRITICAL: 'bg-red-50 border-red-500',
+                HIGH: 'bg-orange-50 border-orange-500',
+                MEDIUM: 'bg-yellow-50 border-yellow-500',
+                LOW: 'bg-green-50 border-green-500',
+              };
+              const priorityTextColors = {
+                CRITICAL: 'text-red-700',
+                HIGH: 'text-orange-700',
+                MEDIUM: 'text-yellow-700',
+                LOW: 'text-green-700',
+              };
+
+              return (
+                <div
+                  key={pillarStats.pillar}
+                  className={`border-l-4 rounded-lg p-4 ${priorityColors[pillarStats.priority]}`}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="text-lg font-semibold text-gray-900">{pillarLabel}</h3>
+                        <span className={`px-2 py-1 text-xs font-bold rounded ${priorityTextColors[pillarStats.priority]}`}>
+                          {pillarStats.priority}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                        <div>
+                          <span className="text-gray-600">Total Questions:</span>
+                          <span className="ml-2 font-semibold">{pillarStats.totalQuestions}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">With Mappings:</span>
+                          <span className="ml-2 font-semibold text-green-600">{pillarStats.questionsWithMappings}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Empty (0%):</span>
+                          <span className="ml-2 font-semibold text-yellow-600">{pillarStats.questionsWithEmptyMappings}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">No Mappings:</span>
+                          <span className="ml-2 font-semibold text-red-600">{pillarStats.questionsWithoutMappings}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-gray-900">
+                        {pillarStats.mappingCoverage.toFixed(1)}%
+                      </div>
+                      <div className="text-xs text-gray-500">Coverage</div>
+                    </div>
+                  </div>
+                  
+                  {/* Progress Bar */}
+                  <div className="mb-3">
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full ${
+                          pillarStats.mappingCoverage >= 80
+                            ? 'bg-green-600'
+                            : pillarStats.mappingCoverage >= 50
+                            ? 'bg-yellow-600'
+                            : 'bg-red-600'
+                        }`}
+                        style={{ width: `${pillarStats.mappingCoverage}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Questions Needing Review */}
+                  {pillarStats.questionsNeedingReview.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-gray-300">
+                      <p className="text-xs font-medium text-gray-700 mb-2">
+                        ⚠️ {pillarStats.questionsNeedingReview.length} question(s) need expert review:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {pillarStats.questionsNeedingReview.slice(0, 5).map((q) => (
+                          <span
+                            key={q.questionId}
+                            className="inline-block px-2 py-1 bg-white rounded text-xs text-gray-700 border border-gray-300"
+                            title={q.text}
+                          >
+                            {q.questionId}
+                          </span>
+                        ))}
+                        {pillarStats.questionsNeedingReview.length > 5 && (
+                          <span className="inline-block px-2 py-1 text-xs text-gray-500">
+                            +{pillarStats.questionsNeedingReview.length - 5} more
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 

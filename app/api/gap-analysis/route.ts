@@ -72,104 +72,69 @@ export async function POST(request: NextRequest) {
     // Step 2: Get questionnaire response to determine applicable controls
     const questionnaireResponse = await QuestionnaireResponse.findOne({ userId: String(payload.userId) });
     
-    // Step 3: Get all requirements for this pillar
+    // Step 3: Get all requirements for this pillar (for reference/display only)
     const allRequirements = await DORARequirement.find({ pillar });
     
-    // Step 4: Determine which requirements are applicable based on questionnaire
-    const applicableRequirementIds = new Set<string>();
-    
-    if (questionnaireResponse && questionnaireResponse.answers) {
-      // Get all questions that were answered "yes"
-      for (const answer of questionnaireResponse.answers) {
-        if (answer.value === 'yes') {
-          const question = await Question.findOne({ _id: answer.questionId });
-          if (question && question.options) {
-            // Find the "yes" option and get its applicableControls (which are requirement IDs)
-            const yesOption = question.options.find((opt: any) => opt.value === 'yes');
-            if (yesOption && yesOption.applicableControls) {
-              yesOption.applicableControls.forEach((reqId: any) => {
-                applicableRequirementIds.add(String(reqId));
-              });
-            }
-          }
-          
-          // Also add all requirements for this pillar if question is answered yes
-          if (question && question.pillar === pillar) {
-            allRequirements.forEach((req: any) => {
-              applicableRequirementIds.add(String(req._id || req.requirementId));
-            });
-          }
-        }
-      }
-    }
-    
-    // If no questionnaire, assume all requirements are applicable
-    if (applicableRequirementIds.size === 0) {
-      allRequirements.forEach((req: any) => {
-        applicableRequirementIds.add(String(req._id || req.requirementId));
-      });
-    }
-    
-    // Step 5: Get all controls for this pillar
+    // Step 4: Get all controls for this pillar
     const allControlsForPillar = await Control.find({ pillar });
     
-    // Step 5a: Determine which controls are applicable based on questionnaire response
-    // Using elimination/inclusion logic: "yes" excludes, "no" includes
+    // Step 4a: Determine which controls are applicable based on questionnaire response
+    // The questionnaire response already contains the correct applicableControls calculated using:
+    // 1. Precomputed question-to-requirement mappings (static, from precomputed-mappings.ts)
+    // 2. Static requirement-to-control mappings (Control.requirementIds - defined in data)
+    // We should NOT recalculate - just use what's stored in questionnaireResponse.applicableControls
     const applicableControlIdsFromQuestionnaire = new Set<string>();
 
     if (questionnaireResponse && questionnaireResponse.applicableControls) {
       questionnaireResponse.applicableControls.forEach((id: any) => {
         applicableControlIdsFromQuestionnaire.add(String(id));
       });
-      console.log(`📋 Questionnaire response has ${applicableControlIdsFromQuestionnaire.size} applicable controls (after elimination/inclusion logic)`);
+      console.log(`📋 Questionnaire response has ${applicableControlIdsFromQuestionnaire.size} applicable controls`);
+      console.log(`   (Calculated from: Questions → Requirements [precomputed] → Controls [static mapping])`);
     }
 
-    // Step 5b: Filter controls based on questionnaire response
-    // Priority: Questionnaire response > Requirement mapping > All controls
+    // Step 4b: Filter controls based on questionnaire response
+    // The questionnaire response.applicableControls is the source of truth
+    // It was calculated using the correct flow: Questions → Requirements → Controls
     let filteredControls: any[] = [];
     
-    // If questionnaire response has applicable controls, ONLY use those (strict filtering)
-    if (applicableControlIdsFromQuestionnaire.size > 0) {
-      console.log(`📋 Filtering by questionnaire: ${applicableControlIdsFromQuestionnaire.size} applicable controls for pillar ${pillar}`);
-      
-      // Filter controls that match questionnaire response AND are for this pillar
-      filteredControls = allControlsForPillar.filter((control: any) => {
-        // Check multiple ID formats for matching
-        const controlId1 = String(control._id || '');
-        const controlId2 = String(control.controlId || '');
+    if (questionnaireResponse) {
+      // If questionnaire response has applicable controls, ONLY use those (strict filtering)
+      if (applicableControlIdsFromQuestionnaire.size > 0) {
+        console.log(`📋 Filtering by questionnaire: ${applicableControlIdsFromQuestionnaire.size} applicable controls for pillar ${pillar}`);
         
-        // Check if either ID matches
-        const matches = applicableControlIdsFromQuestionnaire.has(controlId1) || 
-                       applicableControlIdsFromQuestionnaire.has(controlId2);
+        // Filter controls that match questionnaire response AND are for this pillar
+        filteredControls = allControlsForPillar.filter((control: any) => {
+          // Check multiple ID formats for matching
+          const controlId1 = String(control._id || '');
+          const controlId2 = String(control.controlId || '');
+          
+          // Check if either ID matches
+          const matches = applicableControlIdsFromQuestionnaire.has(controlId1) || 
+                         applicableControlIdsFromQuestionnaire.has(controlId2);
+          
+          return matches;
+        });
         
-        return matches;
-      });
-      
-      console.log(`   ✅ Filtered to ${filteredControls.length} controls from questionnaire (out of ${allControlsForPillar.length} total for pillar)`);
-      
-      // If no controls matched, log for debugging
-      if (filteredControls.length === 0) {
-        console.log(`   ⚠️  WARNING: No controls matched! Sample questionnaire IDs:`, Array.from(applicableControlIdsFromQuestionnaire).slice(0, 5));
-        console.log(`   ⚠️  Sample control IDs for pillar:`, allControlsForPillar.slice(0, 3).map((c: any) => ({ _id: c._id, controlId: c.controlId })));
-      }
-    } 
-    // Otherwise, if we have applicable requirements from questionnaire, use requirement mapping
-    else if (applicableRequirementIds.size > 0 && applicableRequirementIds.size < allRequirements.length) {
-      console.log(`📋 Filtering by requirements: ${applicableRequirementIds.size} applicable requirements`);
-      filteredControls = allControlsForPillar.filter((control: any) => {
-        if (control.requirementIds && control.requirementIds.length > 0) {
-          return control.requirementIds.some((reqId: any) => {
-            const reqIdStr = String(reqId);
-            return applicableRequirementIds.has(reqIdStr);
-          });
+        console.log(`   ✅ Filtered to ${filteredControls.length} controls from questionnaire (out of ${allControlsForPillar.length} total for pillar)`);
+        
+        // If no controls matched, log for debugging
+        if (filteredControls.length === 0) {
+          console.log(`   ⚠️  WARNING: No controls matched! This might indicate an ID format mismatch.`);
+          console.log(`   ⚠️  Sample questionnaire IDs:`, Array.from(applicableControlIdsFromQuestionnaire).slice(0, 5));
+          console.log(`   ⚠️  Sample control IDs for pillar:`, allControlsForPillar.slice(0, 3).map((c: any) => ({ _id: String(c._id), controlId: String(c.controlId || '') })));
         }
-        return false; // Only include controls with requirement mappings
-      });
-      console.log(`   ✅ Filtered to ${filteredControls.length} controls from requirements`);
+      } 
+      // If questionnaire response exists but has 0 applicable controls, this means "no gaps" (all answers were "yes")
+      else {
+        console.log(`📋 Questionnaire response exists but has 0 applicable controls - this means NO GAPS (all answers were "Yes")`);
+        console.log(`   ✅ No controls to analyze - 100% compliance for this pillar`);
+        filteredControls = []; // Empty array = no gaps, 100% compliance
+      }
     }
-    // If no questionnaire response or all requirements are applicable, include all controls for this pillar
+    // If no questionnaire response exists, show all controls for this pillar (baseline analysis)
     else {
-      console.log(`📋 No questionnaire filtering: using all ${allControlsForPillar.length} controls for pillar ${pillar}`);
+      console.log(`📋 No questionnaire response found - using all ${allControlsForPillar.length} controls for pillar ${pillar} (baseline analysis)`);
       filteredControls = allControlsForPillar;
     }
 
@@ -329,9 +294,14 @@ export async function POST(request: NextRequest) {
     // Step 7: Calculate compliance metrics
     const totalControls = controlsToAnalyze.length;
     const applicableControlsCount = totalControls - notApplicableCount; // Exclude not applicable
-    const compliancePercentage = applicableControlsCount > 0 
-      ? Math.round((implementedCount / applicableControlsCount) * 100) 
-      : 0;
+    
+    // If no controls to analyze, it means no gaps (100% compliance)
+    // This happens when all questionnaire answers are "Yes"
+    const compliancePercentage = totalControls === 0 
+      ? 100  // No controls = no gaps = 100% compliance
+      : applicableControlsCount > 0 
+        ? Math.round((implementedCount / applicableControlsCount) * 100) 
+        : 0;
     
     // Log compliance calculation details
     console.log(`📊 Compliance Calculation:`);
