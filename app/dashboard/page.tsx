@@ -53,13 +53,27 @@ export default function DashboardPage() {
     });
   }
 
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/f85e8ae0-d382-466b-9574-875e68788737',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard/page.tsx:45',message:'Regulation detection',data:{pathname,isChileanPrivacy,regulationType},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+  // #endregion
+
   const loadKPIs = async () => {
     try {
       setLoading(true);
-      const response = await apiRequest<KPIData>(`/dashboard/kpis?regulation=${regulationType}`);
+      const apiUrl = `/dashboard/kpis?regulation=${regulationType}`;
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/f85e8ae0-d382-466b-9574-875e68788737',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard/page.tsx:59',message:'API call URL',data:{apiUrl,regulationType},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
+      const response = await apiRequest<KPIData>(apiUrl);
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/f85e8ae0-d382-466b-9574-875e68788737',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard/page.tsx:62',message:'API response received',data:{regulationType:response?.regulationType,overallCompliance:response?.overallCompliance},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+      // #endregion
       setKpis(response);
     } catch (error) {
       console.error('Failed to load KPIs:', error);
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/f85e8ae0-d382-466b-9574-875e68788737',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard/page.tsx:66',message:'API call error',data:{error:error instanceof Error?error.message:String(error)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+      // #endregion
     } finally {
       setLoading(false);
     }

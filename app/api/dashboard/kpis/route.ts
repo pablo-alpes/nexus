@@ -53,10 +53,18 @@ export async function GET(request: NextRequest) {
     
     // Get regulation type from query parameter (defaults to DORA)
     const searchParams = request.nextUrl.searchParams;
-    const regulationType = searchParams.get('regulation') || RegulationType.DORA;
+    const regulationParam = searchParams.get('regulation');
+    const regulationType = regulationParam || RegulationType.DORA;
+    
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/f85e8ae0-d382-466b-9574-875e68788737',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api/dashboard/kpis/route.ts:56',message:'Regulation parameter received',data:{regulationParam,regulationType,url:request.nextUrl.toString()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+    // #endregion
     
     // Get pillars for this regulation
     const pillars = getPillarsForRegulation(regulationType);
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/f85e8ae0-d382-466b-9574-875e68788737',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api/dashboard/kpis/route.ts:60',message:'Pillars determined',data:{regulationType,pillars},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+    // #endregion
     
     const userId = String(user.userId);
     

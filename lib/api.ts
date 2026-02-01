@@ -1,6 +1,10 @@
 const getApiUrl = () => {
   if (typeof window !== 'undefined') {
-    return process.env.NEXT_PUBLIC_API_URL || window.location.origin + '/api';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || window.location.origin + '/api';
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/f85e8ae0-d382-466b-9574-875e68788737',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/api.ts:3',message:'API URL determined',data:{nextPublicApiUrl:process.env.NEXT_PUBLIC_API_URL,windowOrigin:window.location.origin,finalApiUrl:apiUrl},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+    // #endregion
+    return apiUrl;
   }
   return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 };

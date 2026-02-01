@@ -13,6 +13,7 @@
     "setup:assets": "node scripts/create-mock-assets.js",
     "setup:questionnaire": "node scripts/create-dora-questionnaire.js",
         "setup:chilean-privacy": "node scripts/fetch-chilean-privacy-law.js && tsx scripts/import-chilean-privacy-requirements.js && tsx scripts/create-chilean-privacy-questionnaire.js",
+    "setup:chilean-privacy-complete": "bash scripts/setup-chilean-privacy-complete.sh",
     "populate:chilean-privacy": "node scripts/populate-chilean-privacy-data.js",
     "test:controls-fallback": "node scripts/test-controls-requirements-fallback.js",
     "test:matching-comparison": "node scripts/compare-matching-approaches.js",
