@@ -2,6 +2,11 @@
 # Copy this file to .vps-config and update with your VPS details
 
 VPS_USER="root"
-VPS_HOST="your-vps-ip"
+# Use Tailscale IP (recommended) or public IP
+# Find Tailscale IP: tailscale ip -4 (on VPS) or check Tailscale admin console
+VPS_HOST="your-vps-tailscale-ip"  # e.g., 100.x.x.x
 VPS_PATH="/root/nexus/nexus"
 BRANCH="privacy-chile"
+
+# Optional: Use Tailscale hostname instead of IP
+# VPS_HOST="your-vps-hostname.tailscale-name.ts.net"

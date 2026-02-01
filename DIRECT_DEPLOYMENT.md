@@ -4,6 +4,18 @@ This guide shows you how to deploy directly from your Cursor development environ
 
 ## Quick Setup
 
+### Option A: Using Tailscale (Recommended - More Secure)
+
+Tailscale provides a secure, private VPN network. See [TAILSCALE_SETUP.md](./TAILSCALE_SETUP.md) for detailed instructions.
+
+**Quick Tailscale setup:**
+1. Install Tailscale on both local machine and VPS
+2. Connect both to same Tailscale network
+3. Get VPS Tailscale IP: `tailscale ip -4` (on VPS)
+4. Use Tailscale IP in `.vps-config`
+
+### Option B: Using Public IP
+
 ### 1. Configure VPS Connection
 
 Create a `.vps-config` file in the `nexus` directory:
@@ -16,7 +28,7 @@ nano .vps-config
 Update with your VPS details:
 ```bash
 VPS_USER="root"
-VPS_HOST="your-vps-ip-address"
+VPS_HOST="your-vps-ip-address"  # Or Tailscale IP (100.x.x.x)
 VPS_PATH="/root/nexus/nexus"
 BRANCH="privacy-chile"
 ```
