@@ -1,0 +1,9 @@
+{
+  "metadata": {
+    "regulation": "DORA",
+    "source": "DORA_Gap_Assessment_Template_v1.1.xlsx",
+    "version": "1.0",
+    "lastUpdated": "2024-01-01"
+  },
+  "note": "This file is a placeholder. The actual DORA requirements are stored in data/dora-requirements-final.json"
+}

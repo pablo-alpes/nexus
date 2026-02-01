@@ -1,21 +1,25 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest } from '@/lib/api';
+import { useTranslation } from '@/lib/hooks/useTranslation';
+import { RegulationType, getRegulationConfig } from '@/lib/regulations';
+import { LanguageToggle } from '@/components/LanguageToggle';
 import Control from '@/models/Control';
-
-const DORA_PILLARS = [
-  { value: 'ICT_RISK_MANAGEMENT', label: 'ICT Risk Management' },
-  { value: 'INCIDENT_MANAGEMENT', label: 'ICT-Related Incident Management' },
-  { value: 'RESILIENCE_TESTING', label: 'Digital Operational Resilience Testing' },
-  { value: 'THIRD_PARTY_RISK', label: 'ICT Third-Party Risk Management' },
-  { value: 'INFORMATION_SHARING', label: 'Information Sharing' },
-];
 
 export default function GapAnalysisPage() {
   const router = useRouter();
+  const { language } = useTranslation();
+  const pathname = usePathname();
+  const isChileanPrivacy = pathname?.includes('chile-privacy') || pathname?.includes('chilean-privacy');
+  const regulationType = isChileanPrivacy ? RegulationType.CHILEAN_PRIVACY : RegulationType.DORA;
+  const config = getRegulationConfig(regulationType);
+  const pillars = config.pillars.map(p => ({
+    value: p.id,
+    label: p.name,
+  }));
   const [selectedPillar, setSelectedPillar] = useState<string>('');
   const [gapAnalysis, setGapAnalysis] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -23,7 +27,7 @@ export default function GapAnalysisPage() {
 
   const handleGenerate = async () => {
     if (!selectedPillar) {
-      alert('Please select a DORA pillar');
+      alert(language === 'es' ? 'Por favor seleccione un principio' : 'Please select a pillar');
       return;
     }
 
@@ -31,7 +35,10 @@ export default function GapAnalysisPage() {
     try {
       const response = await apiRequest('/gap-analysis', {
         method: 'POST',
-        body: JSON.stringify({ pillar: selectedPillar }),
+        body: JSON.stringify({ 
+          pillar: selectedPillar,
+          regulation: regulationType,
+        }),
       });
 
       setGapAnalysis(response.gapAnalysis);
@@ -49,7 +56,7 @@ export default function GapAnalysisPage() {
 
     setLoading(true);
     try {
-      const response = await apiRequest<{ gapAnalyses: any[] }>(`/gap-analysis?pillar=${selectedPillar}`);
+      const response = await apiRequest<{ gapAnalyses: any[] }>(`/gap-analysis?pillar=${selectedPillar}&regulation=${regulationType}`);
       if (response.gapAnalyses && response.gapAnalyses.length > 0) {
         setGapAnalysis(response.gapAnalyses[0]);
       }
@@ -61,8 +68,10 @@ export default function GapAnalysisPage() {
   };
 
   useEffect(() => {
-    loadGapAnalysis();
-  }, [selectedPillar]);
+    if (selectedPillar) {
+      loadGapAnalysis();
+    }
+  }, [selectedPillar, regulationType]);
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -80,19 +89,22 @@ export default function GapAnalysisPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center space-x-8">
-              <Link href="/dashboard" className="text-2xl font-bold text-primary-600">
-                Nexus Cloud
+              <Link href={isChileanPrivacy ? '/chile-privacy/dashboard' : '/dashboard'} className={`text-2xl font-bold ${isChileanPrivacy ? 'text-blue-600' : 'text-primary-600'}`}>
+                {isChileanPrivacy ? 'Nexus Privacy' : 'Nexus Cloud'}
               </Link>
-              <Link href="/dashboard/gap-analysis" className="text-gray-700 hover:text-primary-600">
+              <Link href={isChileanPrivacy ? '/chile-privacy/dashboard/gap-analysis' : '/dashboard/gap-analysis'} className="text-gray-700 hover:text-primary-600">
                 Gap Analysis
               </Link>
+            </div>
+            <div className="flex items-center">
+              <LanguageToggle />
             </div>
           </div>
         </div>
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold mb-6">Gap Analysis</h1>
+        <h1 className="text-3xl font-bold">{isChileanPrivacy ? (language === 'es' ? 'Análisis de Brechas' : 'Gap Analysis') : 'Gap Analysis'}</h1>
 
         {/* Disclaimer */}
         <div className="bg-blue-50 border-l-4 border-blue-400 p-6 mb-6 rounded-lg">
@@ -113,8 +125,8 @@ export default function GapAnalysisPage() {
               <ul className="list-disc list-inside text-sm text-blue-700 space-y-1 mb-2">
                 <li>Review all identified gaps for accuracy and completeness</li>
                 <li>Manually verify control implementation status</li>
-                <li>Consult with DORA compliance experts to validate findings</li>
-                <li>You are solely responsible for ensuring compliance with DORA regulations</li>
+                <li>Consult with {isChileanPrivacy ? 'Ley 21.719' : 'DORA'} compliance experts to validate findings</li>
+                <li>You are solely responsible for ensuring compliance with {isChileanPrivacy ? 'Ley 21.719' : 'DORA'} regulations</li>
               </ul>
               <p className="text-xs text-blue-600">
                 See our <Link href="/terms-of-service" className="underline font-medium">Terms of Service</Link> for complete details on liability and responsibilities.
@@ -124,7 +136,7 @@ export default function GapAnalysisPage() {
         </div>
 
         <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Select DORA Pillar</h2>
+          <h2 className="text-xl font-semibold mb-4">Select Pillar</h2>
           <div className="flex gap-4 items-end">
             <div className="flex-1">
               <select
@@ -133,7 +145,7 @@ export default function GapAnalysisPage() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
               >
                 <option value="">Select a pillar...</option>
-                {DORA_PILLARS.map((pillar) => (
+                {pillars.map((pillar) => (
                   <option key={pillar.value} value={pillar.value}>
                     {pillar.label}
                   </option>
@@ -153,7 +165,7 @@ export default function GapAnalysisPage() {
         {gapAnalysis && (
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4">Summary - {DORA_PILLARS.find(p => p.value === selectedPillar)?.label}</h2>
+              <h2 className="text-xl font-semibold mb-4">Summary - {pillars.find(p => p.value === selectedPillar)?.label}</h2>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <p className="text-sm text-gray-600">Total Controls</p>
@@ -307,7 +319,7 @@ export default function GapAnalysisPage() {
 
             <div className="text-center">
               <Link
-                href="/dashboard/remediation"
+                href={isChileanPrivacy ? '/chile-privacy/dashboard/remediation' : '/dashboard/remediation'}
                 className="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700"
               >
                 Generate Remediation Plan

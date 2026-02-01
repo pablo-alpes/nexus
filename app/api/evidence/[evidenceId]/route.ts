@@ -33,7 +33,9 @@ export async function GET(
     // Download from Azure Blob Storage
     const fileBuffer = await downloadEvidence(evidence.blobName);
     
-    return new NextResponse(fileBuffer, {
+    // NextResponse accepts Buffer, Uint8Array, or ArrayBuffer
+    // Buffer extends Uint8Array, so we can use it directly with type assertion
+    return new NextResponse(fileBuffer as any, {
       headers: {
         'Content-Type': evidence.mimeType,
         'Content-Disposition': `attachment; filename="${evidence.fileName}"`,
@@ -87,4 +89,3 @@ export async function DELETE(
     );
   }
 }
-

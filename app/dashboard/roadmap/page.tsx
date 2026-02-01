@@ -1,17 +1,12 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest } from '@/lib/api';
-
-const DORA_PILLARS = [
-  { value: 'ICT_RISK_MANAGEMENT', label: 'ICT Risk Management', color: 'bg-blue-500' },
-  { value: 'INCIDENT_MANAGEMENT', label: 'Incident Management', color: 'bg-red-500' },
-  { value: 'RESILIENCE_TESTING', label: 'Resilience Testing', color: 'bg-green-500' },
-  { value: 'THIRD_PARTY_RISK', label: 'Third Party Risk', color: 'bg-yellow-500' },
-  { value: 'INFORMATION_SHARING', label: 'Information Sharing', color: 'bg-purple-500' },
-];
+import { RegulationType, getRegulationConfig } from '@/lib/regulations';
+import { useTranslation } from '@/lib/hooks/useTranslation';
+import { LanguageToggle } from '@/components/LanguageToggle';
 
 interface RoadmapTask {
   taskId: string;
@@ -43,6 +38,17 @@ interface Roadmap {
 
 export default function RoadmapPage() {
   const router = useRouter();
+  const pathname = usePathname();
+  const { language } = useTranslation();
+  const isChileanPrivacy = pathname?.includes('/chile-privacy') || pathname?.includes('/chilean-privacy');
+  const regulationType = isChileanPrivacy ? RegulationType.CHILEAN_PRIVACY : RegulationType.DORA;
+  const config = getRegulationConfig(regulationType);
+  const pillars = config.pillars.map(p => ({
+    value: p.id,
+    label: language === 'es' && p.nameEs ? p.nameEs : p.name,
+    color: 'bg-blue-500', // Default color, can be customized
+  }));
+  
   const [roadmap, setRoadmap] = useState<Roadmap | null>(null);
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -52,12 +58,12 @@ export default function RoadmapPage() {
 
   useEffect(() => {
     loadRoadmap();
-  }, []);
+  }, [regulationType]);
 
   const loadRoadmap = async () => {
     setLoading(true);
     try {
-      const response = await apiRequest<{ roadmap: Roadmap }>('/roadmap');
+      const response = await apiRequest<{ roadmap: Roadmap }>(`/roadmap?regulation=${regulationType}`);
       if (response.roadmap) {
         setRoadmap(response.roadmap);
       }
@@ -73,12 +79,23 @@ export default function RoadmapPage() {
     try {
       const response = await apiRequest<{ roadmap: Roadmap; summary: any }>('/roadmap', {
         method: 'POST',
-        body: JSON.stringify({ regenerate: true }),
+        body: JSON.stringify({ 
+          regenerate: true,
+          regulation: regulationType,
+        }),
       });
       setRoadmap(response.roadmap);
-      alert(`Roadmap generated with ${response.summary?.totalTasks || 0} tasks.`);
+      alert(
+        language === 'es'
+          ? `Hoja de ruta generada con ${response.summary?.totalTasks || 0} tareas.`
+          : `Roadmap generated with ${response.summary?.totalTasks || 0} tasks.`
+      );
     } catch (error: any) {
-      alert(`Error: ${error.message}`);
+      alert(
+        language === 'es'
+          ? `Error: ${error.message}`
+          : `Error: ${error.message}`
+      );
     } finally {
       setGenerating(false);
     }
@@ -100,6 +117,7 @@ export default function RoadmapPage() {
         method: 'PUT',
         body: JSON.stringify({
           taskId: editingTask.taskId,
+          regulation: regulationType,
           updates,
         }),
       });
@@ -191,7 +209,7 @@ export default function RoadmapPage() {
   };
 
   const getPillarColor = (pillar: string) => {
-    const pillarObj = DORA_PILLARS.find(p => p.value === pillar);
+    const pillarObj = pillars.find(p => p.value === pillar);
     return pillarObj?.color || 'bg-gray-500';
   };
 
@@ -201,12 +219,61 @@ export default function RoadmapPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center space-x-8">
-              <Link href="/dashboard" className="text-2xl font-bold text-primary-600">
-                Nexus Cloud
+              <Link 
+                href={isChileanPrivacy ? '/chile-privacy/dashboard' : '/dashboard'} 
+                className={`text-2xl font-bold ${isChileanPrivacy ? 'text-blue-600' : 'text-primary-600'}`}
+              >
+                {isChileanPrivacy ? 'Nexus Privacy' : 'Nexus Cloud'}
               </Link>
-              <Link href="/dashboard/roadmap" className="text-gray-700 hover:text-primary-600">
-                Roadmap
+              <Link 
+                href={isChileanPrivacy ? '/chile-privacy/dashboard/roadmap' : '/dashboard/roadmap'} 
+                className="text-gray-700 hover:text-primary-600"
+              >
+                {language === 'es' ? 'Hoja de Ruta' : 'Roadmap'}
               </Link>
+              {!isChileanPrivacy && (
+                <>
+                  <Link 
+                    href="/dashboard/questionnaire" 
+                    className="text-gray-700 hover:text-primary-600"
+                  >
+                    {language === 'es' ? 'Cuestionario' : 'Questionnaire'}
+                  </Link>
+                  <Link 
+                    href="/dashboard/requirements" 
+                    className="text-gray-700 hover:text-primary-600"
+                  >
+                    {language === 'es' ? 'Requisitos' : 'Requirements'}
+                  </Link>
+                  <Link 
+                    href="/dashboard/controls" 
+                    className="text-gray-700 hover:text-primary-600"
+                  >
+                    {language === 'es' ? 'Controles' : 'Controls'}
+                  </Link>
+                  <Link 
+                    href="/dashboard/rule-engine" 
+                    className="text-gray-700 hover:text-primary-600"
+                  >
+                    {language === 'es' ? 'Motor de Reglas' : 'Rule Engine'}
+                  </Link>
+                  <Link 
+                    href="/dashboard/gap-analysis" 
+                    className="text-gray-700 hover:text-primary-600"
+                  >
+                    {language === 'es' ? 'Análisis de Brechas' : 'Gap Analysis'}
+                  </Link>
+                  <Link 
+                    href="/dashboard/remediation" 
+                    className="text-gray-700 hover:text-primary-600"
+                  >
+                    {language === 'es' ? 'Remediación' : 'Remediation'}
+                  </Link>
+                </>
+              )}
+            </div>
+            <div className="flex items-center gap-4">
+              <LanguageToggle />
             </div>
           </div>
         </div>
@@ -265,16 +332,22 @@ export default function RoadmapPage() {
 
         {/* Gantt Chart */}
         {loading ? (
-          <div className="text-center py-8">Loading roadmap...</div>
+          <div className="text-center py-8">{language === 'es' ? 'Cargando hoja de ruta...' : 'Loading roadmap...'}</div>
         ) : !roadmap ? (
           <div className="bg-white rounded-lg shadow p-8 text-center">
-            <p className="text-gray-600 mb-4">No roadmap found. Generate one from your remediation plans.</p>
+            <p className="text-gray-600 mb-4">
+              {language === 'es' 
+                ? 'No se encontró hoja de ruta. Genere una desde sus planes de remediation.'
+                : 'No roadmap found. Generate one from your remediation plans.'}
+            </p>
             <button
               onClick={generateRoadmap}
               disabled={generating}
-              className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 disabled:opacity-50"
+              className={`${isChileanPrivacy ? 'bg-blue-600 hover:bg-blue-700' : 'bg-primary-600 hover:bg-primary-700'} text-white px-6 py-3 rounded-lg disabled:opacity-50`}
             >
-              {generating ? 'Generating...' : 'Generate Roadmap'}
+              {generating 
+                ? (language === 'es' ? 'Generando...' : 'Generating...')
+                : (language === 'es' ? 'Generar Hoja de Ruta' : 'Generate Roadmap')}
             </button>
           </div>
         ) : (
@@ -282,7 +355,9 @@ export default function RoadmapPage() {
             {/* Timeline Header */}
             <div className="sticky top-0 bg-gray-100 z-10 border-b">
               <div className="flex" style={{ minWidth: `${months.length * 200}px` }}>
-                <div className="w-64 p-4 font-semibold border-r">Task / Pillar</div>
+                <div className="w-64 p-4 font-semibold border-r">
+                  {language === 'es' ? 'Tarea / Principio' : isChileanPrivacy ? 'Task / Principle' : 'Task / Pillar'}
+                </div>
                 {months.map((month, idx) => (
                   <div
                     key={idx}
@@ -302,7 +377,7 @@ export default function RoadmapPage() {
             {/* Tasks by Pillar */}
             <div className="divide-y">
               {Object.entries(tasksByPillar).map(([pillar, tasks]) => {
-                const pillarObj = DORA_PILLARS.find(p => p.value === pillar);
+                const pillarObj = pillars.find(p => p.value === pillar);
                 return (
                   <div key={pillar} className="border-b">
                     {/* Pillar Header */}
@@ -311,7 +386,7 @@ export default function RoadmapPage() {
                         className={`w-4 h-4 rounded mr-2 ${getPillarColor(pillar)}`}
                       />
                       <div className="font-semibold text-gray-700">
-                        {pillarObj?.label || pillar} ({tasks.length} tasks)
+                        {pillarObj?.label || pillar} ({tasks.length} {language === 'es' ? 'tareas' : 'tasks'})
                       </div>
                     </div>
 

@@ -7,6 +7,8 @@ import DORARequirement from '@/models/DORARequirement';
 import { getAuthUser } from '@/lib/auth-helper';
 import { ensureControlsSetup } from '@/lib/auto-controls';
 import { getPrecomputedMappings, getActiveRuleVersion } from '@/lib/services/precomputed-mappings';
+import { RequirementOperations } from '@/lib/model-operations';
+import { RegulationType } from '@/lib/regulations';
 
 // GET user's questionnaire response
 export async function GET(request: NextRequest) {
@@ -102,10 +104,19 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // Step 3: For "no" answers, find requirements using HYBRID APPROACH (Logic + NLP)
+    // Step 3: Detect regulation from questions
+    // Check if any question has regulationType or starts with Q-PRIV-
+    const sampleQuestion = noAnswers.length > 0 ? noAnswers[0].question : (yesAnswers.length > 0 ? yesAnswers[0].question : null);
+    const isChileanPrivacy = sampleQuestion && (
+      sampleQuestion.regulationType === 'CHILEAN_PRIVACY' ||
+      sampleQuestion.questionId?.startsWith('Q-PRIV-')
+    );
+    const regulationType = isChileanPrivacy ? RegulationType.CHILEAN_PRIVACY : RegulationType.DORA;
+    
+    // For "no" answers, find requirements using HYBRID APPROACH (Logic + NLP)
     const requirementsFromNoAnswers = new Set<string>();
     const requirementsFromYesAnswers = new Set<string>();
-    const ruleVersion = await getActiveRuleVersion();
+    const ruleVersion = await getActiveRuleVersion(regulationType);
     
     // Process "no" answers: use precomputed mappings (control-based + NLP validated)
     for (const { question, answer } of noAnswers) {
@@ -129,7 +140,7 @@ export async function POST(request: NextRequest) {
       } else {
         // Fallback: Use keyword matching if precomputed mappings not available
         console.warn(`⚠️  No precomputed mappings for ${question.questionId}, using keyword fallback`);
-        const allRequirements = await DORARequirement.find({ pillar: question.pillar });
+        const allRequirements = await RequirementOperations.findByRegulation(regulationType, { pillar: question.pillar });
         const questionKeywords = question.text?.toLowerCase().split(' ').filter((w: string) => w.length > 3) || [];
         
         const matchingRequirements = allRequirements.filter((req: any) => {
@@ -154,7 +165,7 @@ export async function POST(request: NextRequest) {
         });
       } else {
         // Fallback: keyword matching
-        const allRequirements = await DORARequirement.find({ pillar: question.pillar });
+        const allRequirements = await RequirementOperations.findByRegulation(regulationType, { pillar: question.pillar });
         const questionKeywords = question.text?.toLowerCase().split(' ').filter((w: string) => w.length > 3) || [];
         
         const matchingRequirements = allRequirements.filter((req: any) => {
@@ -180,8 +191,8 @@ export async function POST(request: NextRequest) {
       const reqIdMap = new Map<string, string>(); // Maps any ID format to canonical requirementId
       
       // Get all requirements to build ID mapping (more efficient than per-control lookups)
-      // Works with both MongoDB and local storage (local storage now supports $or)
-      const allReqs = await DORARequirement.find({
+      // Use RequirementOperations to get requirements for the correct regulation
+      const allReqs = await RequirementOperations.findByRegulation(regulationType, {
         $or: [
           { requirementId: { $in: requirementIdsArray } },
           { _id: { $in: requirementIdsArray } },
@@ -191,7 +202,7 @@ export async function POST(request: NextRequest) {
       // Build normalized ID set and mapping
       for (const reqId of requirementIdsArray) {
         normalizedReqIds.add(reqId);
-        const req = allReqs.find(r => 
+        const req = allReqs.find((r: any) => 
           String(r._id) === reqId || r.requirementId === reqId
         );
         if (req) {
@@ -233,7 +244,7 @@ export async function POST(request: NextRequest) {
             }
           } else {
             // Try to find requirement by this ID
-            const req = allReqs.find(r => 
+            const req = allReqs.find((r: any) => 
               String(r._id) === controlReqIdStr || r.requirementId === controlReqIdStr
             );
             if (req) {

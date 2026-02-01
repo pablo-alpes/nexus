@@ -1,0 +1,10 @@
+{
+  "metadata": {
+    "regulation": "CHILEAN_PRIVACY",
+    "standards": ["ISO 27701", "ISO 27001", "ISO 27002"],
+    "version": "1.0",
+    "lastUpdated": "2024-01-01"
+  },
+  "description": "Privacy-specific controls from ISO 27701 and relevant security controls from ISO 27001/27002",
+  "note": "ISO 27701 controls will be added here. For now, ISO 27001/27002 controls are in data/iso27002-controls.json"
+}

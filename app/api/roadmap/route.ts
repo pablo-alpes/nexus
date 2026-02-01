@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectDBLocal } from '@/lib/mongodb-local';
 import Roadmap from '@/models/Roadmap';
 import RemediationPlan from '@/models/RemediationPlan';
-import Control from '@/models/Control';
-import DORARequirement from '@/models/DORARequirement';
 import { getAuthUser } from '@/lib/auth-helper';
-import { DORAPillar } from '@/models/DORARequirement';
+// Removed DORARequirement, DORAPillar, and Control imports - using regulation-agnostic approach
 
 // GET roadmap for user
 export async function GET(request: NextRequest) {
@@ -17,7 +15,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const roadmap = await Roadmap.findOne({ userId: String(user.userId) });
+    // Get regulation type from query parameter
+    const searchParams = request.nextUrl.searchParams;
+    const regulationType = searchParams.get('regulation') || 'DORA';
+    
+    const roadmap = await Roadmap.findOne({ 
+      userId: String(user.userId),
+      regulationType: regulationType,
+    });
     
     return NextResponse.json({ roadmap });
   } catch (error: any) {
@@ -40,10 +45,14 @@ export async function POST(request: NextRequest) {
     }
     
     const body = await request.json();
-    const { regenerate } = body;
+    const { regenerate, regulation } = body;
+    const regulationType = regulation || 'DORA';
     
-    // Get all remediation plans for the user
-    const remediationPlans = await RemediationPlan.find({ userId: String(user.userId) });
+    // Get all remediation plans for the user and regulation
+    const remediationPlans = await RemediationPlan.find({ 
+      userId: String(user.userId),
+      regulationType: regulationType,
+    });
     
     if (remediationPlans.length === 0) {
       return NextResponse.json(
@@ -53,7 +62,10 @@ export async function POST(request: NextRequest) {
     }
     
     // Check if roadmap already exists
-    let roadmap = await Roadmap.findOne({ userId: String(user.userId) });
+    let roadmap = await Roadmap.findOne({ 
+      userId: String(user.userId),
+      regulationType: regulationType,
+    });
     
     if (roadmap && !regenerate) {
       return NextResponse.json({ roadmap });
@@ -61,7 +73,7 @@ export async function POST(request: NextRequest) {
     
     // Generate tasks from remediation plans
     const tasks: any[] = [];
-    const allPillars = new Set<DORAPillar>();
+    const allPillars = new Set<string>();
     let earliestStart = new Date();
     let latestEnd = new Date();
     
@@ -75,12 +87,13 @@ export async function POST(request: NextRequest) {
           // Calculate dates based on priority and order
           const baseStartDate = new Date(plan.startDate || new Date());
           const monthsOffset = i * 0.5; // Stagger tasks by 0.5 months
-          const priorityMultiplier = {
+          const priorityMultiplierMap: Record<string, number> = {
             CRITICAL: 1,
             HIGH: 1.5,
             MEDIUM: 2,
             LOW: 3,
-          }[action.priority] || 2;
+          };
+          const priorityMultiplier = priorityMultiplierMap[action.priority] || 2;
           
           const startDate = new Date(baseStartDate);
           startDate.setMonth(startDate.getMonth() + Math.floor(monthsOffset));
@@ -121,15 +134,19 @@ export async function POST(request: NextRequest) {
     // Create or update roadmap
     const roadmapData = {
       userId: String(user.userId),
-      name: 'DORA Implementation Roadmap',
-      description: 'Implementation roadmap based on remediation plans',
+      regulationType: regulationType,
+      name: `${regulationType} Implementation Roadmap`,
+      description: `Implementation roadmap based on remediation plans for ${regulationType}`,
       startDate: earliestStart.toISOString(),
       endDate: latestEnd.toISOString(),
       tasks,
     };
     
     roadmap = await Roadmap.findOneAndUpdate(
-      { userId: String(user.userId) },
+      { 
+        userId: String(user.userId),
+        regulationType: regulationType,
+      },
       roadmapData,
       { upsert: true, new: true }
     );
@@ -166,7 +183,8 @@ export async function PUT(request: NextRequest) {
     }
     
     const body = await request.json();
-    const { taskId, updates } = body;
+    const { taskId, updates, regulation } = body;
+    const regulationType = regulation || 'DORA';
     
     if (!taskId || !updates) {
       return NextResponse.json(
@@ -175,7 +193,10 @@ export async function PUT(request: NextRequest) {
       );
     }
     
-    const roadmap = await Roadmap.findOne({ userId: String(user.userId) });
+    const roadmap = await Roadmap.findOne({ 
+      userId: String(user.userId),
+      regulationType: regulationType,
+    });
     
     if (!roadmap) {
       return NextResponse.json(
@@ -218,7 +239,10 @@ export async function PUT(request: NextRequest) {
     
     // Update the roadmap
     const updatedRoadmap = await Roadmap.findOneAndUpdate(
-      { userId: String(user.userId) },
+      { 
+        userId: String(user.userId),
+        regulationType: regulationType,
+      },
       {
         tasks: roadmap.tasks,
         startDate: roadmap.startDate,

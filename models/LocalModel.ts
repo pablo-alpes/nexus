@@ -2,7 +2,8 @@
  * Local model adapter that mimics Mongoose models but uses file storage
  */
 
-import { LocalStorage, useLocalStorage, getStorage } from '@/lib/local-storage';
+import { LocalStorage, getStorage } from '@/lib/local-storage';
+import { isLocalStorage } from '@/lib/mongodb-local';
 
 export class LocalModel<T> {
   private storage: LocalStorage;
@@ -54,7 +55,7 @@ export class LocalModel<T> {
 
 // Factory function to get model (MongoDB or Local)
 export function getModel<T>(modelName: string, mongooseModel: any): LocalModel<T> | any {
-  if (useLocalStorage()) {
+  if (isLocalStorage()) {
     return new LocalModel<T>(modelName);
   }
   return mongooseModel;

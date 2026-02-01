@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { useLocalStorage } from '@/lib/local-storage';
+import { isLocalStorage } from '@/lib/mongodb-local';
 import { LocalModel } from './LocalModel';
 
 export enum DORAPillar {
@@ -98,7 +98,7 @@ const DORARequirementSchema = new Schema<IDORARequirement>(
 // Export model with local storage fallback
 let DORARequirementModel: any;
 
-if (useLocalStorage()) {
+if (isLocalStorage()) {
   DORARequirementModel = new LocalModel<IDORARequirement>('DORARequirement');
 } else {
   DORARequirementModel = mongoose.models.DORARequirement || 

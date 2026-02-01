@@ -1,9 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest } from '@/lib/api';
+import { RegulationType, getRegulationConfig } from '@/lib/regulations';
+import { useTranslation } from '@/lib/hooks/useTranslation';
+import { LanguageToggle } from '@/components/LanguageToggle';
 
 interface Requirement {
   _id: string;
@@ -34,13 +37,8 @@ interface AssociatedControl {
   complianceStatus?: string;
 }
 
-const DORA_PILLARS = [
-  { value: 'ICT_RISK_MANAGEMENT', label: 'ICT Risk Management' },
-  { value: 'INCIDENT_MANAGEMENT', label: 'ICT-Related Incident Management' },
-  { value: 'RESILIENCE_TESTING', label: 'Digital Operational Resilience Testing' },
-  { value: 'THIRD_PARTY_RISK', label: 'ICT Third-Party Risk Management' },
-  { value: 'INFORMATION_SHARING', label: 'Information Sharing' },
-];
+// Will be set dynamically based on regulation
+let PILLARS: Array<{ value: string; label: string }> = [];
 
 const COMPLIANCE_STATUSES = [
   { value: 'NOT_APPLICABLE', label: 'Not Applicable', color: 'bg-gray-100 text-gray-800' },
@@ -51,6 +49,8 @@ const COMPLIANCE_STATUSES = [
 
 export default function RequirementsPage() {
   const router = useRouter();
+  const pathname = usePathname();
+  const { language } = useTranslation();
   const [requirements, setRequirements] = useState<Requirement[]>([]);
   const [filteredRequirements, setFilteredRequirements] = useState<Requirement[]>([]);
   const [selectedPillar, setSelectedPillar] = useState<string>('');
@@ -64,17 +64,28 @@ export default function RequirementsPage() {
   const [associatedControls, setAssociatedControls] = useState<Record<string, AssociatedControl[]>>({});
   const [loadingControls, setLoadingControls] = useState<Set<string>>(new Set());
 
+  // Detect regulation from route
+  const isChileanPrivacy = pathname?.includes('chile-privacy') || pathname?.includes('chilean-privacy');
+  const regulationType = isChileanPrivacy ? RegulationType.CHILEAN_PRIVACY : RegulationType.DORA;
+  
+  // Get pillars dynamically
+  const config = getRegulationConfig(regulationType);
+  const pillars = config.pillars.map(p => ({
+    value: p.id,
+    label: language === 'es' && p.nameEs ? p.nameEs : p.name,
+  }));
+
   useEffect(() => {
     loadRequirements();
-  }, []);
+  }, [regulationType]);
 
   useEffect(() => {
     filterRequirements();
-  }, [requirements, selectedPillar, selectedStatus]);
+  }, [requirements, selectedPillar, selectedStatus, pillars]);
 
   const loadRequirements = async () => {
     try {
-      const response = await apiRequest<{ requirements: Requirement[] }>('/requirements?includeCounts=true');
+      const response = await apiRequest<{ requirements: Requirement[] }>(`/requirements?includeCounts=true&regulation=${regulationType}`);
       setRequirements(response.requirements);
     } catch (error) {
       console.error('Failed to load requirements:', error);
@@ -197,12 +208,21 @@ export default function RequirementsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center space-x-8">
-              <Link href="/dashboard" className="text-2xl font-bold text-primary-600">
-                Nexus Cloud
+              <Link 
+                href={isChileanPrivacy ? '/chile-privacy/dashboard' : '/dashboard'} 
+                className={`text-2xl font-bold ${isChileanPrivacy ? 'text-blue-600' : 'text-primary-600'}`}
+              >
+                {isChileanPrivacy ? 'Nexus Privacy' : 'Nexus Cloud'}
               </Link>
-              <Link href="/dashboard/requirements" className="text-gray-700 hover:text-primary-600">
+              <Link 
+                href={isChileanPrivacy ? '/chile-privacy/dashboard/requirements' : '/dashboard/requirements'} 
+                className="text-gray-700 hover:text-primary-600"
+              >
                 Requirements
               </Link>
+            </div>
+            <div className="flex items-center">
+              <LanguageToggle />
             </div>
           </div>
         </div>
@@ -211,9 +231,17 @@ export default function RequirementsPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold">DORA Requirements</h1>
+            <h1 className="text-3xl font-bold">
+              {isChileanPrivacy 
+                ? (language === 'es' ? 'Requisitos de Ley 21.719' : 'Ley 21.719 Requirements')
+                : 'DORA Requirements'}
+            </h1>
             <p className="text-sm text-gray-500 mt-1">
-              Requirements are automatically imported from JSON on first access
+              {isChileanPrivacy
+                ? (language === 'es' 
+                    ? 'Requisitos de la Ley de Protección de Datos Personales de Chile'
+                    : 'Chilean Personal Data Protection Law requirements')
+                : 'Requirements are automatically imported from JSON on first access'}
             </p>
           </div>
           <button
@@ -245,7 +273,7 @@ export default function RequirementsPage() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
               >
                 <option value="">All Pillars</option>
-                {DORA_PILLARS.map((pillar) => (
+                {pillars.map((pillar) => (
                   <option key={pillar.value} value={pillar.value}>
                     {pillar.label}
                   </option>
@@ -275,9 +303,36 @@ export default function RequirementsPage() {
         {/* Requirements List */}
         {loading ? (
           <div className="text-center py-8">Loading requirements...</div>
-        ) : filteredRequirements.length === 0 ? (
+        ) : filteredRequirements.length === 0 && requirements.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-8 text-center">
-            <p className="text-gray-600">No requirements found. Import requirements to get started.</p>
+            <p className="text-gray-600 mb-4">No requirements found. Import requirements to get started.</p>
+            <p className="text-sm text-gray-500 mb-4">
+              Run: <code className="bg-gray-100 px-2 py-1 rounded">npm run load:chilean-privacy</code> to load all data.
+            </p>
+            <button
+              onClick={loadRequirements}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Refresh
+            </button>
+            <div className="mt-4 text-xs text-gray-500">
+              <p>Total requirements loaded: {requirements.length}</p>
+              <p>Filtered requirements: {filteredRequirements.length}</p>
+            </div>
+          </div>
+        ) : filteredRequirements.length === 0 && requirements.length > 0 ? (
+          <div className="bg-white rounded-lg shadow p-8 text-center">
+            <p className="text-gray-600">No requirements match the current filters.</p>
+            <p className="text-sm text-gray-500 mt-2">Total requirements: {requirements.length}</p>
+            <button
+              onClick={() => {
+                setSelectedPillar('');
+                setSelectedStatus('');
+              }}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Clear Filters
+            </button>
           </div>
         ) : (
           <div className="space-y-4">

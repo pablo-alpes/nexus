@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { useLocalStorage } from '@/lib/local-storage';
+import { isLocalStorage } from '@/lib/mongodb-local';
 import { LocalModel } from './LocalModel';
 
 export interface INLPSimilarity {
@@ -78,7 +78,7 @@ QuestionMappingSchema.index({ questionId: 1, ruleVersion: 1 }, { unique: true })
 // Export model with local storage fallback
 let QuestionMappingModel: any;
 
-if (useLocalStorage()) {
+if (isLocalStorage()) {
   QuestionMappingModel = new LocalModel<IQuestionMapping>('QuestionMapping');
 } else {
   QuestionMappingModel = mongoose.models.QuestionMapping || 

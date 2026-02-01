@@ -1,0 +1,9 @@
+{
+  "metadata": {
+    "regulation": "DORA",
+    "version": "1.0",
+    "lastUpdated": "2024-01-01",
+    "totalQuestions": 24
+  },
+  "note": "DORA questions are stored in the database. This file serves as a reference structure."
+}

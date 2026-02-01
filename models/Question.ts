@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
-import { useLocalStorage } from '@/lib/local-storage';
+import { isLocalStorage } from '@/lib/mongodb-local';
 import { LocalModel } from './LocalModel';
 
 export enum QuestionType {
@@ -78,7 +78,7 @@ const QuestionSchema = new Schema<IQuestion>(
 // Export model with local storage fallback
 let QuestionModel: any;
 
-if (useLocalStorage()) {
+if (isLocalStorage()) {
   QuestionModel = new LocalModel<IQuestion>('Question');
 } else {
   QuestionModel = mongoose.models.Question || mongoose.model<IQuestion>('Question', QuestionSchema);

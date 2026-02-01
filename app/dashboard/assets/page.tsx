@@ -1,9 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest } from '@/lib/api';
+import { useTranslation } from '@/lib/hooks/useTranslation';
+import { RegulationType, getRegulationConfig } from '@/lib/regulations';
+import { LanguageToggle } from '@/components/LanguageToggle';
 
 interface Asset {
   _id: string;
@@ -19,6 +22,10 @@ interface Asset {
 
 export default function AssetsPage() {
   const router = useRouter();
+  const { language } = useTranslation();
+  const pathname = usePathname();
+  const isChileanPrivacy = pathname?.includes('chile-privacy') || pathname?.includes('chilean-privacy');
+  const regulationType = isChileanPrivacy ? RegulationType.CHILEAN_PRIVACY : RegulationType.DORA;
   const [assets, setAssets] = useState<Asset[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -100,12 +107,15 @@ export default function AssetsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center space-x-8">
-              <Link href="/dashboard" className="text-2xl font-bold text-primary-600">
-                Nexus Cloud
+              <Link href={isChileanPrivacy ? '/chile-privacy/dashboard' : '/dashboard'} className={`text-2xl font-bold ${isChileanPrivacy ? 'text-blue-600' : 'text-primary-600'}`}>
+                {isChileanPrivacy ? 'Nexus Privacy' : 'Nexus Cloud'}
               </Link>
-              <Link href="/dashboard/assets" className="text-gray-700 hover:text-primary-600">
+              <Link href={isChileanPrivacy ? '/chile-privacy/dashboard/assets' : '/dashboard/assets'} className="text-gray-700 hover:text-primary-600">
                 Assets
               </Link>
+            </div>
+            <div className="flex items-center">
+              <LanguageToggle />
             </div>
           </div>
         </div>
@@ -113,7 +123,7 @@ export default function AssetsPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Asset Management</h1>
+          <h1 className="text-3xl font-bold">{isChileanPrivacy ? (language === 'es' ? 'Gestión de Activos' : 'Asset Management') : 'Asset Management'}</h1>
           <button
             onClick={() => setShowForm(!showForm)}
             className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700"

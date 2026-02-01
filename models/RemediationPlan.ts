@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
 import { DORAPillar } from './DORARequirement';
-import { useLocalStorage } from '@/lib/local-storage';
+import { isLocalStorage } from '@/lib/mongodb-local';
 import { LocalModel } from './LocalModel';
 
 export enum RemediationStatus {
@@ -23,7 +23,8 @@ export interface IRemediationAction {
 
 export interface IRemediationPlan extends Document {
   userId: Types.ObjectId;
-  pillar: DORAPillar;
+  regulationType?: string;
+  pillar: string; // Changed from DORAPillar to string to support multiple regulations
   actions: IRemediationAction[];
   startDate: Date;
   targetCompletionDate?: Date;
@@ -49,10 +50,14 @@ const RemediationPlanSchema = new Schema<IRemediationPlan>(
       ref: 'User',
       required: true,
     },
+    regulationType: {
+      type: String,
+      default: 'DORA',
+    },
     pillar: {
       type: String,
-      enum: Object.values(DORAPillar),
       required: true,
+      // Removed enum constraint to support multiple regulations
     },
     actions: [RemediationActionSchema],
     startDate: {
@@ -72,7 +77,7 @@ const RemediationPlanSchema = new Schema<IRemediationPlan>(
 // Export model with local storage fallback
 let RemediationPlanModel: any;
 
-if (useLocalStorage()) {
+if (isLocalStorage()) {
   RemediationPlanModel = new LocalModel<IRemediationPlan>('RemediationPlan');
 } else {
   RemediationPlanModel = mongoose.models.RemediationPlan || 

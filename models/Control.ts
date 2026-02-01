@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
 import { DORAPillar } from './DORARequirement';
-import { useLocalStorage } from '@/lib/local-storage';
+import { isLocalStorage } from '@/lib/mongodb-local';
 import { LocalModel } from './LocalModel';
 
 export enum ControlType {
@@ -116,7 +116,7 @@ const ControlSchema = new Schema<IControl>(
 // Export model with local storage fallback
 let ControlModel: any;
 
-if (useLocalStorage()) {
+if (isLocalStorage()) {
   ControlModel = new LocalModel<IControl>('Control');
 } else {
   ControlModel = mongoose.models.Control || mongoose.model<IControl>('Control', ControlSchema);

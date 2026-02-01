@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
-import { useLocalStorage } from '@/lib/local-storage';
+import { isLocalStorage } from '@/lib/mongodb-local';
 import { LocalModel } from './LocalModel';
 
 export enum AssetType {
@@ -82,7 +82,7 @@ const AssetSchema = new Schema<IAsset>(
 // Export model with local storage fallback
 let AssetModel: any;
 
-if (useLocalStorage()) {
+if (isLocalStorage()) {
   AssetModel = new LocalModel<IAsset>('Asset');
 } else {
   AssetModel = mongoose.models.Asset || mongoose.model<IAsset>('Asset', AssetSchema);

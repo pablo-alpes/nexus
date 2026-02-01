@@ -5,9 +5,18 @@ import GapAnalysis from '@/models/GapAnalysis';
 import Control from '@/models/Control';
 import Asset from '@/models/Asset';
 import { getAuthUser } from '@/lib/auth-helper';
+import { RegulationType, getRegulationConfig } from '@/lib/regulations';
 import { DORAPillar } from '@/models/DORARequirement';
 import { ensureControlsSetup } from '@/lib/auto-controls';
 import { generateAIStrategy } from '@/lib/services/ai-strategy';
+
+function getPillarsForRegulation(regulationType: RegulationType | string | null) {
+  if (!regulationType || regulationType === RegulationType.DORA) {
+    return ['ICT_RISK_MANAGEMENT', 'INCIDENT_MANAGEMENT', 'RESILIENCE_TESTING', 'THIRD_PARTY_RISK', 'INFORMATION_SHARING'];
+  }
+  const config = getRegulationConfig(regulationType as RegulationType);
+  return config.pillars.map(p => p.id);
+}
 
 // Evidence suggestions based on control type and pillar
 const EVIDENCE_SUGGESTIONS: { [key: string]: string[] } = {
@@ -64,9 +73,22 @@ export async function GET(request: NextRequest) {
     
     const searchParams = request.nextUrl.searchParams;
     const pillar = searchParams.get('pillar') as DORAPillar;
+    const regulation = searchParams.get('regulation') || RegulationType.DORA;
+    const regulationPillars = getPillarsForRegulation(regulation);
     
-    const query: any = { userId: String(user.userId) };
-    if (pillar) query.pillar = pillar;
+    const query: any = { 
+      userId: String(user.userId),
+      regulationType: regulation,
+    };
+    if (pillar) {
+      if (regulationPillars.includes(pillar)) {
+        query.pillar = pillar;
+      } else {
+        return NextResponse.json({ remediationPlans: [] });
+      }
+    } else {
+      query.pillar = { $in: regulationPillars };
+    }
     
     const remediationPlans = await RemediationPlan.find(query, { createdAt: -1 });
     
@@ -93,7 +115,9 @@ export async function POST(request: NextRequest) {
     }
     
     const body = await request.json();
-    const { pillar } = body;
+    const { pillar, regulation } = body;
+    const regulationType = regulation || RegulationType.DORA;
+    const regulationPillars = getPillarsForRegulation(regulationType);
     
     if (!pillar) {
       return NextResponse.json(
@@ -102,10 +126,19 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Validate pillar belongs to regulation
+    if (!regulationPillars.includes(pillar)) {
+      return NextResponse.json(
+        { error: `Pillar ${pillar} is not valid for regulation ${regulationType}` },
+        { status: 400 }
+      );
+    }
+    
     // Get gap analysis for this pillar
     const gapAnalysis = await GapAnalysis.findOne({
       userId: String(user.userId),
       pillar,
+      regulationType: regulationType,
     });
     
     if (!gapAnalysis) {
@@ -121,7 +154,7 @@ export async function POST(request: NextRequest) {
     // Get all controls
     const allControls = await Control.find({ pillar });
     const controlsMap = new Map();
-    allControls.forEach(c => {
+    allControls.forEach((c: any) => {
       controlsMap.set(String(c._id || c.controlId), c);
     });
     
@@ -137,7 +170,7 @@ export async function POST(request: NextRequest) {
       if (!control) continue;
       
       // Find applicable assets for this control
-      const applicableAssets = assets.filter(asset => {
+      const applicableAssets = assets.filter((asset: any) => {
         if (control.controlType === 'TRANSVERSAL') {
           if (control.minCriticalityLevel) {
             return asset.criticalityLevel >= control.minCriticalityLevel;
@@ -171,7 +204,7 @@ export async function POST(request: NextRequest) {
         dueDate: null,
         assignedTo: null,
         evidenceIds: [],
-        applicableAssets: applicableAssets.map(a => ({
+        applicableAssets: applicableAssets.map((a: any) => ({
           assetId: a.assetId,
           name: a.name,
           criticalityLevel: a.criticalityLevel,
@@ -188,9 +221,14 @@ export async function POST(request: NextRequest) {
     
     // Create remediation plan
     const remediationPlan = await RemediationPlan.findOneAndUpdate(
-      { userId: String(user.userId), pillar },
+      { 
+        userId: String(user.userId), 
+        pillar,
+        regulationType: regulationType,
+      },
       {
         userId: String(user.userId),
+        regulationType: regulationType,
         pillar,
         actions,
         startDate: new Date().toISOString(),
@@ -316,7 +354,8 @@ export async function PUT(request: NextRequest) {
     }
     
     const body = await request.json();
-    const { pillar, actionIndex, updates } = body;
+    const { pillar, actionIndex, updates, regulation } = body;
+    const regulationType = regulation || RegulationType.DORA;
     
     if (!pillar || actionIndex === undefined) {
       return NextResponse.json(
@@ -328,6 +367,7 @@ export async function PUT(request: NextRequest) {
     const remediationPlan = await RemediationPlan.findOne({
       userId: String(user.userId),
       pillar,
+      regulationType: regulationType,
     });
     
     if (!remediationPlan) {
@@ -345,7 +385,11 @@ export async function PUT(request: NextRequest) {
       };
       
       await RemediationPlan.findOneAndUpdate(
-        { userId: String(user.userId), pillar },
+        { 
+          userId: String(user.userId), 
+          pillar,
+          regulationType: regulationType,
+        },
         { actions: remediationPlan.actions },
         { new: true }
       );

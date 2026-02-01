@@ -48,3 +48,4 @@ export function isLocalStorage(): boolean {
   return useLocalStorage();
 }
 
+export { useLocalStorage } from './local-storage';

@@ -1,0 +1,7 @@
+# VPS Deployment Configuration
+# Copy this file to .vps-config and update with your VPS details
+
+VPS_USER="root"
+VPS_HOST="your-vps-ip"
+VPS_PATH="/root/nexus/nexus"
+BRANCH="privacy-chile"

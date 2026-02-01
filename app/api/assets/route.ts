@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
     const assetData = {
       ...body,
       userId: payload.userId,
-      controls: applicableControls.map(c => c._id || c.controlId || c),
+      controls: applicableControls.map((c: any) => c._id || c.controlId || c),
       assetId: body.assetId || `ASSET-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     };
     

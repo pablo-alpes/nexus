@@ -1,0 +1,1762 @@
+{
+  "metadata": {
+    "regulation": "CHILEAN_PRIVACY",
+    "exportedAt": "2026-02-01T18:45:52.467Z",
+    "totalMappings": 23,
+    "ruleVersions": [
+      "2.0"
+    ],
+    "questionIds": [
+      "Q-PRIV-LF-001",
+      "Q-PRIV-LF-002",
+      "Q-PRIV-LF-003",
+      "Q-PRIV-PL-001",
+      "Q-PRIV-PL-002",
+      "Q-PRIV-PL-003",
+      "Q-PRIV-DM-001",
+      "Q-PRIV-DM-002",
+      "Q-PRIV-PR-001",
+      "Q-PRIV-Q-001",
+      "Q-PRIV-Q-002",
+      "Q-PRIV-A-001",
+      "Q-PRIV-A-002",
+      "Q-PRIV-A-003",
+      "Q-PRIV-A-004",
+      "Q-PRIV-S-001",
+      "Q-PRIV-S-002",
+      "Q-PRIV-S-003",
+      "Q-PRIV-S-004",
+      "Q-PRIV-TC-001",
+      "Q-PRIV-TC-002",
+      "Q-PRIV-TC-003",
+      "Q-PRIV-TC-004"
+    ]
+  },
+  "mappings": [
+    {
+      "questionId": "Q-PRIV-LF-001",
+      "ruleVersion": "2.0",
+      "controlBasedRequirements": [
+        "CHILE-ART-12",
+        "CHILE-ART-13",
+        "CHILE-ART-14-TER-LIT-b",
+        "CHILE-ART-15",
+        "CHILE-ART-11-LIT-a"
+      ],
+      "nlpSimilarities": [
+        {
+          "requirementId": "CHILE-ART-12",
+          "similarity": 0.7641900740986355,
+          "isControlBased": true,
+          "confidence": "high"
+        },
+        {
+          "requirementId": "CHILE-ART-13",
+          "similarity": 0.7629426501526917,
+          "isControlBased": true,
+          "confidence": "high"
+        },
+        {
+          "requirementId": "CHILE-ART-14-TER-LIT-b",
+          "similarity": 0.7037336005240822,
+          "isControlBased": true,
+          "confidence": "high"
+        },
+        {
+          "requirementId": "CHILE-ART-15",
+          "similarity": 0.669225406313523,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-11-LIT-a",
+          "similarity": 0.6503188238861911,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-20",
+          "similarity": 0.7283890971849145,
+          "isControlBased": false,
+          "confidence": "high"
+        },
+        {
+          "requirementId": "CHILE-ART-54",
+          "similarity": 0.7279526663616712,
+          "isControlBased": false,
+          "confidence": "high"
+        },
+        {
+          "requirementId": "CHILE-ART-34-TER-LIT-a",
+          "similarity": 0.7002982237019117,
+          "isControlBased": false,
+          "confidence": "high"
+        },
+        {
+          "requirementId": "CHILE-ART-16-LIT-f",
+          "similarity": 0.6980535592498234,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-22",
+          "similarity": 0.6688698900542603,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-16",
+          "similarity": 0.647347957017996,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-23",
+          "similarity": 0.6327066367032519,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-25",
+          "similarity": 0.6097763182721196,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-16-LIT-b",
+          "similarity": 0.5939367903944207,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-15-TER-LIT-d",
+          "similarity": 0.590497906052079,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-25-LIT-b",
+          "similarity": 0.5852024684128629,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-16-LIT-c",
+          "similarity": 0.5617133780220006,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-34-TER-LIT-b",
+          "similarity": 0.5505262866220416,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-30-NONIES-LIT-d",
+          "similarity": 0.5486878010477074,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-30-TER-LIT-e",
+          "similarity": 0.5248173133195465,
+          "isControlBased": false,
+          "confidence": "medium"
+        }
+      ],
+      "coherenceMetrics": {
+        "averageRelevance": 0.7100821109950247,
+        "highConfidenceCount": 3,
+        "mediumConfidenceCount": 2,
+        "lowConfidenceCount": 0,
+        "overallCoherence": 60
+      },
+      "computedAt": "2026-02-01T07:56:43.107Z"
+    },
+    {
+      "questionId": "Q-PRIV-LF-002",
+      "ruleVersion": "2.0",
+      "controlBasedRequirements": [
+        "CHILE-ART-12",
+        "CHILE-ART-13",
+        "CHILE-ART-15",
+        "CHILE-ART-14-TER-LIT-b",
+        "CHILE-ART-11-LIT-a"
+      ],
+      "nlpSimilarities": [
+        {
+          "requirementId": "CHILE-ART-12",
+          "similarity": 0.7157127261440404,
+          "isControlBased": true,
+          "confidence": "high"
+        },
+        {
+          "requirementId": "CHILE-ART-13",
+          "similarity": 0.6756202902423658,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-15",
+          "similarity": 0.6287273488048517,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-TER-LIT-b",
+          "similarity": 0.605121375741964,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-11-LIT-a",
+          "similarity": 0.6002206867781754,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-16-LIT-f",
+          "similarity": 0.6750661155432808,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-15-TER-LIT-d",
+          "similarity": 0.6124262220913754,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-34-TER-LIT-a",
+          "similarity": 0.6096659764350426,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-54",
+          "similarity": 0.6080339345788223,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-20",
+          "similarity": 0.6012361515578981,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-22",
+          "similarity": 0.6003385765085469,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-16-LIT-c",
+          "similarity": 0.585991830728462,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-16",
+          "similarity": 0.5748734823710026,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-23",
+          "similarity": 0.5432514201517736,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-25-LIT-b",
+          "similarity": 0.5420817793431275,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-34-TER-LIT-b",
+          "similarity": 0.536131561047537,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-16-LIT-b",
+          "similarity": 0.5339772657970572,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-25-LIT-d",
+          "similarity": 0.5301631593828766,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-25",
+          "similarity": 0.5227002122272283,
+          "isControlBased": false,
+          "confidence": "medium"
+        }
+      ],
+      "coherenceMetrics": {
+        "averageRelevance": 0.6450804855422795,
+        "highConfidenceCount": 1,
+        "mediumConfidenceCount": 4,
+        "lowConfidenceCount": 0,
+        "overallCoherence": 20
+      },
+      "computedAt": "2026-02-01T07:56:43.159Z"
+    },
+    {
+      "questionId": "Q-PRIV-LF-003",
+      "ruleVersion": "2.0",
+      "controlBasedRequirements": [
+        "CHILE-ART-12",
+        "CHILE-ART-13",
+        "CHILE-ART-11-LIT-a"
+      ],
+      "nlpSimilarities": [
+        {
+          "requirementId": "CHILE-ART-12",
+          "similarity": 0.7049023161743855,
+          "isControlBased": true,
+          "confidence": "high"
+        },
+        {
+          "requirementId": "CHILE-ART-13",
+          "similarity": 0.6148267856256086,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-11-LIT-a",
+          "similarity": 0.5452744097063735,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-16-LIT-f",
+          "similarity": 0.5995208789950353,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-25-LIT-d",
+          "similarity": 0.5908173157066334,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-34-TER-LIT-a",
+          "similarity": 0.5818689981166276,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-34-TER-LIT-b",
+          "similarity": 0.5811923386205735,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-16-LIT-c",
+          "similarity": 0.5629122425863684,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-16",
+          "similarity": 0.5531234512295345,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-15-TER-LIT-d",
+          "similarity": 0.5446759105944197,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-16-LIT-b",
+          "similarity": 0.523509512918147,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-23",
+          "similarity": 0.5136586091732512,
+          "isControlBased": false,
+          "confidence": "medium"
+        }
+      ],
+      "coherenceMetrics": {
+        "averageRelevance": 0.6216678371687892,
+        "highConfidenceCount": 1,
+        "mediumConfidenceCount": 2,
+        "lowConfidenceCount": 0,
+        "overallCoherence": 33.33333333333333
+      },
+      "computedAt": "2026-02-01T07:56:43.216Z"
+    },
+    {
+      "questionId": "Q-PRIV-PL-001",
+      "ruleVersion": "2.0",
+      "controlBasedRequirements": [
+        "CHILE-ART-16-LIT-a",
+        "CHILE-ART-16-QUINQUIES",
+        "CHILE-ART-18",
+        "CHILE-ART-14-SEPTIES",
+        "CHILE-ART-16-SEXIES"
+      ],
+      "nlpSimilarities": [
+        {
+          "requirementId": "CHILE-ART-16-LIT-a",
+          "similarity": 0.761966534696645,
+          "isControlBased": true,
+          "confidence": "high"
+        },
+        {
+          "requirementId": "CHILE-ART-16-QUINQUIES",
+          "similarity": 0.6840442969433117,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-18",
+          "similarity": 0.6163654787381777,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-SEPTIES",
+          "similarity": 0.562078568454094,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-16-SEXIES",
+          "similarity": 0.5475070736919108,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-24-LIT-a",
+          "similarity": 0.6988065808873594,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-34-TER-LIT-c",
+          "similarity": 0.6573504676280233,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-QUINQUIES-LIT-l",
+          "similarity": 0.6362722793919333,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-28-LIT-e",
+          "similarity": 0.605252718844905,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-30-NONIES-LIT-g",
+          "similarity": 0.5303978657721599,
+          "isControlBased": false,
+          "confidence": "medium"
+        }
+      ],
+      "coherenceMetrics": {
+        "averageRelevance": 0.6343923905048279,
+        "highConfidenceCount": 1,
+        "mediumConfidenceCount": 4,
+        "lowConfidenceCount": 0,
+        "overallCoherence": 20
+      },
+      "computedAt": "2026-02-01T07:56:43.261Z"
+    },
+    {
+      "questionId": "Q-PRIV-PL-002",
+      "ruleVersion": "2.0",
+      "controlBasedRequirements": [
+        "CHILE-ART-16-LIT-a",
+        "CHILE-ART-18",
+        "CHILE-ART-16-QUINQUIES",
+        "CHILE-ART-16-SEXIES",
+        "CHILE-ART-14-SEPTIES"
+      ],
+      "nlpSimilarities": [
+        {
+          "requirementId": "CHILE-ART-16-LIT-a",
+          "similarity": 0.7611824515766206,
+          "isControlBased": true,
+          "confidence": "high"
+        },
+        {
+          "requirementId": "CHILE-ART-18",
+          "similarity": 0.7268642583830848,
+          "isControlBased": true,
+          "confidence": "high"
+        },
+        {
+          "requirementId": "CHILE-ART-16-QUINQUIES",
+          "similarity": 0.6822857153420303,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-16-SEXIES",
+          "similarity": 0.5497042045707498,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-SEPTIES",
+          "similarity": 0.5313826515295227,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-24-LIT-a",
+          "similarity": 0.661083928616976,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-34-TER-LIT-c",
+          "similarity": 0.6429630952376892,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-QUINQUIES-LIT-l",
+          "similarity": 0.640564488155345,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-28-LIT-e",
+          "similarity": 0.6346103229473914,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-30-NONIES-LIT-g",
+          "similarity": 0.531208754101164,
+          "isControlBased": false,
+          "confidence": "medium"
+        }
+      ],
+      "coherenceMetrics": {
+        "averageRelevance": 0.6502838562804016,
+        "highConfidenceCount": 2,
+        "mediumConfidenceCount": 3,
+        "lowConfidenceCount": 0,
+        "overallCoherence": 40
+      },
+      "computedAt": "2026-02-01T07:56:43.306Z"
+    },
+    {
+      "questionId": "Q-PRIV-PL-003",
+      "ruleVersion": "2.0",
+      "controlBasedRequirements": [
+        "CHILE-ART-16-LIT-a",
+        "CHILE-ART-14-SEPTIES"
+      ],
+      "nlpSimilarities": [
+        {
+          "requirementId": "CHILE-ART-16-LIT-a",
+          "similarity": 0.596833337459618,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-SEPTIES",
+          "similarity": 0.5297789597269945,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-28-LIT-e",
+          "similarity": 0.5328802292244772,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-24-LIT-a",
+          "similarity": 0.5099606762085862,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-30-NONIES-LIT-g",
+          "similarity": 0.5023735813591393,
+          "isControlBased": false,
+          "confidence": "medium"
+        }
+      ],
+      "coherenceMetrics": {
+        "averageRelevance": 0.5633061485933062,
+        "highConfidenceCount": 0,
+        "mediumConfidenceCount": 2,
+        "lowConfidenceCount": 0,
+        "overallCoherence": 0
+      },
+      "computedAt": "2026-02-01T07:56:43.350Z"
+    },
+    {
+      "questionId": "Q-PRIV-DM-001",
+      "ruleVersion": "2.0",
+      "controlBasedRequirements": [
+        "CHILE-ART-14-TER-LIT-e",
+        "CHILE-ART-16-LIT-d",
+        "CHILE-ART-14-TER-LIT-g",
+        "CHILE-ART-14-TER-LIT-f"
+      ],
+      "nlpSimilarities": [
+        {
+          "requirementId": "CHILE-ART-14-TER-LIT-e",
+          "similarity": 0.6966498431432806,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-16-LIT-d",
+          "similarity": 0.6417419902647538,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-TER-LIT-g",
+          "similarity": 0.5690333142587507,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-TER-LIT-f",
+          "similarity": 0.5244386684217441,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-16-LIT-e",
+          "similarity": 0.6507066830077068,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-30-BIS-LIT-a",
+          "similarity": 0.5941691745238922,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-27-LIT-a",
+          "similarity": 0.5410801782605622,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-30-NONIES-LIT-e",
+          "similarity": 0.5118834130404554,
+          "isControlBased": false,
+          "confidence": "medium"
+        }
+      ],
+      "coherenceMetrics": {
+        "averageRelevance": 0.6079659540221323,
+        "highConfidenceCount": 0,
+        "mediumConfidenceCount": 4,
+        "lowConfidenceCount": 0,
+        "overallCoherence": 0
+      },
+      "computedAt": "2026-02-01T07:56:43.452Z"
+    },
+    {
+      "questionId": "Q-PRIV-DM-002",
+      "ruleVersion": "2.0",
+      "controlBasedRequirements": [
+        "CHILE-ART-14-TER-LIT-e",
+        "CHILE-ART-16-LIT-d",
+        "CHILE-ART-14-TER-LIT-f"
+      ],
+      "nlpSimilarities": [
+        {
+          "requirementId": "CHILE-ART-14-TER-LIT-e",
+          "similarity": 0.654502131533707,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-16-LIT-d",
+          "similarity": 0.6158987339066405,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-TER-LIT-f",
+          "similarity": 0.5363616827755097,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-16-LIT-e",
+          "similarity": 0.5707088579813002,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-30-BIS-LIT-a",
+          "similarity": 0.5426110282505563,
+          "isControlBased": false,
+          "confidence": "medium"
+        }
+      ],
+      "coherenceMetrics": {
+        "averageRelevance": 0.6022541827386191,
+        "highConfidenceCount": 0,
+        "mediumConfidenceCount": 3,
+        "lowConfidenceCount": 0,
+        "overallCoherence": 0
+      },
+      "computedAt": "2026-02-01T07:56:43.560Z"
+    },
+    {
+      "questionId": "Q-PRIV-PR-001",
+      "ruleVersion": "2.0",
+      "controlBasedRequirements": [
+        "CHILE-ART-30-QUINQUIES"
+      ],
+      "nlpSimilarities": [
+        {
+          "requirementId": "CHILE-ART-30-QUINQUIES",
+          "similarity": 0.6078624509354427,
+          "isControlBased": true,
+          "confidence": "medium"
+        }
+      ],
+      "coherenceMetrics": {
+        "averageRelevance": 0.6078624509354427,
+        "highConfidenceCount": 0,
+        "mediumConfidenceCount": 1,
+        "lowConfidenceCount": 0,
+        "overallCoherence": 0
+      },
+      "computedAt": "2026-02-01T07:56:43.586Z"
+    },
+    {
+      "questionId": "Q-PRIV-Q-001",
+      "ruleVersion": "2.0",
+      "controlBasedRequirements": [],
+      "nlpSimilarities": [],
+      "coherenceMetrics": {
+        "averageRelevance": 0,
+        "highConfidenceCount": 0,
+        "mediumConfidenceCount": 0,
+        "lowConfidenceCount": 0,
+        "overallCoherence": 0
+      },
+      "computedAt": "2026-02-01T07:56:43.605Z"
+    },
+    {
+      "questionId": "Q-PRIV-Q-002",
+      "ruleVersion": "2.0",
+      "controlBasedRequirements": [],
+      "nlpSimilarities": [],
+      "coherenceMetrics": {
+        "averageRelevance": 0,
+        "highConfidenceCount": 0,
+        "mediumConfidenceCount": 0,
+        "lowConfidenceCount": 0,
+        "overallCoherence": 0
+      },
+      "computedAt": "2026-02-01T07:56:43.624Z"
+    },
+    {
+      "questionId": "Q-PRIV-A-001",
+      "ruleVersion": "2.0",
+      "controlBasedRequirements": [
+        "CHILE-ART-11",
+        "CHILE-ART-11-LIT-c",
+        "CHILE-ART-41"
+      ],
+      "nlpSimilarities": [
+        {
+          "requirementId": "CHILE-ART-11",
+          "similarity": 0.6385508891765995,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-11-LIT-c",
+          "similarity": 0.5699316382787126,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-41",
+          "similarity": 0.5568442055535696,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-49-LIT-a",
+          "similarity": 0.7166210845306453,
+          "isControlBased": false,
+          "confidence": "high"
+        },
+        {
+          "requirementId": "CHILE-ART-14",
+          "similarity": 0.6697492011443155,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-50",
+          "similarity": 0.6543466995497734,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-49-LIT-b",
+          "similarity": 0.6414938120600936,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-BIS",
+          "similarity": 0.62233047954276,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-17-LIT-c",
+          "similarity": 0.6133177038909473,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-15-BIS",
+          "similarity": 0.6119981745181344,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-47",
+          "similarity": 0.5976387679267068,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-52-LIT-b",
+          "similarity": 0.5964791872242906,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-52-LIT-e",
+          "similarity": 0.5884081465300086,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-15-TER",
+          "similarity": 0.5877899715276979,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-28-LIT-a",
+          "similarity": 0.5777538645327042,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-39",
+          "similarity": 0.5757956412391996,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-49",
+          "similarity": 0.5739256661298782,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-33",
+          "similarity": 0.5697068742052497,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-15-TER-LIT-c",
+          "similarity": 0.5687561429541239,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-15-TER-LIT-b",
+          "similarity": 0.5676453798444571,
+          "isControlBased": false,
+          "confidence": "medium"
+        }
+      ],
+      "coherenceMetrics": {
+        "averageRelevance": 0.5884422443362939,
+        "highConfidenceCount": 0,
+        "mediumConfidenceCount": 3,
+        "lowConfidenceCount": 0,
+        "overallCoherence": 0
+      },
+      "computedAt": "2026-02-01T07:56:43.714Z"
+    },
+    {
+      "questionId": "Q-PRIV-A-002",
+      "ruleVersion": "2.0",
+      "controlBasedRequirements": [
+        "CHILE-ART-41",
+        "CHILE-ART-11-LIT-b",
+        "CHILE-ART-11",
+        "CHILE-ART-11-LIT-d",
+        "CHILE-ART-11-LIT-c"
+      ],
+      "nlpSimilarities": [
+        {
+          "requirementId": "CHILE-ART-41",
+          "similarity": 0.5429907601352847,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-11-LIT-b",
+          "similarity": 0.5267424068341912,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-11",
+          "similarity": 0.5248638771941702,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-11-LIT-d",
+          "similarity": 0.5225769947287809,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-11-LIT-c",
+          "similarity": 0.516403489170872,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-49-LIT-e",
+          "similarity": 0.6440386453862315,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-49-LIT-d",
+          "similarity": 0.6391868613926722,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-39",
+          "similarity": 0.6210952785225662,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-28-LIT-a",
+          "similarity": 0.5718115285883993,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-TER-LIT-d",
+          "similarity": 0.5687121706043977,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-28-LIT-c",
+          "similarity": 0.5663397393541812,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-52-LIT-e",
+          "similarity": 0.553898279901468,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-30-QUINQUIES-LIT-a",
+          "similarity": 0.5506701379799841,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-33",
+          "similarity": 0.5498533155801552,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-15-TER-LIT-c",
+          "similarity": 0.5497219909305572,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-24",
+          "similarity": 0.5436500917893702,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-15-TER-LIT-b",
+          "similarity": 0.5425992271065191,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-15-BIS",
+          "similarity": 0.5421956755113115,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-43-LIT-h",
+          "similarity": 0.5417301730586611,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-30-NONIES-LIT-b",
+          "similarity": 0.5393531708201724,
+          "isControlBased": false,
+          "confidence": "medium"
+        }
+      ],
+      "coherenceMetrics": {
+        "averageRelevance": 0.5267155056126598,
+        "highConfidenceCount": 0,
+        "mediumConfidenceCount": 5,
+        "lowConfidenceCount": 0,
+        "overallCoherence": 0
+      },
+      "computedAt": "2026-02-01T07:56:43.803Z"
+    },
+    {
+      "questionId": "Q-PRIV-A-003",
+      "ruleVersion": "2.0",
+      "controlBasedRequirements": [
+        "CHILE-ART-11",
+        "CHILE-ART-11-LIT-d",
+        "CHILE-ART-41",
+        "CHILE-ART-11-LIT-b",
+        "CHILE-ART-11-LIT-c"
+      ],
+      "nlpSimilarities": [
+        {
+          "requirementId": "CHILE-ART-11",
+          "similarity": 0.6001158051830232,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-11-LIT-d",
+          "similarity": 0.5920142370691208,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-41",
+          "similarity": 0.5786890222083166,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-11-LIT-b",
+          "similarity": 0.5693908195766243,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-11-LIT-c",
+          "similarity": 0.5260460019261122,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-30-NONIES-LIT-b",
+          "similarity": 0.6163673625662618,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-TER-LIT-j",
+          "similarity": 0.6072936219815185,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-TER-LIT-k",
+          "similarity": 0.5994018275132459,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-30-TER-LIT-a",
+          "similarity": 0.5958491020629476,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-32-BIS-LIT-a",
+          "similarity": 0.5894017609652745,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-25-LIT-c",
+          "similarity": 0.582629339954947,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-30-QUINQUIES-LIT-a",
+          "similarity": 0.5807301873494579,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-30-SEXIES",
+          "similarity": 0.5792919645984679,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-52-LIT-a",
+          "similarity": 0.5778709888434096,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-49",
+          "similarity": 0.5723417317539211,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-30-TER-LIT-b",
+          "similarity": 0.5720065269893257,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-43-LIT-h",
+          "similarity": 0.569776755814639,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-43",
+          "similarity": 0.5696051629487988,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-TER-LIT-h",
+          "similarity": 0.5651477965226439,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-39",
+          "similarity": 0.5644245146903268,
+          "isControlBased": false,
+          "confidence": "medium"
+        }
+      ],
+      "coherenceMetrics": {
+        "averageRelevance": 0.5732511771926394,
+        "highConfidenceCount": 0,
+        "mediumConfidenceCount": 5,
+        "lowConfidenceCount": 0,
+        "overallCoherence": 0
+      },
+      "computedAt": "2026-02-01T07:56:43.890Z"
+    },
+    {
+      "questionId": "Q-PRIV-A-004",
+      "ruleVersion": "2.0",
+      "controlBasedRequirements": [
+        "CHILE-ART-11",
+        "CHILE-ART-11-LIT-c",
+        "CHILE-ART-41"
+      ],
+      "nlpSimilarities": [
+        {
+          "requirementId": "CHILE-ART-11",
+          "similarity": 0.6628231192927793,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-11-LIT-c",
+          "similarity": 0.6627951166510171,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-41",
+          "similarity": 0.5994626795756886,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-49-LIT-a",
+          "similarity": 0.7317673154432085,
+          "isControlBased": false,
+          "confidence": "high"
+        },
+        {
+          "requirementId": "CHILE-ART-15-TER",
+          "similarity": 0.7293895628579611,
+          "isControlBased": false,
+          "confidence": "high"
+        },
+        {
+          "requirementId": "CHILE-ART-49-LIT-b",
+          "similarity": 0.7210168639813118,
+          "isControlBased": false,
+          "confidence": "high"
+        },
+        {
+          "requirementId": "CHILE-ART-14",
+          "similarity": 0.6477701114074382,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-28-LIT-c",
+          "similarity": 0.6432056204970129,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-50",
+          "similarity": 0.6386636073485071,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-QUINQUIES-LIT-a",
+          "similarity": 0.6315848666049814,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-15-TER-LIT-a",
+          "similarity": 0.6222062238833439,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-52-LIT-e",
+          "similarity": 0.6093273654877313,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-28-LIT-a",
+          "similarity": 0.6083101620049679,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-17-LIT-c",
+          "similarity": 0.6060245750712725,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-TER-LIT-j",
+          "similarity": 0.6048926664764627,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-BIS",
+          "similarity": 0.596786634845551,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-16-BIS",
+          "similarity": 0.5961899845005069,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-39",
+          "similarity": 0.5849671582400034,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-49",
+          "similarity": 0.5831243789110104,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-15-BIS",
+          "similarity": 0.5830143039546465,
+          "isControlBased": false,
+          "confidence": "medium"
+        }
+      ],
+      "coherenceMetrics": {
+        "averageRelevance": 0.641693638506495,
+        "highConfidenceCount": 0,
+        "mediumConfidenceCount": 3,
+        "lowConfidenceCount": 0,
+        "overallCoherence": 0
+      },
+      "computedAt": "2026-02-01T07:56:43.978Z"
+    },
+    {
+      "questionId": "Q-PRIV-S-001",
+      "ruleVersion": "2.0",
+      "controlBasedRequirements": [
+        "CHILE-ART-14-QUINQUIES-LIT-d",
+        "CHILE-ART-14-QUINQUIES",
+        "CHILE-ART-30",
+        "CHILE-ART-30-QUINQUIES-LIT-c",
+        "CHILE-ART-14-QUINQUIES-LIT-b"
+      ],
+      "nlpSimilarities": [
+        {
+          "requirementId": "CHILE-ART-14-QUINQUIES-LIT-d",
+          "similarity": 0.7081360941134673,
+          "isControlBased": true,
+          "confidence": "high"
+        },
+        {
+          "requirementId": "CHILE-ART-14-QUINQUIES",
+          "similarity": 0.6965615045735221,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-30",
+          "similarity": 0.6147542902117233,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-30-QUINQUIES-LIT-c",
+          "similarity": 0.5862643804311605,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-QUINQUIES-LIT-b",
+          "similarity": 0.5156265564437018,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-QUINQUIES-LIT-k",
+          "similarity": 0.5671421838228414,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-49-LIT-f",
+          "similarity": 0.5494627378519878,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-BIS-LIT-j",
+          "similarity": 0.548097413711813,
+          "isControlBased": false,
+          "confidence": "medium"
+        }
+      ],
+      "coherenceMetrics": {
+        "averageRelevance": 0.6242685651547151,
+        "highConfidenceCount": 1,
+        "mediumConfidenceCount": 4,
+        "lowConfidenceCount": 0,
+        "overallCoherence": 20
+      },
+      "computedAt": "2026-02-01T07:56:44.048Z"
+    },
+    {
+      "questionId": "Q-PRIV-S-002",
+      "ruleVersion": "2.0",
+      "controlBasedRequirements": [
+        "CHILE-ART-14-QUINQUIES-LIT-d",
+        "CHILE-ART-14-QUINQUIES",
+        "CHILE-ART-30-QUINQUIES-LIT-c"
+      ],
+      "nlpSimilarities": [
+        {
+          "requirementId": "CHILE-ART-14-QUINQUIES-LIT-d",
+          "similarity": 0.6305040677376351,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-QUINQUIES",
+          "similarity": 0.6028272146045279,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-30-QUINQUIES-LIT-c",
+          "similarity": 0.5190567841807088,
+          "isControlBased": true,
+          "confidence": "medium"
+        }
+      ],
+      "coherenceMetrics": {
+        "averageRelevance": 0.584129355507624,
+        "highConfidenceCount": 0,
+        "mediumConfidenceCount": 3,
+        "lowConfidenceCount": 0,
+        "overallCoherence": 0
+      },
+      "computedAt": "2026-02-01T07:56:44.113Z"
+    },
+    {
+      "questionId": "Q-PRIV-S-003",
+      "ruleVersion": "2.0",
+      "controlBasedRequirements": [
+        "CHILE-ART-30",
+        "CHILE-ART-30-QUINQUIES-LIT-c",
+        "CHILE-ART-14-QUINQUIES-LIT-d",
+        "CHILE-ART-14-QUINQUIES"
+      ],
+      "nlpSimilarities": [
+        {
+          "requirementId": "CHILE-ART-30",
+          "similarity": 0.6190450316008167,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-30-QUINQUIES-LIT-c",
+          "similarity": 0.616076261332065,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-QUINQUIES-LIT-d",
+          "similarity": 0.5852080043816785,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-QUINQUIES",
+          "similarity": 0.5760358179975262,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-49-LIT-f",
+          "similarity": 0.5979555221353106,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-BIS-LIT-j",
+          "similarity": 0.5716883679376707,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-51-LIT-c",
+          "similarity": 0.5424155223227214,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-QUINQUIES-LIT-k",
+          "similarity": 0.5076321250969098,
+          "isControlBased": false,
+          "confidence": "medium"
+        }
+      ],
+      "coherenceMetrics": {
+        "averageRelevance": 0.5990912788280216,
+        "highConfidenceCount": 0,
+        "mediumConfidenceCount": 4,
+        "lowConfidenceCount": 0,
+        "overallCoherence": 0
+      },
+      "computedAt": "2026-02-01T07:56:44.182Z"
+    },
+    {
+      "questionId": "Q-PRIV-S-004",
+      "ruleVersion": "2.0",
+      "controlBasedRequirements": [
+        "CHILE-ART-14-QUINQUIES-LIT-d",
+        "CHILE-ART-14-QUINQUIES-LIT-b",
+        "CHILE-ART-14-QUINQUIES"
+      ],
+      "nlpSimilarities": [
+        {
+          "requirementId": "CHILE-ART-14-QUINQUIES-LIT-d",
+          "similarity": 0.6020927345884318,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-QUINQUIES-LIT-b",
+          "similarity": 0.5313997850489383,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-QUINQUIES",
+          "similarity": 0.5249836299837365,
+          "isControlBased": true,
+          "confidence": "medium"
+        }
+      ],
+      "coherenceMetrics": {
+        "averageRelevance": 0.5528253832070354,
+        "highConfidenceCount": 0,
+        "mediumConfidenceCount": 3,
+        "lowConfidenceCount": 0,
+        "overallCoherence": 0
+      },
+      "computedAt": "2026-02-01T07:56:44.244Z"
+    },
+    {
+      "questionId": "Q-PRIV-TC-001",
+      "ruleVersion": "2.0",
+      "controlBasedRequirements": [
+        "CHILE-ART-14-TER",
+        "CHILE-ART-10",
+        "CHILE-ART-12-LIT-c",
+        "CHILE-ART-34-BIS-LIT-a"
+      ],
+      "nlpSimilarities": [
+        {
+          "requirementId": "CHILE-ART-14-TER",
+          "similarity": 0.772933951907054,
+          "isControlBased": true,
+          "confidence": "high"
+        },
+        {
+          "requirementId": "CHILE-ART-10",
+          "similarity": 0.7186777303905948,
+          "isControlBased": true,
+          "confidence": "high"
+        },
+        {
+          "requirementId": "CHILE-ART-12-LIT-c",
+          "similarity": 0.5652898261581458,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-34-BIS-LIT-a",
+          "similarity": 0.5001240921083584,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-49-LIT-c",
+          "similarity": 0.729862641412399,
+          "isControlBased": false,
+          "confidence": "high"
+        },
+        {
+          "requirementId": "CHILE-ART-46",
+          "similarity": 0.6227525454736339,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-53",
+          "similarity": 0.5078646673887551,
+          "isControlBased": false,
+          "confidence": "medium"
+        }
+      ],
+      "coherenceMetrics": {
+        "averageRelevance": 0.6392564001410382,
+        "highConfidenceCount": 2,
+        "mediumConfidenceCount": 2,
+        "lowConfidenceCount": 0,
+        "overallCoherence": 50
+      },
+      "computedAt": "2026-02-01T07:56:44.358Z"
+    },
+    {
+      "questionId": "Q-PRIV-TC-002",
+      "ruleVersion": "2.0",
+      "controlBasedRequirements": [
+        "CHILE-ART-12-LIT-c",
+        "CHILE-ART-10",
+        "CHILE-ART-34-BIS-LIT-a",
+        "CHILE-ART-14-TER"
+      ],
+      "nlpSimilarities": [
+        {
+          "requirementId": "CHILE-ART-12-LIT-c",
+          "similarity": 0.5619369653444147,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-10",
+          "similarity": 0.5542555714044751,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-34-BIS-LIT-a",
+          "similarity": 0.5172225110209133,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-TER",
+          "similarity": 0.5033957935245258,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-53",
+          "similarity": 0.5275473007097565,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-46",
+          "similarity": 0.5251920797631975,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-49-LIT-c",
+          "similarity": 0.517183449236748,
+          "isControlBased": false,
+          "confidence": "medium"
+        }
+      ],
+      "coherenceMetrics": {
+        "averageRelevance": 0.5342027103235822,
+        "highConfidenceCount": 0,
+        "mediumConfidenceCount": 4,
+        "lowConfidenceCount": 0,
+        "overallCoherence": 0
+      },
+      "computedAt": "2026-02-01T07:56:44.474Z"
+    },
+    {
+      "questionId": "Q-PRIV-TC-003",
+      "ruleVersion": "2.0",
+      "controlBasedRequirements": [
+        "CHILE-ART-12-LIT-c",
+        "CHILE-ART-10"
+      ],
+      "nlpSimilarities": [
+        {
+          "requirementId": "CHILE-ART-12-LIT-c",
+          "similarity": 0.6010406052913433,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-10",
+          "similarity": 0.5947781966456755,
+          "isControlBased": true,
+          "confidence": "medium"
+        }
+      ],
+      "coherenceMetrics": {
+        "averageRelevance": 0.5979094009685094,
+        "highConfidenceCount": 0,
+        "mediumConfidenceCount": 2,
+        "lowConfidenceCount": 0,
+        "overallCoherence": 0
+      },
+      "computedAt": "2026-02-01T07:56:44.582Z"
+    },
+    {
+      "questionId": "Q-PRIV-TC-004",
+      "ruleVersion": "2.0",
+      "controlBasedRequirements": [
+        "CHILE-ART-10",
+        "CHILE-ART-14-TER",
+        "CHILE-ART-12-LIT-c"
+      ],
+      "nlpSimilarities": [
+        {
+          "requirementId": "CHILE-ART-10",
+          "similarity": 0.6716549385653857,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-14-TER",
+          "similarity": 0.6051526886148998,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-12-LIT-c",
+          "similarity": 0.5301677943867482,
+          "isControlBased": true,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-46",
+          "similarity": 0.6776212866249189,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-49-LIT-c",
+          "similarity": 0.5881013669065025,
+          "isControlBased": false,
+          "confidence": "medium"
+        },
+        {
+          "requirementId": "CHILE-ART-53",
+          "similarity": 0.5197848869134745,
+          "isControlBased": false,
+          "confidence": "medium"
+        }
+      ],
+      "coherenceMetrics": {
+        "averageRelevance": 0.6023251405223445,
+        "highConfidenceCount": 0,
+        "mediumConfidenceCount": 3,
+        "lowConfidenceCount": 0,
+        "overallCoherence": 0
+      },
+      "computedAt": "2026-02-01T07:56:44.693Z"
+    }
+  ]
+}

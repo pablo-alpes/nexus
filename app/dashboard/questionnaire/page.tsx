@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest } from '@/lib/api';
+import { RegulationType } from '@/lib/regulations';
 
 interface Question {
   _id: string;
@@ -40,6 +41,7 @@ interface RuleVersionInfo {
 
 export default function QuestionnairePage() {
   const router = useRouter();
+  const pathname = usePathname();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
@@ -52,11 +54,15 @@ export default function QuestionnairePage() {
   const [coherenceMetrics, setCoherenceMetrics] = useState<CoherenceMetrics | null>(null);
   const [overallMetrics, setOverallMetrics] = useState<any>(null);
 
+  // Detect regulation from route
+  const isChileanPrivacy = pathname?.includes('chile-privacy') || pathname?.includes('chilean-privacy');
+  const regulationType = isChileanPrivacy ? RegulationType.CHILEAN_PRIVACY : RegulationType.DORA;
+
   useEffect(() => {
     loadQuestions();
     loadSavedResponse();
     loadRuleVersion();
-  }, []);
+  }, [regulationType]);
 
   const loadSavedResponse = async () => {
     try {
@@ -94,7 +100,8 @@ export default function QuestionnairePage() {
 
   const loadQuestions = async () => {
     try {
-      const response = await apiRequest<{ questions: Question[] }>('/questionnaire/questions');
+      // Pass regulation parameter to API
+      const response = await apiRequest<{ questions: Question[] }>(`/questionnaire/questions?regulation=${regulationType}`);
       const sortedQuestions = response.questions.sort((a, b) => a.order - b.order);
       setQuestions(sortedQuestions);
     } catch (error) {
@@ -231,10 +238,10 @@ export default function QuestionnairePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between h-16">
               <div className="flex items-center space-x-8">
-                <Link href="/dashboard" className="text-2xl font-bold text-primary-600">
-                  Nexus Cloud
-                </Link>
-                <Link href="/dashboard/questionnaire" className="text-gray-700 hover:text-primary-600">
+                <Link href={isChileanPrivacy ? '/chile-privacy/dashboard' : '/dashboard'} className={`text-2xl font-bold ${isChileanPrivacy ? 'text-blue-600' : 'text-primary-600'}`}>
+                {isChileanPrivacy ? 'Nexus Privacy' : 'Nexus Cloud'}
+              </Link>
+                <Link href={isChileanPrivacy ? '/chile-privacy/dashboard/questionnaire' : '/dashboard/questionnaire'} className="text-gray-700 hover:text-primary-600">
                   Questionnaire
                 </Link>
               </div>
@@ -459,7 +466,7 @@ export default function QuestionnairePage() {
                 <ul className="list-disc list-inside text-sm text-blue-700 space-y-1">
                   <li>Review all identified controls for accuracy and completeness</li>
                   <li>Manually add or remove controls as needed based on your specific situation</li>
-                  <li>Consult with DORA compliance experts to validate your compliance approach</li>
+                  <li>Consult with {isChileanPrivacy ? 'Ley 21.719 compliance' : 'DORA compliance'} experts to validate your compliance approach</li>
                   <li>Regularly update your compliance status as your organization evolves</li>
                 </ul>
                 <p className="text-xs text-blue-600 mt-3">
@@ -472,7 +479,7 @@ export default function QuestionnairePage() {
 
           <div className="mt-6 text-center">
             <Link
-              href="/dashboard/gap-analysis"
+              href={isChileanPrivacy ? '/chile-privacy/dashboard/gap-analysis' : '/dashboard/gap-analysis'}
               className="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700"
             >
               Generate Gap Analysis
@@ -492,10 +499,10 @@ export default function QuestionnairePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center space-x-8">
-              <Link href="/dashboard" className="text-2xl font-bold text-primary-600">
-                Nexus Cloud
+              <Link href={isChileanPrivacy ? '/chile-privacy/dashboard' : '/dashboard'} className={`text-2xl font-bold ${isChileanPrivacy ? 'text-blue-600' : 'text-primary-600'}`}>
+                {isChileanPrivacy ? 'Nexus Privacy' : 'Nexus Cloud'}
               </Link>
-              <Link href="/dashboard/questionnaire" className="text-gray-700 hover:text-primary-600">
+              <Link href={isChileanPrivacy ? '/chile-privacy/dashboard/questionnaire' : '/dashboard/questionnaire'} className="text-gray-700 hover:text-primary-600">
                 Questionnaire
               </Link>
             </div>
@@ -504,7 +511,7 @@ export default function QuestionnairePage() {
       </nav>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold mb-6">DORA Compliance Questionnaire</h1>
+        <h1 className="text-3xl font-bold mb-6">{isChileanPrivacy ? 'Ley 21.719 compliance' : 'DORA compliance'} Questionnaire</h1>
 
         {/* Disclaimer and Acknowledgment */}
         {!acknowledgedDisclaimer && (
@@ -520,7 +527,7 @@ export default function QuestionnairePage() {
                   Important Disclaimer
                 </h3>
                 <p className="text-sm text-yellow-700 mb-4">
-                  <strong>Nexus Cloud is a compliance management tool</strong> that assists organizations in identifying and managing DORA compliance requirements. 
+                  <strong>Nexus {isChileanPrivacy ? 'Privacy' : 'Cloud'} is a compliance management tool</strong> that assists organizations in identifying and managing {isChileanPrivacy ? 'Ley 21.719 compliance' : 'DORA compliance'} requirements. 
                   This questionnaire helps identify applicable controls but does <strong>not guarantee compliance</strong>.
                 </p>
                 <div className="bg-white p-4 rounded border border-yellow-200 mb-4">
@@ -544,8 +551,8 @@ export default function QuestionnairePage() {
                   <label htmlFor="acknowledge-disclaimer" className="text-sm text-yellow-800">
                     I understand and acknowledge that:
                     <ul className="list-disc list-inside mt-2 ml-4 space-y-1">
-                      <li>Nexus Cloud is a tool to assist with compliance management, not a guarantee of compliance</li>
-                      <li>I am solely responsible for ensuring my organization's compliance with DORA regulations</li>
+                      <li>Nexus {isChileanPrivacy ? 'Privacy' : 'Cloud'} is a tool to assist with compliance management, not a guarantee of compliance</li>
+                      <li>I am solely responsible for ensuring my organization's compliance with {isChileanPrivacy ? 'Ley 21.719 regulations' : 'DORA regulations'}</li>
                       <li>I will review all identified controls and consult with compliance experts as needed</li>
                       <li>I have read and agree to the <Link href="/terms-of-service" className="underline font-medium">Terms of Service</Link></li>
                     </ul>

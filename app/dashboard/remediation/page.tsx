@@ -1,20 +1,26 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest, uploadFile } from '@/lib/api';
+import { useTranslation } from '@/lib/hooks/useTranslation';
+import { RegulationType, getRegulationConfig } from '@/lib/regulations';
+import { LanguageToggle } from '@/components/LanguageToggle';
 
-const DORA_PILLARS = [
-  { value: 'ICT_RISK_MANAGEMENT', label: 'ICT Risk Management' },
-  { value: 'INCIDENT_MANAGEMENT', label: 'ICT-Related Incident Management' },
-  { value: 'RESILIENCE_TESTING', label: 'Digital Operational Resilience Testing' },
-  { value: 'THIRD_PARTY_RISK', label: 'ICT Third-Party Risk Management' },
-  { value: 'INFORMATION_SHARING', label: 'Information Sharing' },
-];
+
 
 export default function RemediationPage() {
   const router = useRouter();
+  const { language } = useTranslation();
+  const pathname = usePathname();
+  const isChileanPrivacy = pathname?.includes('chile-privacy') || pathname?.includes('chilean-privacy');
+  const regulationType = isChileanPrivacy ? RegulationType.CHILEAN_PRIVACY : RegulationType.DORA;
+  const config = getRegulationConfig(regulationType);
+  const pillars = config.pillars.map(p => ({
+    value: p.id,
+    label: p.name,
+  }));
   const [selectedPillar, setSelectedPillar] = useState<string>('ICT_RISK_MANAGEMENT');
   const [tableData, setTableData] = useState<any[]>([]);
   const [remediationPlan, setRemediationPlan] = useState<any>(null);
@@ -26,19 +32,14 @@ export default function RemediationPage() {
   const [activeTab, setActiveTab] = useState<'actions' | 'strategy'>('actions');
 
   useEffect(() => {
-    // Clear previous data when pillar changes
-    setTableData([]);
-    setRemediationPlan(null);
-    setSummary(null);
-    
     if (selectedPillar) {
       loadRemediationPlan();
     }
-  }, [selectedPillar]);
+  }, [selectedPillar, regulationType]);
 
   const handleGenerate = async () => {
     if (!selectedPillar) {
-      alert('Please select a DORA pillar');
+      alert(language === 'es' ? 'Por favor seleccione un principio' : 'Please select a pillar');
       return;
     }
 
@@ -46,7 +47,10 @@ export default function RemediationPage() {
     try {
       const response = await apiRequest('/remediation', {
         method: 'POST',
-        body: JSON.stringify({ pillar: selectedPillar }),
+        body: JSON.stringify({ 
+          pillar: selectedPillar,
+          regulation: regulationType,
+        }),
       });
 
       setRemediationPlan(response.remediationPlan);
@@ -72,7 +76,7 @@ export default function RemediationPage() {
 
     setLoading(true);
     try {
-      const response = await apiRequest<{ remediationPlans: any[] }>(`/remediation?pillar=${selectedPillar}`);
+      const response = await apiRequest<{ remediationPlans: any[] }>(`/remediation?pillar=${selectedPillar}&regulation=${regulationType}`);
       
       if (response.remediationPlans && response.remediationPlans.length > 0) {
         const plan = response.remediationPlans[0];
@@ -148,6 +152,7 @@ export default function RemediationPage() {
         body: JSON.stringify({
           pillar: selectedPillar,
           actionIndex: index,
+          regulation: regulationType,
           updates: { status: newStatus },
         }),
       });
@@ -226,19 +231,22 @@ export default function RemediationPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center space-x-8">
-              <Link href="/dashboard" className="text-2xl font-bold text-primary-600">
-                Nexus Cloud
+              <Link href={isChileanPrivacy ? '/chile-privacy/dashboard' : '/dashboard'} className={`text-2xl font-bold ${isChileanPrivacy ? 'text-blue-600' : 'text-primary-600'}`}>
+                {isChileanPrivacy ? 'Nexus Privacy' : 'Nexus Cloud'}
               </Link>
-              <Link href="/dashboard/remediation" className="text-gray-700 hover:text-primary-600">
+              <Link href={isChileanPrivacy ? '/chile-privacy/dashboard/remediation' : '/dashboard/remediation'} className="text-gray-700 hover:text-primary-600">
                 Remediation Plan
               </Link>
+            </div>
+            <div className="flex items-center">
+              <LanguageToggle />
             </div>
           </div>
         </div>
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold mb-6">Remediation Plan</h1>
+        <h1 className="text-3xl font-bold">{isChileanPrivacy ? (language === 'es' ? 'Plan de Remediation' : 'Remediation Plan') : 'Remediation Plan'}</h1>
 
         {/* Tab Navigation */}
         {remediationPlan && (
@@ -273,14 +281,14 @@ export default function RemediationPage() {
           <div className="flex gap-4 items-end">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select DORA Pillar
+                {language === 'es' ? 'Seleccionar Principio' : isChileanPrivacy ? 'Select Principle' : 'Select DORA Pillar'}
               </label>
               <select
                 value={selectedPillar}
                 onChange={(e) => setSelectedPillar(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
               >
-                {DORA_PILLARS.map((pillar) => (
+                {pillars.map((pillar) => (
                   <option key={pillar.value} value={pillar.value}>
                     {pillar.label}
                   </option>

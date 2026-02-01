@@ -1,0 +1,104 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Deploy to VPS (Git)",
+      "type": "shell",
+      "command": "${workspaceFolder}/nexus/deploy-to-vps.sh",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Sync to VPS (Direct)",
+      "type": "shell",
+      "command": "${workspaceFolder}/nexus/sync-to-vps.sh",
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Watch and Auto-Deploy",
+      "type": "shell",
+      "command": "${workspaceFolder}/nexus/watch-and-deploy.sh",
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "close": false
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Watching",
+          "endsPattern": "Sync complete"
+        }
+      }
+    },
+    {
+      "label": "SSH: View VPS Logs",
+      "type": "shell",
+      "command": "ssh",
+      "args": [
+        "${input:sshUser}@${input:sshHost}",
+        "pm2 logs nexus-dev --lines 50"
+      ],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "SSH: Restart VPS App",
+      "type": "shell",
+      "command": "ssh",
+      "args": [
+        "${input:sshUser}@${input:sshHost}",
+        "cd ${input:vpsPath} && pm2 restart nexus-dev"
+      ],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "sshUser",
+      "type": "promptString",
+      "description": "SSH User (e.g., root)",
+      "default": "root"
+    },
+    {
+      "id": "sshHost",
+      "type": "promptString",
+      "description": "SSH Host (e.g., your-vps-ip)",
+      "default": "your-vps-ip"
+    },
+    {
+      "id": "vpsPath",
+      "type": "promptString",
+      "description": "VPS Path",
+      "default": "/root/nexus/nexus"
+    }
+  ]
+}

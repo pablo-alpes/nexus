@@ -1,0 +1,9 @@
+{
+  "metadata": {
+    "regulation": "DORA",
+    "source": "ISO 27002, 27005, 22301, 27017, 27018, 31000, 20000",
+    "version": "1.0",
+    "lastUpdated": "2024-01-01"
+  },
+  "note": "This file is a placeholder. The actual ISO controls are stored in data/iso27002-controls.json"
+}

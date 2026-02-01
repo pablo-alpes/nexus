@@ -1,0 +1,162 @@
+{
+  "metadata": {
+    "description": "Additional GDPR Best Practices Controls",
+    "version": "1.0",
+    "standard": "GDPR Best Practices",
+    "lastUpdated": "2024-01-01",
+    "totalControls": 15,
+    "regulation": "CHILEAN_PRIVACY"
+  },
+  "controls": [
+    {
+      "controlId": "GDPR-BP-001",
+      "title": "Data Protection Impact Assessment (DPIA) Process",
+      "description": "Conduct DPIAs for high-risk processing activities as required by GDPR Article 35",
+      "category": "PRIVACY",
+      "pillar": "ACCOUNTABILITY",
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27701Mapping": "5.10.2"
+    },
+    {
+      "controlId": "GDPR-BP-002",
+      "title": "Data Protection Officer (DPO) Appointment",
+      "description": "Appoint a DPO when required by GDPR Article 37 (public authorities, large-scale processing, special categories)",
+      "category": "PRIVACY",
+      "pillar": "ACCOUNTABILITY",
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27701Mapping": "5.11.2"
+    },
+    {
+      "controlId": "GDPR-BP-003",
+      "title": "Privacy Notice Compliance",
+      "description": "Provide clear, concise privacy notices meeting GDPR Article 13/14 requirements",
+      "category": "PRIVACY",
+      "pillar": "TRANSPARENCY_CONFIDENTIALITY",
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27701Mapping": "5.8.1"
+    },
+    {
+      "controlId": "GDPR-BP-004",
+      "title": "Consent Management System",
+      "description": "Implement system to record, track, and manage consent with withdrawal capability",
+      "category": "PRIVACY",
+      "pillar": "LAWFULNESS_FAIRNESS",
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27701Mapping": "5.3.1"
+    },
+    {
+      "controlId": "GDPR-BP-005",
+      "title": "Data Subject Rights Portal",
+      "description": "Provide accessible mechanism for data subjects to exercise their rights (Articles 15-22)",
+      "category": "PRIVACY",
+      "pillar": "TRANSPARENCY_CONFIDENTIALITY",
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27701Mapping": "5.9.1"
+    },
+    {
+      "controlId": "GDPR-BP-006",
+      "title": "72-Hour Breach Notification Process",
+      "description": "Establish process to notify supervisory authority within 72 hours of breach discovery (Article 33)",
+      "category": "PRIVACY",
+      "pillar": "SECURITY",
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27701Mapping": "5.7.2"
+    },
+    {
+      "controlId": "GDPR-BP-007",
+      "title": "Data Subject Notification Process",
+      "description": "Process to notify data subjects of high-risk breaches without undue delay (Article 34)",
+      "category": "PRIVACY",
+      "pillar": "SECURITY",
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27701Mapping": "5.7.2"
+    },
+    {
+      "controlId": "GDPR-BP-008",
+      "title": "Records of Processing Activities (ROPA)",
+      "description": "Maintain comprehensive records of processing activities as per GDPR Article 30",
+      "category": "PRIVACY",
+      "pillar": "ACCOUNTABILITY",
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27701Mapping": "5.10.1"
+    },
+    {
+      "controlId": "GDPR-BP-009",
+      "title": "Data Processing Agreement (DPA) Management",
+      "description": "Ensure all processors have signed DPAs meeting GDPR Article 28 requirements",
+      "category": "PRIVACY",
+      "pillar": "ACCOUNTABILITY",
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27701Mapping": "6.1.1"
+    },
+    {
+      "controlId": "GDPR-BP-010",
+      "title": "Third Country Transfer Safeguards",
+      "description": "Implement appropriate safeguards for transfers to third countries (Articles 44-49)",
+      "category": "PRIVACY",
+      "pillar": "TRANSPARENCY_CONFIDENTIALITY",
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27701Mapping": "6.3.1"
+    },
+    {
+      "controlId": "GDPR-BP-011",
+      "title": "Data Minimization by Default",
+      "description": "Implement technical and organizational measures to ensure data minimization by default",
+      "category": "PRIVACY",
+      "pillar": "DATA_MINIMIZATION",
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27701Mapping": "5.1.2"
+    },
+    {
+      "controlId": "GDPR-BP-012",
+      "title": "Automated Decision-Making Safeguards",
+      "description": "Implement safeguards for automated decision-making including profiling (Article 22)",
+      "category": "PRIVACY",
+      "pillar": "LAWFULNESS_FAIRNESS",
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 2,
+      "iso27701Mapping": "5.2.1"
+    },
+    {
+      "controlId": "GDPR-BP-013",
+      "title": "Data Retention Policy Enforcement",
+      "description": "Automated enforcement of data retention policies and secure deletion",
+      "category": "PRIVACY",
+      "pillar": "DATA_MINIMIZATION",
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27701Mapping": "5.5.1"
+    },
+    {
+      "controlId": "GDPR-BP-014",
+      "title": "Privacy Training Program",
+      "description": "Regular privacy training for all personnel handling personal data",
+      "category": "PRIVACY",
+      "pillar": "ACCOUNTABILITY",
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27701Mapping": "5.11.3"
+    },
+    {
+      "controlId": "GDPR-BP-015",
+      "title": "Vendor Risk Assessment Process",
+      "description": "Regular assessment of third-party processors for compliance and security",
+      "category": "PRIVACY",
+      "pillar": "ACCOUNTABILITY",
+      "controlType": "TRANSVERSAL",
+      "minCriticalityLevel": 1,
+      "iso27701Mapping": "6.1.2"
+    }
+  ]
+}

@@ -4,16 +4,26 @@ import GapAnalysis from '@/models/GapAnalysis';
 import Asset from '@/models/Asset';
 import RemediationPlan from '@/models/RemediationPlan';
 import { getAuthUser } from '@/lib/auth-helper';
-import { DORAPillar } from '@/models/DORARequirement';
 import { ControlStatus } from '@/models/Control';
+import { RegulationType, getRegulationConfig, getPillars } from '@/lib/regulations';
 
-const DORA_PILLARS: DORAPillar[] = [
-  'ICT_RISK_MANAGEMENT',
-  'INCIDENT_MANAGEMENT',
-  'RESILIENCE_TESTING',
-  'THIRD_PARTY_RISK',
-  'INFORMATION_SHARING',
-];
+// Get pillars dynamically based on regulation type
+function getPillarsForRegulation(regulationType?: string): string[] {
+  if (!regulationType || regulationType === RegulationType.DORA) {
+    // Default to DORA pillars for backward compatibility
+    return [
+      'ICT_RISK_MANAGEMENT',
+      'INCIDENT_MANAGEMENT',
+      'RESILIENCE_TESTING',
+      'THIRD_PARTY_RISK',
+      'INFORMATION_SHARING',
+    ];
+  }
+  
+  // Get pillars from regulation config
+  const config = getRegulationConfig(regulationType as RegulationType);
+  return config.pillars.map(p => p.id);
+}
 
 // Risk multipliers based on criticality level (for max loss estimation)
 const CRITICALITY_MULTIPLIERS: Record<number, number> = {
@@ -41,13 +51,31 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
+    // Get regulation type from query parameter (defaults to DORA)
+    const searchParams = request.nextUrl.searchParams;
+    const regulationType = searchParams.get('regulation') || RegulationType.DORA;
+    
+    // Get pillars for this regulation
+    const pillars = getPillarsForRegulation(regulationType);
+    
     const userId = String(user.userId);
     
-    // Get all gap analyses for this user
-    const gapAnalyses = await GapAnalysis.find({ userId });
+    // Get all gap analyses for this user and regulation
+    const allGapAnalyses = await GapAnalysis.find({ 
+      userId,
+      regulationType: regulationType,
+    });
     
-    // Get all remediation plans for this user
-    const remediationPlans = await RemediationPlan.find({ userId });
+    // Additional filter by regulation pillars (safety check)
+    const filteredGapAnalyses = allGapAnalyses.filter((analysis: any) => {
+      return pillars.includes(analysis.pillar);
+    });
+    
+    // Get all remediation plans for this user and regulation
+    const remediationPlans = await RemediationPlan.find({ 
+      userId,
+      regulationType: regulationType,
+    });
     
     // Create a map of controlId -> remediation status for quick lookup
     const remediationStatusMap = new Map<string, string>();
@@ -72,8 +100,8 @@ export async function GET(request: NextRequest) {
       criticalGaps: number;
     }> = {};
     
-    // Initialize all pillars
-    DORA_PILLARS.forEach(pillar => {
+    // Initialize all pillars for the selected regulation
+    pillars.forEach(pillar => {
       pillarCompliance[pillar] = {
         compliancePercentage: 0,
         totalControls: 0,
@@ -84,12 +112,13 @@ export async function GET(request: NextRequest) {
     });
     
     // Process gap analyses with remediation status consideration
-    gapAnalyses.forEach((analysis: any) => {
+    filteredGapAnalyses.forEach((analysis: any) => {
       const pillar = analysis.pillar;
       if (pillarCompliance[pillar]) {
-        pillarCompliance[pillar].totalControls += analysis.totalControls || 0;
+        // Recalculate compliance based on gap analysis and remediation status
+        // This ensures compliance updates when remediation actions are completed
+        pillarCompliance[pillar].totalControls = analysis.totalControls || 0;
         
-        // Recalculate implemented controls based on remediation status
         let implementedCount = analysis.implementedControls || 0;
         let notImplementedGaps = 0;
         let criticalGapsCount = 0;
@@ -130,31 +159,59 @@ export async function GET(request: NextRequest) {
         pillarCompliance[pillar].gaps = notImplementedGaps;
         pillarCompliance[pillar].criticalGaps = criticalGapsCount;
         
-        // Recalculate compliance percentage
+        // Recalculate compliance percentage based on updated implemented count
         const totalControls = pillarCompliance[pillar].totalControls;
-        const relevantControls = totalControls; // All controls are relevant
-        pillarCompliance[pillar].compliancePercentage = relevantControls > 0
-          ? Math.round((implementedCount / relevantControls) * 100)
+        pillarCompliance[pillar].compliancePercentage = totalControls > 0
+          ? Math.round((implementedCount / totalControls) * 100)
           : 0;
+        
+        // Fallback: if no gaps array, use original compliance percentage
+        if (!analysis.gaps || !Array.isArray(analysis.gaps) || analysis.gaps.length === 0) {
+          if (analysis.compliancePercentage !== undefined && analysis.compliancePercentage !== null) {
+            pillarCompliance[pillar].compliancePercentage = analysis.compliancePercentage;
+          }
+          pillarCompliance[pillar].gaps = 0;
+          pillarCompliance[pillar].criticalGaps = 0;
+        }
+        
+        
+        console.log(`📊 Pillar ${pillar}: ${pillarCompliance[pillar].compliancePercentage}% (${pillarCompliance[pillar].totalControls} controls, ${pillarCompliance[pillar].gaps} gaps)`);
       }
     });
     
     // Calculate overall compliance
-    let totalCompliance = 0;
+    // Use weighted average based on total controls per pillar, not just simple average
+    let totalComplianceWeighted = 0;
+    let totalControlsAcrossPillars = 0;
     let pillarCount = 0;
+    
     Object.values(pillarCompliance).forEach(pillar => {
       if (pillar.totalControls > 0) {
-        totalCompliance += pillar.compliancePercentage;
+        // Weight by number of controls in this pillar
+        totalComplianceWeighted += pillar.compliancePercentage * pillar.totalControls;
+        totalControlsAcrossPillars += pillar.totalControls;
         pillarCount++;
       }
     });
-    const overallCompliance = pillarCount > 0 ? Math.round(totalCompliance / pillarCount) : 0;
+    
+    // Calculate weighted average compliance
+    const overallCompliance = totalControlsAcrossPillars > 0 
+      ? Math.round(totalComplianceWeighted / totalControlsAcrossPillars)
+      : (pillarCount > 0 ? Math.round(Object.values(pillarCompliance).reduce((sum, p) => sum + p.compliancePercentage, 0) / pillarCount) : 0);
+    
+    console.log(`📊 Overall Compliance Calculation:`);
+    console.log(`   Total Controls: ${totalControlsAcrossPillars}`);
+    console.log(`   Pillars with controls: ${pillarCount}`);
+    console.log(`   Weighted Compliance: ${overallCompliance}%`);
+    console.log(`   Pillar breakdown:`, Object.entries(pillarCompliance).map(([id, p]) => 
+      `${id}: ${p.compliancePercentage}% (${p.totalControls} controls, ${p.gaps} gaps)`
+    ));
     
     // Calculate estimated max loss
     let estimatedMaxLoss = 0;
     
     // For each gap analysis, calculate potential loss
-    gapAnalyses.forEach((analysis: any) => {
+    filteredGapAnalyses.forEach((analysis: any) => {
       if (!analysis.gaps || !Array.isArray(analysis.gaps)) return;
       
       analysis.gaps.forEach((gap: any) => {
@@ -198,12 +255,22 @@ export async function GET(request: NextRequest) {
     };
     
     return NextResponse.json({
+      regulationType,
       overallCompliance,
       pillarCompliance,
       estimatedMaxLoss: Math.round(estimatedMaxLoss),
       estimatedMaxLossFormatted: formatCurrency(estimatedMaxLoss),
       totalAssets: assets.length,
-      totalGapAnalyses: gapAnalyses.length,
+      totalGapAnalyses: filteredGapAnalyses.length,
+      pillars: pillars.map(p => {
+        const config = getRegulationConfig(regulationType as RegulationType);
+        const pillarConfig = config.pillars.find(pl => pl.id === p);
+        return {
+          id: p,
+          name: pillarConfig?.name || p,
+          nameEs: pillarConfig?.nameEs,
+        };
+      }),
     });
   } catch (error: any) {
     console.error('Error fetching KPIs:', error);

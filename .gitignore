@@ -27,6 +27,9 @@ yarn-error.log*
 .env
 .env.local
 
+# VPS deployment config (contains sensitive info)
+.vps-config
+
 # vercel
 .vercel
 

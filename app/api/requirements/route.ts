@@ -1,24 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDBLocal } from '@/lib/mongodb-local';
 import DORARequirement from '@/models/DORARequirement';
+import Requirement from '@/models/Requirement';
 import Control from '@/models/Control';
 import { ensureRequirementsImported } from '@/lib/auto-import';
+import { RegulationType } from '@/lib/regulations';
 import * as XLSX from 'xlsx';
+import { RequirementOperations } from '@/lib/model-operations';
 
 // GET all requirements
 export async function GET(request: NextRequest) {
   try {
     await connectDBLocal(); // Use local storage if MongoDB not available
     
-    // Auto-import requirements if database is empty
-    await ensureRequirementsImported();
-    
     const searchParams = request.nextUrl.searchParams;
     const pillar = searchParams.get('pillar');
     const includeCounts = searchParams.get('includeCounts') === 'true';
+    const regulation = searchParams.get('regulation') || RegulationType.DORA;
     
-    const query = pillar ? { pillar } : {};
-    const requirements = await DORARequirement.find(query, { requirementId: 1 });
+    console.log(`[API /requirements] Requested regulation: ${regulation}, pillar: ${pillar || 'all'}`);
+    
+    // Auto-import requirements if database is empty (only for DORA)
+    if (regulation === RegulationType.DORA) {
+      await ensureRequirementsImported();
+    }
+    
+    let requirements: any[] = [];
+    
+    // Get requirements using abstraction layer
+    const query: any = {};
+    if (pillar) query.pillar = pillar;
+    requirements = await RequirementOperations.findByRegulation(regulation, query);
+    
+    console.log(`[API /requirements] Found ${requirements.length} requirements for regulation ${regulation}`);
     
     // If includeCounts is true, add control counts for each requirement
     if (includeCounts) {
@@ -41,7 +55,7 @@ export async function GET(request: NextRequest) {
           });
           
           return {
-            ...req.toObject ? req.toObject() : req,
+            ...req,
             associatedControlsCount: matchingControls.length,
           };
         })

@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
-import { useLocalStorage } from '@/lib/local-storage';
+import { isLocalStorage } from '@/lib/mongodb-local';
 import { LocalModel } from './LocalModel';
 
 export interface IAnswer {
@@ -52,7 +52,7 @@ const QuestionnaireResponseSchema = new Schema<IQuestionnaireResponse>(
 // Export model with local storage fallback
 let QuestionnaireResponseModel: any;
 
-if (useLocalStorage()) {
+if (isLocalStorage()) {
   QuestionnaireResponseModel = new LocalModel<IQuestionnaireResponse>('QuestionnaireResponse');
 } else {
   QuestionnaireResponseModel = mongoose.models.QuestionnaireResponse || 

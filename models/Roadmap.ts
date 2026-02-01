@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
 import { DORAPillar } from './DORARequirement';
-import { useLocalStorage } from '@/lib/local-storage';
+import { isLocalStorage } from '@/lib/mongodb-local';
 import { LocalModel } from './LocalModel';
 
 export interface IRoadmapTask {
@@ -24,6 +24,7 @@ export interface IRoadmapTask {
 
 export interface IRoadmap extends Document {
   userId: Types.ObjectId;
+  regulationType?: string;
   name: string;
   description?: string;
   startDate: Date;
@@ -67,6 +68,10 @@ const RoadmapSchema = new Schema<IRoadmap>(
       ref: 'User',
       required: true,
     },
+    regulationType: {
+      type: String,
+      default: 'DORA',
+    },
     name: {
       type: String,
       required: true,
@@ -93,7 +98,7 @@ const RoadmapSchema = new Schema<IRoadmap>(
 // Export model with local storage fallback
 let RoadmapModel: any;
 
-if (useLocalStorage()) {
+if (isLocalStorage()) {
   RoadmapModel = new LocalModel<IRoadmap>('Roadmap');
 } else {
   RoadmapModel = mongoose.models.Roadmap || 

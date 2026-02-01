@@ -13,12 +13,39 @@ export async function GET(request: NextRequest) {
     
     const searchParams = request.nextUrl.searchParams;
     const pillar = searchParams.get('pillar');
+    const regulation = searchParams.get('regulation');
     
     const query: any = {};
     if (pillar) query.pillar = pillar;
     
     // Get all questions - simple approach
     let allQuestions = await Question.find(query);
+    
+    // Filter by regulation if specified
+    if (regulation === 'CHILEAN_PRIVACY') {
+      // Chilean Privacy questions: check regulationType field, questionId prefix, or pillars
+      const chileanPrivacyPillars = [
+        'LAWFULNESS_FAIRNESS',
+        'PURPOSE_LIMITATION',
+        'DATA_MINIMIZATION',
+        'PROPORTIONALITY',
+        'QUALITY',
+        'ACCOUNTABILITY',
+        'SECURITY',
+        'TRANSPARENCY_CONFIDENTIALITY',
+      ];
+      allQuestions = allQuestions.filter((q: any) => 
+        q.regulationType === 'CHILEAN_PRIVACY' ||
+        q.questionId?.startsWith('Q-PRIV-') || 
+        chileanPrivacyPillars.includes(q.pillar || '')
+      );
+    } else if (regulation === 'DORA') {
+      // DORA questions - exclude Chilean Privacy
+      allQuestions = allQuestions.filter((q: any) => 
+        q.regulationType !== 'CHILEAN_PRIVACY' &&
+        !q.questionId?.startsWith('Q-PRIV-')
+      );
+    }
     
     console.log(`📋 Found ${allQuestions.length} questions in database`);
     

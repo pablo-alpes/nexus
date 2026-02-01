@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+// DORA-only home page - no regulation selector
 
 export default function Home() {
   const router = useRouter();

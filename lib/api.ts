@@ -1,4 +1,9 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const getApiUrl = () => {
+  if (typeof window !== 'undefined') {
+    return process.env.NEXT_PUBLIC_API_URL || window.location.origin + '/api';
+  }
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+};
 
 export async function apiRequest<T>(
   endpoint: string,
@@ -15,7 +20,7 @@ export async function apiRequest<T>(
   if (!token && process.env.NEXT_PUBLIC_TEST_MODE === 'true') {
     // Try to get test token
     try {
-      const testResponse = await fetch(`${API_URL}/auth/test-login`, { method: 'POST' });
+      const testResponse = await fetch(`${getApiUrl()}/auth/test-login`, { method: 'POST' });
       if (testResponse.ok) {
         const testData = await testResponse.json();
         if (testData.token) {
@@ -32,7 +37,7 @@ export async function apiRequest<T>(
     headers['Authorization'] = `Bearer ${token}`;
   }
   
-  const response = await fetch(`${API_URL}${endpoint}`, {
+  const response = await fetch(`${getApiUrl()}${endpoint}`, {
     ...options,
     headers,
   });
@@ -51,7 +56,7 @@ export async function uploadFile(
 ): Promise<any> {
   const token = localStorage.getItem('token');
   
-  const response = await fetch(`${API_URL}${endpoint}`, {
+  const response = await fetch(`${getApiUrl()}${endpoint}`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,

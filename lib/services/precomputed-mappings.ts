@@ -4,8 +4,10 @@
  */
 
 import { connectDBLocal } from '@/lib/mongodb-local';
+import { RegulationType, getRegulationConfig } from '@/lib/regulations';
 import Question from '@/models/Question';
 import DORARequirement from '@/models/DORARequirement';
+import Requirement from '@/models/Requirement';
 import Control from '@/models/Control';
 import QuestionMapping from '@/models/QuestionMapping';
 import RuleVersion from '@/models/RuleVersion';
@@ -14,6 +16,7 @@ import fs from 'fs';
 import path from 'path';
 
 const ISO_CONTROLS_PATH = path.join(process.cwd(), 'data', 'iso27002-controls.json');
+const ISO27701_CONTROLS_PATH = path.join(process.cwd(), 'data', 'iso27701-controls.json');
 
 export interface PrecomputedMappingResult {
   questionId: string;
@@ -36,8 +39,14 @@ export interface PrecomputedMappingResult {
 /**
  * Get current rule version from iso27002-controls.json
  */
-export function getCurrentRuleVersion(): string {
+export function getCurrentRuleVersion(regulationType?: RegulationType): string {
   try {
+    // For Chilean Privacy, use version 2.0
+    if (regulationType === RegulationType.CHILEAN_PRIVACY) {
+      return '2.0';
+    }
+    
+    // For DORA, use version from ISO controls file
     if (fs.existsSync(ISO_CONTROLS_PATH)) {
       const isoControls = JSON.parse(fs.readFileSync(ISO_CONTROLS_PATH, 'utf8'));
       return isoControls.metadata?.version || '1.0';
@@ -51,10 +60,10 @@ export function getCurrentRuleVersion(): string {
 /**
  * Get or create active rule version
  */
-export async function getActiveRuleVersion(): Promise<string> {
+export async function getActiveRuleVersion(regulationType?: RegulationType): Promise<string> {
   await connectDBLocal();
   
-  const currentVersion = getCurrentRuleVersion();
+  const currentVersion = getCurrentRuleVersion(regulationType);
   
   // Check if version exists
   let ruleVersion = await RuleVersion.findOne({ version: currentVersion });
@@ -121,9 +130,13 @@ export async function needsRecomputation(ruleVersion: string): Promise<boolean> 
 
 /**
  * Get requirements from control mappings for a question
+ * Supports both DORA and Chilean Privacy regulations
  */
-async function getRequirementsFromControls(question: any): Promise<string[]> {
+async function getRequirementsFromControls(question: any, regulationType?: RegulationType): Promise<string[]> {
   await connectDBLocal();
+  
+  // Determine regulation type from question or parameter
+  const regType = regulationType || (question.regulationType as RegulationType) || RegulationType.DORA;
   
   const controls = await Control.find({ pillar: question.pillar });
   const reqsFromControls = new Set<string>();
@@ -132,9 +145,23 @@ async function getRequirementsFromControls(question: any): Promise<string[]> {
   for (const control of controls) {
     if (control.requirementIds && Array.isArray(control.requirementIds)) {
       for (const reqId of control.requirementIds) {
-        const req = await DORARequirement.findOne({
-          $or: [{ _id: reqId }, { requirementId: String(reqId) }],
-        });
+        let req = null;
+        
+        // Try generic Requirement model first (for Chilean Privacy)
+        if (regType === RegulationType.CHILEAN_PRIVACY) {
+          req = await Requirement.findOne({
+            regulationType: regType,
+            $or: [{ _id: reqId }, { requirementId: String(reqId) }],
+          });
+        }
+        
+        // Fallback to DORARequirement (for DORA or if not found)
+        if (!req) {
+          req = await DORARequirement.findOne({
+            $or: [{ _id: reqId }, { requirementId: String(reqId) }],
+          });
+        }
+        
         if (req) {
           const reqKey = (req as any).requirementId || String(req._id);
           reqsFromControls.add(reqKey);
@@ -146,14 +173,25 @@ async function getRequirementsFromControls(question: any): Promise<string[]> {
     }
   }
   
-  // Get requirements from ISO controls JSON
-  if (fs.existsSync(ISO_CONTROLS_PATH)) {
+  // Get requirements from ISO controls JSON (regulation-specific)
+  if (regType === RegulationType.DORA && fs.existsSync(ISO_CONTROLS_PATH)) {
     const isoControls = JSON.parse(fs.readFileSync(ISO_CONTROLS_PATH, 'utf8')).controls;
     const pillarISOControls = isoControls.filter((c: any) => c.pillar === question.pillar);
     
     pillarISOControls.forEach((control: any) => {
       if (control.doraRequirements && Array.isArray(control.doraRequirements)) {
         control.doraRequirements.forEach((reqId: string) => {
+          reqsFromControls.add(reqId);
+        });
+      }
+    });
+  } else if (regType === RegulationType.CHILEAN_PRIVACY && fs.existsSync(ISO27701_CONTROLS_PATH)) {
+    const isoControls = JSON.parse(fs.readFileSync(ISO27701_CONTROLS_PATH, 'utf8')).controls;
+    const pillarISOControls = isoControls.filter((c: any) => c.pillar === question.pillar);
+    
+    pillarISOControls.forEach((control: any) => {
+      if (control.chileRequirements && Array.isArray(control.chileRequirements)) {
+        control.chileRequirements.forEach((reqId: string) => {
           reqsFromControls.add(reqId);
         });
       }
@@ -174,19 +212,33 @@ export async function precomputeQuestionMapping(
   question: any,
   ruleVersion: string,
   questionEmbedding?: number[],
-  requirementEmbeddings?: Map<string, number[]>
+  requirementEmbeddings?: Map<string, number[]>,
+  regulationType?: RegulationType
 ): Promise<PrecomputedMappingResult> {
   await connectDBLocal();
   
-  console.log(`Precomputing mappings for ${question.questionId}...`);
+  // Determine regulation type
+  const regType = regulationType || (question.regulationType as RegulationType) || RegulationType.DORA;
+  
+  console.log(`Precomputing mappings for ${question.questionId} (${regType})...`);
   
   // Configuration: Similarity thresholds and limits
   const MIN_SIMILARITY_THRESHOLD = 0.5; // Only include medium/high confidence (>= 0.5)
   const MAX_REQUIREMENTS_PER_QUESTION = 20; // Maximum requirements to include
   const PRIORITY_BOOST_FOR_CONTROL_BASED = 0.05; // Boost similarity for control-based requirements
   
-  // Step 1: Get all requirements for this pillar
-  const allRequirements = await DORARequirement.find({ pillar: question.pillar });
+  // Step 1: Get all requirements for this pillar (regulation-aware)
+  let allRequirements: any[] = [];
+  
+  if (regType === RegulationType.CHILEAN_PRIVACY) {
+    allRequirements = await Requirement.find({ 
+      regulationType: regType,
+      pillar: question.pillar 
+    });
+  } else {
+    // Default to DORA
+    allRequirements = await DORARequirement.find({ pillar: question.pillar });
+  }
   
   // Step 2: Generate question embedding (use provided or compute)
   const questionText = `${question.pillar || ''} ${question.text}`;
@@ -221,7 +273,7 @@ export async function precomputeQuestionMapping(
   }
   
   // Step 4: Get control-based requirements (for reference, but we'll filter by NLP similarity)
-  const allControlBasedReqs = await getRequirementsFromControls(question);
+  const allControlBasedReqs = await getRequirementsFromControls(question, regType);
   const controlBasedSet = new Set(allControlBasedReqs);
   
   // Step 5: Mark control-based requirements and apply priority boost
@@ -314,12 +366,13 @@ export async function precomputeQuestionMapping(
 /**
  * Precompute all question mappings for a rule version
  */
-export async function precomputeAllMappings(ruleVersion?: string): Promise<void> {
+export async function precomputeAllMappings(ruleVersion?: string, regulationType?: RegulationType): Promise<void> {
   await connectDBLocal();
   
   const version = ruleVersion || getCurrentRuleVersion();
+  const regType = regulationType || RegulationType.DORA;
   
-  console.log(`\n🚀 Starting precomputation for rule version ${version}...\n`);
+  console.log(`\n🚀 Starting precomputation for rule version ${version} (${regType})...\n`);
   
   // Update rule version status
   await RuleVersion.findOneAndUpdate(
@@ -328,8 +381,23 @@ export async function precomputeAllMappings(ruleVersion?: string): Promise<void>
     { upsert: true, new: true }
   );
   
-  // Get all questions (deduplicated)
-  const allQuestions = await Question.find();
+  // Get all questions (deduplicated, optionally filtered by regulation)
+  let allQuestions = await Question.find();
+  
+  // Filter by regulation if question has regulationType field
+  if (regType) {
+    allQuestions = allQuestions.filter(q => {
+      // If question has regulationType, filter by it
+      if ((q as any).regulationType) {
+        return (q as any).regulationType === regType;
+      }
+      // Otherwise, use pillar to determine (DORA pillars vs Chilean Privacy pillars)
+      const config = getRegulationConfig(regType);
+      const pillarIds = config.pillars.map(p => p.id);
+      return pillarIds.includes(q.pillar || '');
+    });
+  }
+  
   const seenQuestionIds = new Set();
   const uniqueQuestions = allQuestions.filter(q => {
     if (seenQuestionIds.has(q.questionId)) return false;
@@ -337,7 +405,7 @@ export async function precomputeAllMappings(ruleVersion?: string): Promise<void>
     return true;
   });
   
-  console.log(`Found ${uniqueQuestions.length} unique questions\n`);
+  console.log(`Found ${uniqueQuestions.length} unique questions for ${regType}\n`);
   
   // Pre-load NLP model once (this will download it if needed)
   console.log('📥 Pre-loading NLP model (this may take a few minutes on first run)...');
@@ -353,8 +421,16 @@ export async function precomputeAllMappings(ruleVersion?: string): Promise<void>
   // Cache for requirement embeddings (shared across questions)
   const requirementEmbeddings = new Map<string, number[]>();
   
-  // Get all unique requirements across all pillars
-  const allRequirements = await DORARequirement.find();
+  // Get all unique requirements across all pillars (regulation-aware)
+  // Use RequirementOperations for proper abstraction
+  let allRequirements: any[] = [];
+  if (regType === RegulationType.CHILEAN_PRIVACY) {
+    const { RequirementOperations } = await import('../model-operations');
+    allRequirements = await RequirementOperations.findByRegulation('CHILEAN_PRIVACY');
+  } else {
+    allRequirements = await DORARequirement.find();
+  }
+  
   console.log(`📊 Pre-computing embeddings for ${allRequirements.length} requirements...`);
   const { generateEmbedding } = await import('./nlp-similarity');
   
@@ -376,7 +452,7 @@ export async function precomputeAllMappings(ruleVersion?: string): Promise<void>
       const questionText = `${question.text}`;
       const questionEmbedding = await generateEmbedding(questionText);
       
-      await precomputeQuestionMapping(question, version, questionEmbedding, requirementEmbeddings);
+      await precomputeQuestionMapping(question, version, questionEmbedding, requirementEmbeddings, regType);
       processed++;
       console.log(`✅ [${processed}/${uniqueQuestions.length}] ${question.questionId}`);
     } catch (error: any) {

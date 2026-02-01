@@ -1,9 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest } from '@/lib/api';
+import { useTranslation } from '@/lib/hooks/useTranslation';
+import { RegulationType } from '@/lib/regulations';
+import { LanguageToggle } from '@/components/LanguageToggle';
 
 interface Control {
   _id: string;
@@ -20,6 +23,8 @@ interface Control {
     description: string;
     relevance: string;
   }>;
+  category?: string;
+  standard?: string;
 }
 
 interface AssociatedRequirement {
@@ -40,6 +45,10 @@ const COMPLIANCE_STATUSES = [
 
 export default function ControlsPage() {
   const router = useRouter();
+  const { language } = useTranslation();
+  const pathname = usePathname();
+  const isChileanPrivacy = pathname?.includes('chile-privacy') || pathname?.includes('chilean-privacy');
+  const regulationType = isChileanPrivacy ? RegulationType.CHILEAN_PRIVACY : RegulationType.DORA;
   const [controls, setControls] = useState<Control[]>([]);
   const [selectedControl, setSelectedControl] = useState<Control | null>(null);
   const [showISO27001, setShowISO27001] = useState(false);
@@ -57,8 +66,8 @@ export default function ControlsPage() {
   const loadControls = async () => {
     try {
       const url = selectedPillar 
-        ? `/controls?pillar=${selectedPillar}&includeCounts=true`
-        : '/controls?includeCounts=true';
+        ? `/controls?pillar=${selectedPillar}&regulation=${regulationType}&includeCounts=true`
+        : `/controls?regulation=${regulationType}&includeCounts=true`;
       const response = await apiRequest<{ controls: Control[] }>(url);
       setControls(response.controls);
     } catch (error) {
@@ -160,25 +169,95 @@ export default function ControlsPage() {
     }
   };
 
+  const getControlStandard = (control: Control): string => {
+    const controlId = control.controlId.toUpperCase();
+    
+    // Check controlId patterns (order matters - more specific first)
+    if (controlId.includes('ISO27701') || controlId.startsWith('ISO27701-')) {
+      return 'ISO 27701';
+    }
+    if (controlId.includes('ISO27002') || controlId.startsWith('ISO27002-')) {
+      return 'ISO 27002';
+    }
+    if (controlId.includes('ISO-20000') || controlId.includes('ISO20000')) {
+      return 'ISO 20000';
+    }
+    if (controlId.includes('ISO27017')) {
+      return 'ISO 27017';
+    }
+    if (controlId.includes('ISO27018')) {
+      return 'ISO 27018';
+    }
+    if (controlId.includes('ISO22301')) {
+      return 'ISO 22301';
+    }
+    if (controlId.includes('ISO31000')) {
+      return 'ISO 31000';
+    }
+    // Check if controlId starts with "ISO-" (generic ISO 27002 pattern)
+    if (controlId.startsWith('ISO-')) {
+      return 'ISO 27002';
+    }
+    // Check if there's a standard field
+    if (control.standard) {
+      return control.standard;
+    }
+    // Check category
+    if (control.category === 'PRIVACY') {
+      return 'ISO 27701';
+    }
+    // Default fallback
+    if (control.iso27001Mappings && control.iso27001Mappings.length > 0) {
+      return 'ISO 27001';
+    }
+    return 'ISO 27001'; // Default
+  };
+
+  const getStandardColor = (standard: string): string => {
+    switch (standard) {
+      case 'ISO 27701':
+        return 'bg-purple-100 text-purple-800';
+      case 'ISO 27002':
+        return 'bg-indigo-100 text-indigo-800';
+      case 'ISO 20000':
+        return 'bg-teal-100 text-teal-800';
+      case 'ISO 27017':
+        return 'bg-cyan-100 text-cyan-800';
+      case 'ISO 27018':
+        return 'bg-sky-100 text-sky-800';
+      case 'ISO 22301':
+        return 'bg-emerald-100 text-emerald-800';
+      case 'ISO 31000':
+        return 'bg-violet-100 text-violet-800';
+      case 'ISO 27001':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center space-x-8">
-              <Link href="/dashboard" className="text-2xl font-bold text-primary-600">
-                Nexus Cloud
+              <Link href={isChileanPrivacy ? '/chile-privacy/dashboard' : '/dashboard'} className={`text-2xl font-bold ${isChileanPrivacy ? 'text-blue-600' : 'text-primary-600'}`}>
+                {isChileanPrivacy ? 'Nexus Privacy' : 'Nexus Cloud'}
               </Link>
-              <Link href="/dashboard/controls" className="text-gray-700 hover:text-primary-600">
+              <Link href={isChileanPrivacy ? '/chile-privacy/dashboard/controls' : '/dashboard/controls'} className="text-gray-700 hover:text-primary-600">
                 Controls
               </Link>
+            </div>
+            <div className="flex items-center">
+              <LanguageToggle />
             </div>
           </div>
         </div>
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold mb-6">Controls</h1>
+        <h1 className="text-3xl font-bold">{isChileanPrivacy ? (language === 'es' ? 'Controles' : 'Controls') : 'Controls'}</h1>
 
         {/* Filter */}
         <div className="bg-white rounded-lg shadow p-4 mb-6">
@@ -220,12 +299,15 @@ export default function ControlsPage() {
                       <p className="text-gray-700 mb-2">{control.description}</p>
                       <div className="flex items-center gap-4 text-sm text-gray-500">
                         <span className="capitalize">{control.pillar.replace(/_/g, ' ')}</span>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${getStandardColor(getControlStandard(control))}`}>
+                          {getControlStandard(control)}
+                        </span>
                         {requirementsCount > 0 && (
                           <button
                             onClick={() => toggleRequirementsExpansion(control.controlId)}
                             className="flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium"
                           >
-                            <span>{requirementsCount} Requirement{requirementsCount !== 1 ? 's' : ''}</span>
+                            <span>{requirementsCount} {language === 'es' ? 'Requisito' : 'Requirement'}{requirementsCount !== 1 ? (language === 'es' ? 's' : 's') : ''}</span>
                             <span className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
                               ▼
                             </span>
@@ -246,12 +328,17 @@ export default function ControlsPage() {
                           </option>
                         ))}
                       </select>
-                      <button
-                        onClick={() => loadISOSuggestions(control)}
-                        className="px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm hover:bg-blue-200"
-                      >
-                        ISO 27001
-                      </button>
+                      <span className={`px-3 py-1 rounded text-sm font-medium ${getStandardColor(getControlStandard(control))}`}>
+                        {getControlStandard(control)}
+                      </span>
+                      {control.iso27001Mappings && control.iso27001Mappings.length > 0 && (
+                        <button
+                          onClick={() => loadISOSuggestions(control)}
+                          className="px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm hover:bg-blue-200"
+                        >
+                          {language === 'es' ? 'Ver Mapeos' : 'View Mappings'}
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -295,13 +382,15 @@ export default function ControlsPage() {
           </div>
         )}
 
-        {/* ISO 27001 Modal */}
+        {/* ISO Mappings Modal */}
         {showISO27001 && selectedControl && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-2xl font-bold">ISO 27001 Suggestions</h2>
+                  <h2 className="text-2xl font-bold">
+                    {getControlStandard(selectedControl)} {language === 'es' ? 'Mapeos' : 'Mappings'}
+                  </h2>
                   <button
                     onClick={() => {
                       setShowISO27001(false);

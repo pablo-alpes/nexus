@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
 import { ControlStatus } from './Control';
 import { DORAPillar } from './DORARequirement';
-import { useLocalStorage } from '@/lib/local-storage';
+import { isLocalStorage } from '@/lib/mongodb-local';
 import { LocalModel } from './LocalModel';
 
 export interface IGap {
@@ -13,8 +13,9 @@ export interface IGap {
 
 export interface IGapAnalysis extends Document {
   userId: Types.ObjectId;
+  regulationType?: string;
   gaps: IGap[];
-  pillar: DORAPillar;
+  pillar: string; // Changed from DORAPillar to string to support multiple regulations
   totalControls: number;
   implementedControls: number;
   compliancePercentage: number;
@@ -43,10 +44,14 @@ const GapAnalysisSchema = new Schema<IGapAnalysis>(
       required: true,
     },
     gaps: [GapSchema],
+    regulationType: {
+      type: String,
+      default: 'DORA',
+    },
     pillar: {
       type: String,
-      enum: Object.values(DORAPillar),
       required: true,
+      // Removed enum constraint to support multiple regulations
     },
     totalControls: {
       type: Number,
@@ -72,7 +77,7 @@ const GapAnalysisSchema = new Schema<IGapAnalysis>(
 // Export model with local storage fallback
 let GapAnalysisModel: any;
 
-if (useLocalStorage()) {
+if (isLocalStorage()) {
   GapAnalysisModel = new LocalModel<IGapAnalysis>('GapAnalysis');
 } else {
   GapAnalysisModel = mongoose.models.GapAnalysis || 

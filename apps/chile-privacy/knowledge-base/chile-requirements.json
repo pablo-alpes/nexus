@@ -1,0 +1,12 @@
+{
+  "metadata": {
+    "regulation": "CHILEAN_PRIVACY",
+    "lawName": "Ley 21.719 - Protección de Datos Personales",
+    "source": "https://www.bcn.cl/leychile/navegar?idNorma=1209272",
+    "version": "1.0",
+    "lastUpdated": "2024-01-01",
+    "effectiveDate": "2026-12-01",
+    "authority": "Agencia de Protección de Datos Personales (APDP)"
+  },
+  "note": "Chilean Privacy requirements are stored in data/chilean-privacy-requirements.json. Run 'node scripts/fetch-chilean-privacy-law.js' to update."
+}

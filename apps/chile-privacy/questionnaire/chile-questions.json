@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "regulation": "CHILEAN_PRIVACY",
+    "version": "1.0",
+    "lastUpdated": "2024-01-01",
+    "totalQuestions": 24,
+    "pillars": [
+      "LAWFULNESS_FAIRNESS",
+      "PURPOSE_LIMITATION",
+      "DATA_MINIMIZATION",
+      "PROPORTIONALITY",
+      "QUALITY",
+      "ACCOUNTABILITY",
+      "SECURITY",
+      "TRANSPARENCY_CONFIDENTIALITY"
+    ]
+  },
+  "note": "Chilean Privacy questions are stored in the database. Run 'node scripts/create-chilean-privacy-questionnaire.js' to create them."
+}

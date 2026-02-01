@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { useLocalStorage } from '@/lib/local-storage';
+import { isLocalStorage } from '@/lib/mongodb-local';
 import { LocalModel } from './LocalModel';
 
 export interface IRuleVersion extends Document {
@@ -69,7 +69,7 @@ const RuleVersionSchema = new Schema<IRuleVersion>(
 // Export model with local storage fallback
 let RuleVersionModel: any;
 
-if (useLocalStorage()) {
+if (isLocalStorage()) {
   RuleVersionModel = new LocalModel<IRuleVersion>('RuleVersion');
 } else {
   RuleVersionModel = mongoose.models.RuleVersion || 
