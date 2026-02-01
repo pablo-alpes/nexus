@@ -1,107 +1,81 @@
-#!/bin/bash
-
-# Deploy to VPS Script
-# Run this from your local machine to deploy to VPS
-# Usage: ./deploy-to-vps.sh
-
-set -e
-
-# Configuration - UPDATE THESE VALUES
-VPS_USER="root"
-VPS_HOST="your-vps-ip"
-VPS_PATH="/root/nexus/nexus"
-BRANCH="privacy-chile"  # or your deployment branch
-
-echo "🚀 Deploying to VPS..."
-
-# Check if .vps-config exists
-if [ -f ".vps-config" ]; then
-    echo "📝 Loading VPS configuration..."
-    source .vps-config
-fi
-
-# Validate configuration
-if [ "$VPS_HOST" == "your-vps-ip" ]; then
-    echo "❌ Please configure VPS settings first!"
-    echo ""
-    echo "Create a .vps-config file with:"
-    echo "  VPS_USER=root"
-    echo "  VPS_HOST=your-vps-ip"
-    echo "  VPS_PATH=/root/nexus/nexus"
-    echo "  BRANCH=privacy-chile"
-    exit 1
-fi
-
-# Check if we're in a git repository
-if [ ! -d ".git" ]; then
-    echo "❌ Not a git repository. Please run from the nexus directory."
-    exit 1
-fi
-
-# Get current branch
-CURRENT_BRANCH=$(git branch --show-current)
-echo "📦 Current branch: $CURRENT_BRANCH"
-
-# Ask if user wants to commit changes
-if [ -n "$(git status --porcelain)" ]; then
-    echo ""
-    echo "⚠️  You have uncommitted changes:"
-    git status --short
-    echo ""
-    read -p "Do you want to commit and push changes? (y/n) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        read -p "Commit message: " COMMIT_MSG
-        git add .
-        git commit -m "$COMMIT_MSG"
-        git push origin $CURRENT_BRANCH
-        echo "✅ Changes committed and pushed"
-    else
-        echo "⚠️  Deploying without committing changes..."
-    fi
-fi
-
-# Deploy to VPS
-echo ""
-echo "📤 Deploying to VPS ($VPS_USER@$VPS_HOST)..."
-echo "   Path: $VPS_PATH"
-echo "   Branch: $CURRENT_BRANCH"
-echo ""
-
 # Create deployment script for VPS
 cat > /tmp/vps-deploy.sh << 'DEPLOY_SCRIPT'
 #!/bin/bash
 set -e
 cd DEPLOY_PATH
+
+echo "📂 Current directory: $(pwd)"
+echo "📁 Files in directory:"
+ls -la | head -10
+
+# Check if npm is installed
+if ! command -v npm &> /dev/null; then
+    echo "⚠️  npm not found. Installing Node.js..."
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+    apt-get install -y nodejs
+    if ! command -v npm &> /dev/null; then
+        echo "❌ Failed to install npm. Please install Node.js manually on VPS."
+        exit 1
+    fi
+    echo "✅ Node.js and npm installed"
+fi
+
+# Set up git credential helper with token
+git config --global credential.helper store
+echo "https://GITHUB_TOKEN:x-oauth-basic@github.com" > ~/.git-credentials
+chmod 600 ~/.git-credentials
+
+# Update remote to use HTTPS
+git remote set-url origin https://github.com/REPO_PATH.git
+
+# Fetch and pull
+echo "📥 Fetching latest code..."
 git fetch origin
 git checkout DEPLOY_BRANCH
 git pull origin DEPLOY_BRANCH
+
+# Install dependencies
+echo "📦 Installing dependencies..."
 npm install
-if [ -f "package.json" ]; then
-    # If PM2 is running, restart it
-    if command -v pm2 &> /dev/null && pm2 list | grep -q "nexus"; then
-        echo "🔄 Restarting PM2 process..."
-        pm2 restart nexus-dev 2>/dev/null || pm2 restart nexus 2>/dev/null || true
-    fi
+
+# Check if PM2 is installed
+if ! command -v pm2 &> /dev/null; then
+    echo "📦 Installing PM2..."
+    npm install -g pm2
 fi
+
+# Create .env if it doesn't exist
+if [ ! -f ".env" ]; then
+    echo "📝 Creating .env file..."
+    cat > .env << 'ENVFILE'
+TEST_MODE=true
+USE_LOCAL_STORAGE=true
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
+NODE_ENV=development
+ENVFILE
+fi
+
+# Stop any existing process
+pm2 delete nexus-dev 2>/dev/null || pm2 delete nexus 2>/dev/null || true
+
+# Start the application
+echo "🚀 Starting application with PM2..."
+pm2 start npm --name "nexus-dev" -- run dev
+pm2 save
+
+# Wait a moment for app to start
+sleep 3
+
+# Show PM2 status
+echo ""
+echo "📊 PM2 Status:"
+pm2 list
+
+# Show recent logs
+echo ""
+echo "📋 Recent logs:"
+pm2 logs nexus-dev --lines 10 --nostream || true
+
+echo ""
 echo "✅ Deployment complete on VPS"
 DEPLOY_SCRIPT
-
-# Replace placeholders
-sed -i.bak "s|DEPLOY_PATH|$VPS_PATH|g" /tmp/vps-deploy.sh
-sed -i.bak "s|DEPLOY_BRANCH|$CURRENT_BRANCH|g" /tmp/vps-deploy.sh
-rm /tmp/vps-deploy.sh.bak 2>/dev/null || true
-
-# Copy and execute on VPS
-scp /tmp/vps-deploy.sh $VPS_USER@$VPS_HOST:/tmp/vps-deploy.sh
-ssh $VPS_USER@$VPS_HOST "chmod +x /tmp/vps-deploy.sh && bash /tmp/vps-deploy.sh"
-
-# Cleanup
-rm /tmp/vps-deploy.sh
-
-echo ""
-echo "✅ Deployment complete!"
-echo "🌐 Your app should be running at: http://$VPS_HOST:3000"
-echo ""
-echo "📝 To check logs on VPS:"
-echo "   ssh $VPS_USER@$VPS_HOST 'pm2 logs nexus-dev'"
