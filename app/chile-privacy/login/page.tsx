@@ -5,10 +5,9 @@
  * Route: /chile-privacy/login
  */
 
-import { useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { apiRequest } from '@/lib/api';
 
 export default function ChilePrivacyLogin() {
   const router = useRouter();
@@ -16,39 +15,86 @@ export default function ChilePrivacyLogin() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Fix hydration error by only rendering client-side content after mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleTestLogin = async () => {
+    if (!mounted) return;
+    
+    try {
+      setLoading(true);
+      setError('');
+      console.log('🔐 Quick Test Login clicked - Chilean Privacy');
+      
+      const response = await fetch('/api/auth/test-login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || 'Test login failed');
+      }
+
+      const data = await response.json();
+      
+      if (!data || !data.token) {
+        throw new Error('No token received from server');
+      }
+      
+      // Save token to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('token', data.token);
+        console.log('✅ Token saved to localStorage');
+        
+        // Force immediate redirect
+        console.log('📍 Redirecting to /chile-privacy/dashboard');
+        window.location.href = '/chile-privacy/dashboard';
+      }
+      
+    } catch (err: any) {
+      console.error('❌ Test login error:', err);
+      const errorMessage = err.message || 'Test login not available. Please check the console for details.';
+      setError(errorMessage);
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!mounted) return;
+    
     setError('');
     setLoading(true);
 
     try {
-      // Try test login first if in test mode
-      try {
-        const testResponse = await apiRequest<{ token: string; user: any; message?: string }>('/auth/test-login', {
-          method: 'POST',
-        });
-        
-        if (testResponse.token) {
-          localStorage.setItem('token', testResponse.token);
-          // Force redirect to Chilean Privacy dashboard - use replace to prevent back navigation
-          window.location.replace('/chile-privacy/dashboard');
-          return; // Ensure we don't continue execution
-        }
-      } catch (testErr) {
-        // Test login not available, continue with normal login
-      }
-
-      const response = await apiRequest<{ token: string; user: any }>('/auth/login', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ email, password }),
       });
 
-      localStorage.setItem('token', response.token);
-      // Force redirect to Chilean Privacy dashboard - use replace to prevent back navigation
-      window.location.replace('/chile-privacy/dashboard');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Login failed' }));
+        throw new Error(errorData.error || 'Login failed');
+      }
+
+      const data = await response.json();
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('token', data.token);
+        window.location.href = '/chile-privacy/dashboard';
+      }
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -67,26 +113,11 @@ export default function ChilePrivacyLogin() {
           </p>
           <button
             type="button"
-            onClick={async () => {
-              try {
-                console.log('🔐 Quick Test Login clicked - Chilean Privacy');
-                const response = await apiRequest<{ token: string; user: any }>('/auth/test-login', {
-                  method: 'POST',
-                });
-                localStorage.setItem('token', response.token);
-                console.log('✅ Token saved, redirecting to /chile-privacy/dashboard');
-                // Force redirect to Chilean Privacy dashboard - use replace to prevent back navigation
-                const redirectUrl = '/chile-privacy/dashboard';
-                console.log('📍 Redirect URL:', redirectUrl);
-                window.location.replace(redirectUrl);
-              } catch (err: any) {
-                console.error('❌ Test login error:', err);
-                setError(err.message || 'Test login not available');
-              }
-            }}
-            className="mt-2 w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"
+            onClick={handleTestLogin}
+            disabled={loading || !mounted}
+            className="mt-2 w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            Quick Test Login (No Password Required)
+            {loading ? 'Logging in...' : 'Quick Test Login (No Password Required)'}
           </button>
         </div>
         
