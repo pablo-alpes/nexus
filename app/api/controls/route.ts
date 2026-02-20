@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDBLocal } from '@/lib/mongodb-local';
-import Control from '@/models/Control';
+import { connectDBLocal, isLocalStorage } from '@/lib/mongodb-local';
+import Control, { getControlModel } from '@/models/Control';
 import DORARequirement from '@/models/DORARequirement';
 import { getAuthUser } from '@/lib/auth-helper';
 import { ensureControlsSetup } from '@/lib/auto-controls';
@@ -57,8 +57,9 @@ export async function GET(request: NextRequest) {
     }
     if (controlType) query.controlType = controlType;
     
-    // Local storage doesn't support populate, so we fetch directly
-    const controls = await Control.find(query, { controlId: 1 });
+    // Use regulation-scoped model for local storage (separate file per regulation)
+    const ControlModel = isLocalStorage() ? getControlModel(regulation) : Control;
+    const controls = await ControlModel.find(query, { controlId: 1 });
     
     // If includeCounts is true, add requirement counts for each control
     if (includeCounts) {
@@ -87,20 +88,21 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Create or update control
+// POST - Create or update control (regulation from query for storage scope)
 export async function POST(request: NextRequest) {
   try {
     await connectDBLocal();
     
-    // Check auth (bypassed in test mode)
     const user = getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
     const body = await request.json();
+    const regulation = body.regulation || request.nextUrl.searchParams.get('regulation') || RegulationType.DORA;
+    const ControlModel = isLocalStorage() ? getControlModel(regulation) : Control;
     
-    const control = await Control.findOneAndUpdate(
+    const control = await ControlModel.findOneAndUpdate(
       { controlId: body.controlId },
       body,
       { upsert: true, new: true }
@@ -116,13 +118,15 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT - Update control
+// PUT - Update control (regulation from query for storage scope)
 export async function PUT(request: NextRequest) {
   try {
     await connectDBLocal();
     
     const body = await request.json();
-    const { controlId, ...updateData } = body;
+    const { controlId, regulation, ...updateData } = body;
+    const reg = regulation || request.nextUrl.searchParams.get('regulation') || RegulationType.DORA;
+    const ControlModel = isLocalStorage() ? getControlModel(reg) : Control;
     
     if (!controlId) {
       return NextResponse.json(
@@ -131,7 +135,7 @@ export async function PUT(request: NextRequest) {
       );
     }
     
-    const control = await Control.findOneAndUpdate(
+    const control = await ControlModel.findOneAndUpdate(
       { controlId },
       updateData,
       { new: true }

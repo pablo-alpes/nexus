@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDBLocal } from '@/lib/mongodb-local';
+import { connectDBLocal, isLocalStorage } from '@/lib/mongodb-local';
 import QuestionnaireResponse from '@/models/QuestionnaireResponse';
-import Control from '@/models/Control';
-import Question from '@/models/Question';
-import DORARequirement from '@/models/DORARequirement';
+import Control, { getControlModel } from '@/models/Control';
+import Question, { getQuestionModel } from '@/models/Question';
 import { getAuthUser } from '@/lib/auth-helper';
 import { ensureControlsSetup } from '@/lib/auto-controls';
 import { getPrecomputedMappings, getActiveRuleVersion } from '@/lib/services/precomputed-mappings';
@@ -83,16 +82,16 @@ export async function POST(request: NextRequest) {
     
     const payload = user;
     const body = await request.json();
+    const regulationType = (body.regulation as RegulationType) || RegulationType.DORA;
+    const QuestionModel = isLocalStorage() ? getQuestionModel(regulationType) : Question;
+    const ControlModel = isLocalStorage() ? getControlModel(regulationType) : Control;
     
-    // NEW LOGIC: Calculate controls at the end after processing all answers
-    // Step 1: Collect all "no" and "yes" answers first
     const noAnswers: Array<{ question: any; answer: any }> = [];
     const yesAnswers: Array<{ question: any; answer: any }> = [];
     const notApplicableAnswers: Array<{ question: any; answer: any }> = [];
     
-    // Step 2: Process all answers and categorize them
     for (const answer of body.answers) {
-      const question = await Question.findOne({ _id: answer.questionId });
+      const question = await QuestionModel.findOne({ _id: answer.questionId });
       if (!question) continue;
       
       if (answer.value === 'no') {
@@ -104,15 +103,6 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // Step 3: Detect regulation from questions
-    // Check if any question has regulationType or starts with Q-PRIV-
-    const sampleQuestion = noAnswers.length > 0 ? noAnswers[0].question : (yesAnswers.length > 0 ? yesAnswers[0].question : null);
-    const isChileanPrivacy = sampleQuestion && (
-      sampleQuestion.regulationType === 'CHILEAN_PRIVACY' ||
-      sampleQuestion.questionId?.startsWith('Q-PRIV-')
-    );
-    const regulationType = isChileanPrivacy ? RegulationType.CHILEAN_PRIVACY : RegulationType.DORA;
-    
     // For "no" answers, find requirements using HYBRID APPROACH (Logic + NLP)
     const requirementsFromNoAnswers = new Set<string>();
     const requirementsFromYesAnswers = new Set<string>();
@@ -121,7 +111,7 @@ export async function POST(request: NextRequest) {
     // Process "no" answers: use precomputed mappings (control-based + NLP validated)
     for (const { question, answer } of noAnswers) {
       // Try to get precomputed mappings first
-      const precomputed = await getPrecomputedMappings(question.questionId, ruleVersion);
+      const precomputed = await getPrecomputedMappings(question.questionId, ruleVersion, regulationType);
       
       if (precomputed && precomputed.controlBasedRequirements.length > 0) {
         // Use precomputed control-based requirements (high confidence)
@@ -130,8 +120,9 @@ export async function POST(request: NextRequest) {
         });
         
         // Also include high-confidence NLP suggestions (similarity > 0.75, not already in control-based)
-        const highConfidenceSuggestions = precomputed.nlpSimilarities
-          .filter(s => !s.isControlBased && s.confidence === 'high' && s.similarity >= 0.75)
+        const nlpSim = precomputed.nlpSimilarities ?? [];
+        const highConfidenceSuggestions = nlpSim
+          .filter((s: { isControlBased?: boolean; confidence?: string; similarity?: number }) => !s.isControlBased && s.confidence === 'high' && (s.similarity ?? 0) >= 0.75)
           .map(s => s.requirementId);
         
         highConfidenceSuggestions.forEach((reqId: string) => {
@@ -156,7 +147,7 @@ export async function POST(request: NextRequest) {
     
     // Process "yes" answers: use precomputed mappings for conflict detection
     for (const { question, answer } of yesAnswers) {
-      const precomputed = await getPrecomputedMappings(question.questionId, ruleVersion);
+      const precomputed = await getPrecomputedMappings(question.questionId, ruleVersion, regulationType);
       
       if (precomputed && precomputed.controlBasedRequirements.length > 0) {
         // Use precomputed control-based requirements
@@ -220,7 +211,7 @@ export async function POST(request: NextRequest) {
       
       // Get controls only from pillars that have "no" answers (more efficient)
       const pillarsFromNoAnswers = new Set(noAnswers.map(({ question }) => question.pillar).filter(Boolean));
-      const allControls = await Control.find({
+      const allControls = await ControlModel.find({
         pillar: { $in: Array.from(pillarsFromNoAnswers) },
       });
       
@@ -299,7 +290,7 @@ export async function POST(request: NextRequest) {
       
       // Include controls for conflicting requirements (prudence criteria)
       const conflictingReqIds = Array.from(conflictingRequirements);
-      const conflictingControls = await Control.find({
+      const conflictingControls = await ControlModel.find({
         requirementIds: { $in: conflictingReqIds }
       });
       
@@ -355,7 +346,7 @@ export async function POST(request: NextRequest) {
     });
     
     for (const question of allQuestions) {
-      const precomputed = await getPrecomputedMappings(question.questionId, ruleVersion);
+      const precomputed = await getPrecomputedMappings(question.questionId, ruleVersion, regulationType);
       if (precomputed) {
         if (precomputed.controlBasedRequirements.length > 0) {
           mappingCompleteness.questionsWithMappings++;
@@ -396,7 +387,7 @@ export async function POST(request: NextRequest) {
     let coherenceMetrics = null;
     if (noAnswers.length > 0 && noAnswers[0].question) {
       try {
-        const precomputed = await getPrecomputedMappings(noAnswers[0].question.questionId, ruleVersion);
+        const precomputed = await getPrecomputedMappings(noAnswers[0].question.questionId, ruleVersion, regulationType);
         coherenceMetrics = precomputed?.coherenceMetrics || null;
       } catch (error) {
         console.warn('Could not fetch coherence metrics:', error);

@@ -6,7 +6,9 @@
 import fs from 'fs';
 import path from 'path';
 
-const DATA_DIR = path.join(process.cwd(), 'data', 'local-db');
+const DATA_DIR = process.env.TEST_LOCAL_DB_PATH
+  ? path.resolve(process.env.TEST_LOCAL_DB_PATH)
+  : path.join(process.cwd(), 'data', 'local-db');
 
 // Ensure data directory exists
 function ensureDataDir() {
@@ -15,15 +17,16 @@ function ensureDataDir() {
   }
 }
 
-// Get collection file path
-function getCollectionPath(collectionName: string): string {
+// Get collection file path (optionally scoped by regulation for separate DORA vs Chilean Privacy data)
+function getCollectionPath(collectionName: string, regulation?: string): string {
   ensureDataDir();
-  return path.join(DATA_DIR, `${collectionName}.json`);
+  const fileName = regulation ? `${collectionName}_${regulation}.json` : `${collectionName}.json`;
+  return path.join(DATA_DIR, fileName);
 }
 
-// Read collection from file
-function readCollection<T>(collectionName: string): T[] {
-  const filePath = getCollectionPath(collectionName);
+// Read collection from file (optionally scoped by regulation)
+function readCollection<T>(collectionName: string, regulation?: string): T[] {
+  const filePath = getCollectionPath(collectionName, regulation);
   
   if (!fs.existsSync(filePath)) {
     return [];
@@ -38,28 +41,30 @@ function readCollection<T>(collectionName: string): T[] {
   }
 }
 
-// Write collection to file
-function writeCollection<T>(collectionName: string, data: T[]): void {
-  const filePath = getCollectionPath(collectionName);
+// Write collection to file (optionally scoped by regulation)
+function writeCollection<T>(collectionName: string, data: T[], regulation?: string): void {
+  const filePath = getCollectionPath(collectionName, regulation);
   ensureDataDir();
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
-// Local storage adapter
+// Local storage adapter (optionally scoped by regulation for separate persistence per regulation)
 export class LocalStorage {
   private collectionName: string;
+  private regulation?: string;
 
-  constructor(collectionName: string) {
+  constructor(collectionName: string, regulation?: string) {
     this.collectionName = collectionName;
+    this.regulation = regulation;
   }
 
   async find(query: any = {}, sort?: any): Promise<any[]> {
-    let data = readCollection<any>(this.collectionName);
+    let data = readCollection<any>(this.collectionName, this.regulation);
     
     // Handle top-level $or operator
     if (query.$or && Array.isArray(query.$or)) {
       const orResults = new Set<string>(); // Use string IDs to avoid duplicates
-      const allData = readCollection<any>(this.collectionName);
+      const allData = readCollection<any>(this.collectionName, this.regulation);
       
       for (const orCondition of query.$or) {
         // Create a sub-query without $or
@@ -193,7 +198,7 @@ export class LocalStorage {
   }
 
   async findOneAndUpdate(query: any, update: any, options: any = {}): Promise<any> {
-    const data = readCollection<any>(this.collectionName);
+    const data = readCollection<any>(this.collectionName, this.regulation);
     const index = data.findIndex(item => {
       for (const [key, value] of Object.entries(query)) {
         // Handle userId comparison (can be string or ObjectId-like)
@@ -239,7 +244,7 @@ export class LocalStorage {
       }
       
       data[index] = updatedItem;
-      writeCollection(this.collectionName, data);
+      writeCollection(this.collectionName, data, this.regulation);
       return options.new ? data[index] : data[index];
     } else if (options.upsert) {
       // Create new
@@ -274,7 +279,7 @@ export class LocalStorage {
       }
       
       data.push(newItem);
-      writeCollection(this.collectionName, data);
+      writeCollection(this.collectionName, data, this.regulation);
       return options.new ? newItem : newItem;
     }
 
@@ -282,7 +287,7 @@ export class LocalStorage {
   }
 
   async create(item: any): Promise<any> {
-    const data = readCollection<any>(this.collectionName);
+    const data = readCollection<any>(this.collectionName, this.regulation);
     
     // Generate unique ID
     const timestamp = Date.now();
@@ -315,12 +320,12 @@ export class LocalStorage {
     }
     
     data.push(newItem);
-    writeCollection(this.collectionName, data);
+    writeCollection(this.collectionName, data, this.regulation);
     return newItem;
   }
 
   async deleteOne(query: any): Promise<void> {
-    const data = readCollection<any>(this.collectionName);
+    const data = readCollection<any>(this.collectionName, this.regulation);
     const filtered = data.filter(item => {
       for (const [key, value] of Object.entries(query)) {
         if (item[key] === value) {
@@ -329,7 +334,7 @@ export class LocalStorage {
       }
       return true;
     });
-    writeCollection(this.collectionName, filtered);
+    writeCollection(this.collectionName, filtered, this.regulation);
   }
 
   async countDocuments(query: any = {}): Promise<number> {
@@ -338,7 +343,7 @@ export class LocalStorage {
   }
 
   async bulkWrite(operations: any[]): Promise<void> {
-    const data = readCollection<any>(this.collectionName);
+    const data = readCollection<any>(this.collectionName, this.regulation);
     
     for (const op of operations) {
       if (op.updateOne) {
@@ -366,7 +371,7 @@ export class LocalStorage {
       }
     }
     
-    writeCollection(this.collectionName, data);
+    writeCollection(this.collectionName, data, this.regulation);
   }
 }
 
@@ -376,8 +381,8 @@ export function useLocalStorage(): boolean {
   return useLocal;
 }
 
-// Get storage instance
-export function getStorage(collectionName: string): LocalStorage {
-  return new LocalStorage(collectionName);
+// Get storage instance (optionally scoped by regulation for separate DORA vs Chilean Privacy data)
+export function getStorage(collectionName: string, regulation?: string): LocalStorage {
+  return new LocalStorage(collectionName, regulation);
 }
 

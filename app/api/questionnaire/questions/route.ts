@@ -1,50 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDBLocal } from '@/lib/mongodb-local';
-import Question from '@/models/Question';
+import { connectDBLocal, isLocalStorage } from '@/lib/mongodb-local';
+import Question, { getQuestionModel } from '@/models/Question';
 import { ensureQuestionnaireSetup } from '@/lib/auto-questionnaire';
+import { RegulationType } from '@/lib/regulations';
 
-// GET all questions (ordered)
+// GET all questions (ordered) - scoped by regulation for separate DORA vs Chilean Privacy data
 export async function GET(request: NextRequest) {
   try {
     await connectDBLocal();
     
-    // Auto-create questionnaire if none exists
-    await ensureQuestionnaireSetup();
-    
     const searchParams = request.nextUrl.searchParams;
     const pillar = searchParams.get('pillar');
-    const regulation = searchParams.get('regulation');
+    const regulation = searchParams.get('regulation') || RegulationType.DORA;
+    
+    // Auto-create questionnaire if none exists (DORA only)
+    if (regulation === RegulationType.DORA) {
+      await ensureQuestionnaireSetup();
+    }
     
     const query: any = {};
     if (pillar) query.pillar = pillar;
     
-    // Get all questions - simple approach
-    let allQuestions = await Question.find(query);
+    // Use regulation-scoped model for local storage (separate file); filter by regulationType for MongoDB
+    const QuestionModel = isLocalStorage() ? getQuestionModel(regulation) : Question;
+    let allQuestions = await QuestionModel.find(query);
     
-    // Filter by regulation if specified
-    if (regulation === 'CHILEAN_PRIVACY') {
-      // Chilean Privacy questions: check regulationType field, questionId prefix, or pillars
-      const chileanPrivacyPillars = [
-        'LAWFULNESS_FAIRNESS',
-        'PURPOSE_LIMITATION',
-        'DATA_MINIMIZATION',
-        'PROPORTIONALITY',
-        'QUALITY',
-        'ACCOUNTABILITY',
-        'SECURITY',
-        'TRANSPARENCY_CONFIDENTIALITY',
-      ];
-      allQuestions = allQuestions.filter((q: any) => 
-        q.regulationType === 'CHILEAN_PRIVACY' ||
-        q.questionId?.startsWith('Q-PRIV-') || 
-        chileanPrivacyPillars.includes(q.pillar || '')
-      );
-    } else if (regulation === 'DORA') {
-      // DORA questions - exclude Chilean Privacy
-      allQuestions = allQuestions.filter((q: any) => 
-        q.regulationType !== 'CHILEAN_PRIVACY' &&
-        !q.questionId?.startsWith('Q-PRIV-')
-      );
+    // For MongoDB, filter by regulationType when present on documents
+    if (!isLocalStorage()) {
+      if (regulation === RegulationType.CHILEAN_PRIVACY) {
+        const chileanPrivacyPillars = [
+          'LAWFULNESS_FAIRNESS', 'PURPOSE_LIMITATION', 'DATA_MINIMIZATION', 'PROPORTIONALITY',
+          'QUALITY', 'ACCOUNTABILITY', 'SECURITY', 'TRANSPARENCY_CONFIDENTIALITY',
+        ];
+        allQuestions = allQuestions.filter((q: any) =>
+          q.regulationType === RegulationType.CHILEAN_PRIVACY ||
+          q.questionId?.startsWith('Q-PRIV-') ||
+          chileanPrivacyPillars.includes(q.pillar || '')
+        );
+      } else {
+        allQuestions = allQuestions.filter((q: any) =>
+          q.regulationType !== RegulationType.CHILEAN_PRIVACY && !q.questionId?.startsWith('Q-PRIV-')
+        );
+      }
     }
     
     console.log(`📋 Found ${allQuestions.length} questions in database`);
@@ -87,19 +84,20 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Create question
+// POST - Create question (regulation from body or query for correct storage scope)
 export async function POST(request: NextRequest) {
   try {
     await connectDBLocal();
     
     const body = await request.json();
+    const regulation = body.regulation || request.nextUrl.searchParams.get('regulation') || RegulationType.DORA;
+    const QuestionModel = isLocalStorage() ? getQuestionModel(regulation) : Question;
     
-    const question = new Question({
+    const question = await QuestionModel.create({
       ...body,
       questionId: body.questionId || `Q-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      ...(body.regulationType ? {} : { regulationType: regulation }),
     });
-    
-    await question.save();
     
     return NextResponse.json({ question });
   } catch (error: any) {
@@ -110,16 +108,18 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT - Update question
+// PUT - Update question (regulation from query for correct storage scope)
 export async function PUT(request: NextRequest) {
   try {
     await connectDBLocal();
     
     const body = await request.json();
     const { _id, questionId, ...updateData } = body;
+    const regulation = body.regulation || request.nextUrl.searchParams.get('regulation') || RegulationType.DORA;
+    const QuestionModel = isLocalStorage() ? getQuestionModel(regulation) : Question;
     
     const query = _id ? { _id } : { questionId };
-    const question = await Question.findOneAndUpdate(
+    const question = await QuestionModel.findOneAndUpdate(
       query,
       updateData,
       { new: true }
@@ -141,7 +141,7 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// DELETE - Delete question
+// DELETE - Delete question (regulation from query for correct storage scope)
 export async function DELETE(request: NextRequest) {
   try {
     await connectDBLocal();
@@ -149,6 +149,8 @@ export async function DELETE(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const id = searchParams.get('id');
     const questionId = searchParams.get('questionId');
+    const regulation = searchParams.get('regulation') || RegulationType.DORA;
+    const QuestionModel = isLocalStorage() ? getQuestionModel(regulation) : Question;
     
     const query = id ? { _id: id } : questionId ? { questionId } : null;
     
@@ -159,7 +161,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
     
-    const result = await Question.deleteOne(query);
+    const result = await QuestionModel.deleteOne(query);
     
     if (result.deletedCount === 0) {
       return NextResponse.json(

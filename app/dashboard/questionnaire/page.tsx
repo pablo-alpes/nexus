@@ -150,7 +150,7 @@ export default function QuestionnairePage() {
         };
       }>('/questionnaire/response', {
         method: 'POST',
-        body: JSON.stringify({ answers: answerArray }),
+        body: JSON.stringify({ answers: answerArray, regulation: regulationType }),
       });
 
       setSavedResponse(response.response);

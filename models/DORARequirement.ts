@@ -99,7 +99,7 @@ const DORARequirementSchema = new Schema<IDORARequirement>(
 let DORARequirementModel: any;
 
 if (isLocalStorage()) {
-  DORARequirementModel = new LocalModel<IDORARequirement>('DORARequirement');
+  DORARequirementModel = new LocalModel<IDORARequirement>('DORARequirement', 'DORA');
 } else {
   DORARequirementModel = mongoose.models.DORARequirement || 
     mongoose.model<IDORARequirement>('DORARequirement', DORARequirementSchema);

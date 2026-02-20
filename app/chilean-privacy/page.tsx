@@ -50,7 +50,7 @@ export default function ChileanPrivacyHome() {
               {isAuthenticated ? (
                 <>
                   <Link 
-                    href="/dashboard" 
+                    href="/chile-privacy/dashboard" 
                     className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
                   >
                     {isSpanish ? 'Panel' : 'Dashboard'}
@@ -59,7 +59,7 @@ export default function ChileanPrivacyHome() {
                     onClick={() => {
                       localStorage.removeItem('token');
                       setIsAuthenticated(false);
-                      router.push('/');
+                      router.push('/chilean-privacy');
                     }}
                     className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
                   >
@@ -69,13 +69,13 @@ export default function ChileanPrivacyHome() {
               ) : (
                 <>
                   <Link 
-                    href="/login" 
+                    href="/chile-privacy/login" 
                     className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
                   >
                     {isSpanish ? 'Iniciar Sesión' : 'Login'}
                   </Link>
                   <Link
-                    href="/register"
+                    href="/chile-privacy/register"
                     className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                   >
                     {isSpanish ? 'Registrarse' : 'Sign Up'}
@@ -131,7 +131,7 @@ export default function ChileanPrivacyHome() {
               {!isAuthenticated && (
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
                   <Link
-                    href="/register"
+                    href="/chile-privacy/register"
                     className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl text-lg font-semibold shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200 overflow-hidden"
                   >
                     <span className="relative z-10">
@@ -140,7 +140,7 @@ export default function ChileanPrivacyHome() {
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-800 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   </Link>
                   <Link
-                    href="/login"
+                    href="/chile-privacy/login"
                     className="px-8 py-4 bg-white text-blue-600 rounded-xl text-lg font-semibold border-2 border-blue-600 hover:bg-blue-50 transition-all duration-200 shadow-md hover:shadow-lg"
                   >
                     {isSpanish ? 'Iniciar Sesión' : 'Sign In'}
@@ -266,13 +266,13 @@ export default function ChileanPrivacyHome() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
-                  href="/register"
+                  href="/chile-privacy/register"
                   className="px-8 py-4 bg-white text-blue-600 rounded-xl text-lg font-semibold shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200"
                 >
                   {isSpanish ? 'Comenzar Prueba Gratuita' : 'Start Free Trial'}
                 </Link>
                 <Link
-                  href="/login"
+                  href="/chile-privacy/login"
                   className="px-8 py-4 bg-transparent text-white border-2 border-white rounded-xl text-lg font-semibold hover:bg-white/10 transition-all duration-200"
                 >
                   {isSpanish ? 'Iniciar Sesión' : 'Sign In'}
@@ -305,12 +305,12 @@ export default function ChileanPrivacyHome() {
                 </h4>
                 <ul className="space-y-2">
                   <li>
-                    <Link href="/terms-of-service" className="text-sm text-gray-400 hover:text-white transition-colors">
+                    <Link href="/chile-privacy/terms" className="text-sm text-gray-400 hover:text-white transition-colors">
                       {isSpanish ? 'Términos de Servicio' : 'Terms of Service'}
                     </Link>
                   </li>
                   <li>
-                    <Link href="/privacy-policy" className="text-sm text-gray-400 hover:text-white transition-colors">
+                    <Link href="/chile-privacy/privacy" className="text-sm text-gray-400 hover:text-white transition-colors">
                       {isSpanish ? 'Política de Privacidad' : 'Privacy Policy'}
                     </Link>
                   </li>

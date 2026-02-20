@@ -12,6 +12,7 @@ export interface INLPSimilarity {
 export interface IQuestionMapping extends Document {
   questionId: string;
   ruleVersion: string; // Rule version this mapping is for
+  regulationType?: string; // DORA | CHILEAN_PRIVACY - for separate persistence per regulation
   controlBasedRequirements: string[]; // Requirements from control mappings
   nlpSimilarities: INLPSimilarity[]; // All requirements with NLP similarity scores
   coherenceMetrics: {
@@ -47,6 +48,10 @@ const QuestionMappingSchema = new Schema<IQuestionMapping>(
     ruleVersion: {
       type: String,
       required: true,
+    },
+    regulationType: {
+      type: String,
+      enum: ['DORA', 'CHILEAN_PRIVACY'],
     },
     controlBasedRequirements: [String],
     nlpSimilarities: [NLPSimilaritySchema],
@@ -86,4 +91,12 @@ if (isLocalStorage()) {
 }
 
 export default QuestionMappingModel;
+
+/** Returns regulation-scoped model for local storage (separate file per regulation); same model for MongoDB. */
+export function getQuestionMappingModel(regulation?: string) {
+  if (isLocalStorage()) {
+    return new LocalModel<IQuestionMapping>('QuestionMapping', regulation || 'DORA');
+  }
+  return QuestionMappingModel;
+}
 

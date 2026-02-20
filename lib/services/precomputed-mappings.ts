@@ -3,13 +3,13 @@
  * Manages pre-computed question→requirement mappings with NLP validation
  */
 
-import { connectDBLocal } from '@/lib/mongodb-local';
+import { connectDBLocal, isLocalStorage } from '@/lib/mongodb-local';
 import { RegulationType, getRegulationConfig } from '@/lib/regulations';
-import Question from '@/models/Question';
+import Question, { getQuestionModel } from '@/models/Question';
 import DORARequirement from '@/models/DORARequirement';
 import Requirement from '@/models/Requirement';
 import Control from '@/models/Control';
-import QuestionMapping from '@/models/QuestionMapping';
+import QuestionMapping, { getQuestionMappingModel } from '@/models/QuestionMapping';
 import RuleVersion from '@/models/RuleVersion';
 import { generateEmbedding, calculateSimilarity, getConfidenceLevel, cosineSimilarity } from './nlp-similarity';
 import fs from 'fs';
@@ -82,17 +82,20 @@ export async function getActiveRuleVersion(regulationType?: RegulationType): Pro
 }
 
 /**
- * Get precomputed mappings for a question
+ * Get precomputed mappings for a question (regulation-scoped in local storage)
  */
 export async function getPrecomputedMappings(
   questionId: string,
-  ruleVersion?: string
+  ruleVersion?: string,
+  regulationType?: RegulationType
 ): Promise<PrecomputedMappingResult | null> {
   await connectDBLocal();
   
-  const version = ruleVersion || await getActiveRuleVersion();
+  const version = ruleVersion || await getActiveRuleVersion(regulationType);
+  const regType = regulationType || RegulationType.DORA;
+  const MappingModel = isLocalStorage() ? getQuestionMappingModel(regType) : QuestionMapping;
   
-  const mapping = await QuestionMapping.findOne({
+  const mapping = await MappingModel.findOne({
     questionId,
     ruleVersion: version,
   });
@@ -236,7 +239,7 @@ export async function precomputeQuestionMapping(
       pillar: question.pillar 
     });
   } else {
-    // Default to DORA
+    // Default to DORA: only same-pillar requirements (prudence criterion — no cross-pillar mapping)
     allRequirements = await DORARequirement.find({ pillar: question.pillar });
   }
   
@@ -336,14 +339,15 @@ export async function precomputeQuestionMapping(
     overallCoherence,
   };
   
-  // Step 9: Save to database (store filtered results)
-  await QuestionMapping.findOneAndUpdate(
+  // Step 9: Save to database (regulation-scoped in local storage so DORA dashboard reads QuestionMapping_DORA.json)
+  const MappingModel = isLocalStorage() ? getQuestionMappingModel(regType) : QuestionMapping;
+  await MappingModel.findOneAndUpdate(
     { questionId: question.questionId, ruleVersion },
     {
       questionId: question.questionId,
       ruleVersion,
-      controlBasedRequirements: finalControlBasedReqs, // Only filtered, high-confidence control-based requirements
-      nlpSimilarities: filteredSimilarities, // Store filtered similarities
+      controlBasedRequirements: finalControlBasedReqs,
+      nlpSimilarities: filteredSimilarities,
       coherenceMetrics,
       computedAt: new Date(),
       version: ruleVersion,
@@ -381,17 +385,31 @@ export async function precomputeAllMappings(ruleVersion?: string, regulationType
     { upsert: true, new: true }
   );
   
-  // Get all questions (deduplicated, optionally filtered by regulation)
-  let allQuestions = await Question.find();
-  
-  // Filter by regulation if question has regulationType field
-  if (regType) {
-    allQuestions = allQuestions.filter(q => {
-      // If question has regulationType, filter by it
+  // Get all questions (use regulation-scoped store in local so we read Question_DORA.json / Question_CHILEAN_PRIVACY.json)
+  const QuestionModel = isLocalStorage() ? getQuestionModel(regType) : Question;
+  let allQuestions = await QuestionModel.find();
+  // Fallback: if local storage, also include DORA questions from unscoped Question.json (backward compat / migration)
+  if (isLocalStorage()) {
+    const config = getRegulationConfig(regType);
+    const pillarIds = new Set(config.pillars.map(p => p.id));
+    const seenIds = new Set(allQuestions.map((q: any) => q.questionId));
+    const unscoped = await Question.find();
+    const fromUnscoped = unscoped.filter((q: any) => {
+      if (seenIds.has(q.questionId)) return false;
+      if (q.regulationType) return q.regulationType === regType;
+      return pillarIds.has(q.pillar || '');
+    });
+    if (fromUnscoped.length > 0) {
+      console.log(`📋 Including ${fromUnscoped.length} additional question(s) from unscoped store for ${regType}`);
+      allQuestions = [...allQuestions, ...fromUnscoped];
+    }
+  }
+  // Filter by regulation if question has regulationType field (for MongoDB or mixed storage)
+  if (regType && !isLocalStorage()) {
+    allQuestions = allQuestions.filter((q: any) => {
       if ((q as any).regulationType) {
         return (q as any).regulationType === regType;
       }
-      // Otherwise, use pillar to determine (DORA pillars vs Chilean Privacy pillars)
       const config = getRegulationConfig(regType);
       const pillarIds = config.pillars.map(p => p.id);
       return pillarIds.includes(q.pillar || '');
@@ -485,8 +503,9 @@ export async function getOverallCoherenceMetrics(ruleVersion?: string): Promise<
   await connectDBLocal();
   
   const version = ruleVersion || await getActiveRuleVersion();
-  
-  const mappings = await QuestionMapping.find({ ruleVersion: version });
+  const regType = RegulationType.DORA; // getOverallCoherenceMetrics is used by DORA precompute script
+  const MappingModel = isLocalStorage() ? getQuestionMappingModel(regType) : QuestionMapping;
+  const mappings = await MappingModel.find({ ruleVersion: version });
   
   if (mappings.length === 0) {
     return {

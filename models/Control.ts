@@ -124,3 +124,11 @@ if (isLocalStorage()) {
 
 export default ControlModel;
 
+/** Returns regulation-scoped model for local storage (separate file per regulation); same model for MongoDB. */
+export function getControlModel(regulation?: string) {
+  if (isLocalStorage()) {
+    return new LocalModel<IControl>('Control', regulation || 'DORA');
+  }
+  return ControlModel;
+}
+

@@ -100,19 +100,21 @@ export default function RuleEnginePage() {
     loadData();
   }, []);
 
+  // DORA rule-engine: always scope to DORA regulation so data is not mixed with Chilean Privacy
+  const REGULATION = 'DORA';
+
   const loadData = async () => {
     setLoading(true);
     try {
-      const res = await apiRequest<{ ruleVersion: string; mappings: Mapping[]; warning?: string }>('/rule-version/mappings');
+      const res = await apiRequest<{ ruleVersion: string; mappings: Mapping[]; warning?: string }>(`/rule-version/mappings?regulation=${REGULATION}`);
       setRuleVersion({ version: res.ruleVersion });
       setMappings(res.mappings || []);
       if (res.warning) {
         console.warn('Rule engine warning:', res.warning);
       }
-      // Load in order: requirements first, then controls (which need requirements for mapping)
       await loadQuestions();
       await loadRequirements();
-      await loadControls(); // Load controls after requirements are loaded
+      await loadControls();
     } catch (error) {
       console.error('Failed to load mappings', error);
     } finally {
@@ -122,7 +124,7 @@ export default function RuleEnginePage() {
 
   const loadQuestions = async () => {
     try {
-      const res = await apiRequest<{ questions: Question[] }>('/questionnaire/questions');
+      const res = await apiRequest<{ questions: Question[] }>(`/questionnaire/questions?regulation=${REGULATION}`);
       setQuestions(res.questions || []);
     } catch (error) {
       console.warn('Failed to load questions', error);
@@ -131,7 +133,7 @@ export default function RuleEnginePage() {
 
   const loadRequirements = async () => {
     try {
-      const res = await apiRequest<{ requirements: Requirement[] }>('/requirements?includeCounts=true');
+      const res = await apiRequest<{ requirements: Requirement[] }>(`/requirements?includeCounts=true&regulation=${REGULATION}`);
       const map: Record<string, Requirement> = {};
       const all: Requirement[] = [];
       (res.requirements || []).forEach((r) => {
@@ -154,7 +156,7 @@ export default function RuleEnginePage() {
 
   const loadControls = async () => {
     try {
-      const res = await apiRequest<{ controls: Control[] }>('/controls?includeCounts=true');
+      const res = await apiRequest<{ controls: Control[] }>(`/controls?includeCounts=true&regulation=${REGULATION}`);
       const map: Record<string, Control[]> = {};
       const all: Control[] = [];
       
@@ -172,8 +174,7 @@ export default function RuleEnginePage() {
           }
         });
       } else {
-        // Fallback: load requirements if not already loaded
-        const reqsRes = await apiRequest<{ requirements: Requirement[] }>('/requirements?includeCounts=true');
+        const reqsRes = await apiRequest<{ requirements: Requirement[] }>(`/requirements?includeCounts=true&regulation=${REGULATION}`);
         (reqsRes.requirements || []).forEach((r) => {
           if (r.requirementId) {
             reqIdMap[r.requirementId] = r.requirementId;
@@ -421,12 +422,12 @@ export default function RuleEnginePage() {
       let method = 'POST';
       
       if (editModal.type === 'question') {
-        endpoint = '/questionnaire/questions';
+        endpoint = `/questionnaire/questions?regulation=${REGULATION}`;
         if (editModal.item?._id || editModal.item?.questionId) method = 'PUT';
         
         // If linkedRequirements is provided, update the mapping
         if (formData.linkedRequirements && formData.linkedRequirements.length > 0 && editModal.item?.questionId) {
-      await apiRequest('/rule-version/mappings', {
+      await apiRequest(`/rule-version/mappings?regulation=${REGULATION}`, {
         method: 'PUT',
         body: JSON.stringify({
               questionId: editModal.item.questionId,
@@ -435,7 +436,7 @@ export default function RuleEnginePage() {
       });
         }
       } else if (editModal.type === 'requirement') {
-        endpoint = '/requirements';
+        endpoint = `/requirements?regulation=${REGULATION}`;
         if (editModal.item?.requirementId) method = 'PUT';
         
         // If linkedQuestions is provided, update the mappings
@@ -445,7 +446,7 @@ export default function RuleEnginePage() {
             const mapping = mappings.find(m => m.questionId === qId);
             const currentReqs = mapping?.controlBasedRequirements || [];
             if (!currentReqs.includes(editModal.item.requirementId)) {
-              await apiRequest('/rule-version/mappings', {
+              await apiRequest(`/rule-version/mappings?regulation=${REGULATION}`, {
                 method: 'PUT',
                 body: JSON.stringify({
                   questionId: qId,
@@ -456,7 +457,7 @@ export default function RuleEnginePage() {
           }
         }
       } else if (editModal.type === 'control') {
-        endpoint = '/controls';
+        endpoint = `/controls?regulation=${REGULATION}`;
         if (editModal.item?.controlId) method = 'PUT';
       }
 
@@ -484,11 +485,11 @@ export default function RuleEnginePage() {
         try {
           let endpoint = '';
           if (type === 'question') {
-            endpoint = `/questionnaire/questions?id=${item._id || item.questionId}`;
+            endpoint = `/questionnaire/questions?id=${item._id || item.questionId}&regulation=${REGULATION}`;
           } else if (type === 'requirement') {
-            endpoint = `/requirements/${item.requirementId}`;
+            endpoint = `/requirements/${item.requirementId}?regulation=${REGULATION}`;
           } else if (type === 'control') {
-            endpoint = `/controls/${item.controlId}`;
+            endpoint = `/controls/${item.controlId}?regulation=${REGULATION}`;
           }
 
           await apiRequest(endpoint, { method: 'DELETE' });
@@ -549,7 +550,7 @@ export default function RuleEnginePage() {
             const mapping = mappings.find(m => m.questionId === targetQuestionId);
             const currentReqs = mapping?.controlBasedRequirements || [];
             if (!currentReqs.includes(draggedItem.id)) {
-              await apiRequest('/rule-version/mappings', {
+              await apiRequest(`/rule-version/mappings?regulation=${REGULATION}`, {
                 method: 'PUT',
                 body: JSON.stringify({
                   questionId: targetQuestionId,
@@ -562,7 +563,7 @@ export default function RuleEnginePage() {
                 const originalMapping = mappings.find(m => m.questionId === draggedItem.questionId);
                 if (originalMapping) {
                   const updatedReqs = (originalMapping.controlBasedRequirements || []).filter(r => r !== draggedItem.id);
-                  await apiRequest('/rule-version/mappings', {
+                  await apiRequest(`/rule-version/mappings?regulation=${REGULATION}`, {
                     method: 'PUT',
                     body: JSON.stringify({
                       questionId: draggedItem.questionId,
@@ -599,7 +600,7 @@ export default function RuleEnginePage() {
               if (action === 'copy') {
                 // Copy: add to target without removing from original
                 if (!currentReqIds.includes(reqIdStr)) {
-                  await apiRequest('/controls', {
+                  await apiRequest(`/controls?regulation=${REGULATION}`, {
                     method: 'PUT',
                     body: JSON.stringify({
                       controlId: control.controlId,
@@ -609,7 +610,7 @@ export default function RuleEnginePage() {
                 }
               } else {
                 // Move: replace all requirementIds with just the target
-                await apiRequest('/controls', {
+                await apiRequest(`/controls?regulation=${REGULATION}`, {
                   method: 'PUT',
                   body: JSON.stringify({
                     controlId: control.controlId,
@@ -636,7 +637,7 @@ export default function RuleEnginePage() {
               const currentReqIds = (control.requirementIds || []).map(String);
               const reqIdStr = String(draggedItem.id);
               if (!currentReqIds.includes(reqIdStr)) {
-                await apiRequest('/controls', {
+                await apiRequest(`/controls?regulation=${REGULATION}`, {
                   method: 'PUT',
                   body: JSON.stringify({
                     controlId: control.controlId,
@@ -665,7 +666,7 @@ export default function RuleEnginePage() {
         if (control) {
             const currentReqIds = (control.requirementIds || []).map(String);
             const updatedReqIds = currentReqIds.filter(id => id !== String(requirementId));
-            await apiRequest('/controls', {
+            await apiRequest(`/controls?regulation=${REGULATION}`, {
               method: 'PUT',
               body: JSON.stringify({
                 controlId: control.controlId,
@@ -694,7 +695,7 @@ export default function RuleEnginePage() {
           const mapping = mappings.find(m => m.questionId === questionId);
           if (mapping) {
             const currentReqs = (mapping.controlBasedRequirements || []).filter(r => r !== requirementId);
-            await apiRequest('/rule-version/mappings', {
+            await apiRequest(`/rule-version/mappings?regulation=${REGULATION}`, {
               method: 'PUT',
               body: JSON.stringify({
                 questionId: mapping.questionId,
@@ -707,7 +708,7 @@ export default function RuleEnginePage() {
               for (const control of controls) {
                 const currentReqIds = (control.requirementIds || []).map(String);
                 const updatedReqIds = currentReqIds.filter(id => id !== String(requirementId));
-                await apiRequest('/controls', {
+                await apiRequest(`/controls?regulation=${REGULATION}`, {
                   method: 'PUT',
                   body: JSON.stringify({
                     controlId: control.controlId,
@@ -753,7 +754,7 @@ export default function RuleEnginePage() {
               if (mapping) {
                 const currentReqs = mapping.controlBasedRequirements || [];
                 if (!currentReqs.includes(req.requirementId)) {
-                  await apiRequest('/rule-version/mappings', {
+                  await apiRequest(`/rule-version/mappings?regulation=${REGULATION}`, {
                     method: 'PUT',
                     body: JSON.stringify({
                       questionId: mapping.questionId,
@@ -871,7 +872,7 @@ export default function RuleEnginePage() {
             for (const row of jsonData as any[]) {
               if (row.Type === 'Requirement') {
                 // Update requirement
-                await apiRequest('/requirements', {
+                await apiRequest(`/requirements?regulation=${REGULATION}`, {
                   method: 'PUT',
                   body: JSON.stringify({
                     requirementId: row.ID,
@@ -891,7 +892,7 @@ export default function RuleEnginePage() {
                     const mapping = mappings.find(m => m.questionId === qId);
                     const currentReqs = mapping?.controlBasedRequirements || [];
                     if (!currentReqs.includes(row.ID)) {
-                      await apiRequest('/rule-version/mappings', {
+                      await apiRequest(`/rule-version/mappings?regulation=${REGULATION}`, {
                         method: 'PUT',
                         body: JSON.stringify({
                           questionId: qId,
@@ -910,7 +911,7 @@ export default function RuleEnginePage() {
                     if (control) {
                       const currentReqIds = (control.requirementIds || []).map(String);
                       if (!currentReqIds.includes(row.ID)) {
-                        await apiRequest('/controls', {
+                        await apiRequest(`/controls?regulation=${REGULATION}`, {
                           method: 'PUT',
                           body: JSON.stringify({
                             controlId: ctrlId,
@@ -923,7 +924,7 @@ export default function RuleEnginePage() {
                 }
               } else if (row.Type === 'Question') {
                 // Update question
-                await apiRequest('/questionnaire/questions', {
+                await apiRequest(`/questionnaire/questions?regulation=${REGULATION}`, {
                   method: 'PUT',
                   body: JSON.stringify({
                     questionId: row.ID,
@@ -938,7 +939,7 @@ export default function RuleEnginePage() {
                 // Update requirement linkages
                 if (row['Linked Requirements']) {
                   const reqIds = (row['Linked Requirements'] as string).split(';').map(s => s.trim()).filter(Boolean);
-                  await apiRequest('/rule-version/mappings', {
+                  await apiRequest(`/rule-version/mappings?regulation=${REGULATION}`, {
                     method: 'PUT',
                     body: JSON.stringify({
                       questionId: row.ID,
@@ -948,7 +949,7 @@ export default function RuleEnginePage() {
                 }
               } else if (row.Type === 'Control') {
                 // Update control
-                await apiRequest('/controls', {
+                await apiRequest(`/controls?regulation=${REGULATION}`, {
                   method: 'PUT',
                   body: JSON.stringify({
                     controlId: row.ID,
@@ -962,7 +963,7 @@ export default function RuleEnginePage() {
                 // Update requirement linkages
                 if (row['Linked Requirements']) {
                   const reqIds = (row['Linked Requirements'] as string).split(';').map(s => s.trim()).filter(Boolean);
-                  await apiRequest('/controls', {
+                  await apiRequest(`/controls?regulation=${REGULATION}`, {
                     method: 'PUT',
                     body: JSON.stringify({
                       controlId: row.ID,
@@ -1231,6 +1232,7 @@ export default function RuleEnginePage() {
           <h2 className="text-xl font-bold mb-4">Pillar-Level Mapping Completeness</h2>
           <p className="text-sm text-gray-600 mb-4">
             Focus on pillars with CRITICAL or HIGH priority to improve mapping quality. Questions with 0 requirements can't link to controls.
+            By prudence, we only map questions to requirements of the same pillar; add requirements for INC/TEST/INFO in the source data to get coverage.
           </p>
           
           <div className="space-y-4">
@@ -1667,7 +1669,7 @@ export default function RuleEnginePage() {
                                                   if (mapping) {
                                                     const currentReqs = mapping.controlBasedRequirements || [];
                                                     const updatedReqs = currentReqs.filter(r => r !== req.requirementId);
-                                                    await apiRequest('/rule-version/mappings', {
+                                                    await apiRequest(`/rule-version/mappings?regulation=${REGULATION}`, {
                                                       method: 'PUT',
                                                       body: JSON.stringify({
                                                         questionId: qId,
@@ -1712,7 +1714,7 @@ export default function RuleEnginePage() {
                                               const mapping = mappings.find(m => m.questionId === questionId.trim());
                                               const currentReqs = mapping?.controlBasedRequirements || [];
                                               if (!currentReqs.includes(req.requirementId)) {
-                                                await apiRequest('/rule-version/mappings', {
+                                                await apiRequest(`/rule-version/mappings?regulation=${REGULATION}`, {
                                                   method: 'PUT',
                                                   body: JSON.stringify({
                                                     questionId: questionId.trim(),
@@ -1873,7 +1875,7 @@ export default function RuleEnginePage() {
                                                 const currentReqIds = (control.requirementIds || []).map(String);
                                                 const reqIdStr = String(req.requirementId);
                                                 if (!currentReqIds.includes(reqIdStr)) {
-                                                  await apiRequest('/controls', {
+                                                  await apiRequest(`/controls?regulation=${REGULATION}`, {
                                                     method: 'PUT',
                                                     body: JSON.stringify({
                                                       controlId: control.controlId,
@@ -1947,7 +1949,7 @@ export default function RuleEnginePage() {
                                                     if (control) {
                                                       const currentReqIds = (control.requirementIds || []).map(String);
                                                       const updatedReqIds = currentReqIds.filter(id => id !== String(reqId));
-                                                      await apiRequest('/controls', {
+                                                      await apiRequest(`/controls?regulation=${REGULATION}`, {
                                                         method: 'PUT',
                                                         body: JSON.stringify({
                                                           controlId: control.controlId,
@@ -2022,7 +2024,7 @@ export default function RuleEnginePage() {
                                               if (mapping) {
                                                 const currentReqs = mapping.controlBasedRequirements || [];
                                                 if (!currentReqs.includes(reqId)) {
-                                                  await apiRequest('/rule-version/mappings', {
+                                                  await apiRequest(`/rule-version/mappings?regulation=${REGULATION}`, {
                                                     method: 'PUT',
                                                     body: JSON.stringify({
                                                       questionId: mapping.questionId,
@@ -2083,7 +2085,7 @@ export default function RuleEnginePage() {
                                                       if (mapping) {
                                                         const currentReqs = mapping.controlBasedRequirements || [];
                                                         const updatedReqs = currentReqs.filter(r => r !== linkedReqId);
-                                                        await apiRequest('/rule-version/mappings', {
+                                                        await apiRequest(`/rule-version/mappings?regulation=${REGULATION}`, {
                                                           method: 'PUT',
                                                           body: JSON.stringify({
                                                             questionId: mapping.questionId,
@@ -2388,7 +2390,7 @@ export default function RuleEnginePage() {
                                             const mapping = mappings.find(m => m.questionId === questionId.trim());
                                             const currentReqs = mapping?.controlBasedRequirements || [];
                                             if (!currentReqs.includes(req.requirementId)) {
-                                              await apiRequest('/rule-version/mappings', {
+                                              await apiRequest(`/rule-version/mappings?regulation=${REGULATION}`, {
                                                 method: 'PUT',
                                                 body: JSON.stringify({
                                                   questionId: questionId.trim(),
@@ -2567,7 +2569,7 @@ export default function RuleEnginePage() {
                                               const currentReqIds = (control.requirementIds || []).map(String);
                                               const reqIdStr = String(req.requirementId);
                                               if (!currentReqIds.includes(reqIdStr)) {
-                                                await apiRequest('/controls', {
+                                                await apiRequest(`/controls?regulation=${REGULATION}`, {
                                                   method: 'PUT',
                                                   body: JSON.stringify({
                                                     controlId: control.controlId,
@@ -2657,7 +2659,7 @@ export default function RuleEnginePage() {
                                                       if (control) {
                                                         const currentReqIds = (control.requirementIds || []).map(String);
                                                         const updatedReqIds = currentReqIds.filter(id => id !== String(reqId));
-                                                        await apiRequest('/controls', {
+                                                        await apiRequest(`/controls?regulation=${REGULATION}`, {
                                                           method: 'PUT',
                                                           body: JSON.stringify({
                                                             controlId: control.controlId,
@@ -2723,7 +2725,7 @@ export default function RuleEnginePage() {
                                                         if (mapping) {
                                                           const currentReqs = mapping.controlBasedRequirements || [];
                                                           if (!currentReqs.includes(reqId)) {
-                                                            await apiRequest('/rule-version/mappings', {
+                                                            await apiRequest(`/rule-version/mappings?regulation=${REGULATION}`, {
                                                               method: 'PUT',
                                                               body: JSON.stringify({
                                                                 questionId: mapping.questionId,
@@ -2881,7 +2883,7 @@ export default function RuleEnginePage() {
                           `Add control ${control.controlId} to requirement ${addControlModal.requirementId}?`,
                           async () => {
                             try {
-                              await apiRequest('/controls', {
+                              await apiRequest(`/controls?regulation=${REGULATION}`, {
                                 method: 'PUT',
                                 body: JSON.stringify({
                                   controlId: control.controlId,
@@ -2949,7 +2951,7 @@ export default function RuleEnginePage() {
                     `Update requirements for ${editing}?`,
                     async () => {
                       try {
-                        await apiRequest('/rule-version/mappings', {
+                        await apiRequest(`/rule-version/mappings?regulation=${REGULATION}`, {
                           method: 'PUT',
                           body: JSON.stringify({
                             questionId: editing,

@@ -21,7 +21,9 @@ export default function RemediationPage() {
     value: p.id,
     label: p.name,
   }));
-  const [selectedPillar, setSelectedPillar] = useState<string>('ICT_RISK_MANAGEMENT');
+  // Set default pillar based on regulation
+  const defaultPillar = pillars.length > 0 ? pillars[0].value : (isChileanPrivacy ? 'LAWFULNESS_FAIRNESS' : 'ICT_RISK_MANAGEMENT');
+  const [selectedPillar, setSelectedPillar] = useState<string>(defaultPillar);
   const [tableData, setTableData] = useState<any[]>([]);
   const [remediationPlan, setRemediationPlan] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -30,6 +32,15 @@ export default function RemediationPage() {
   const [summary, setSummary] = useState<any>(null);
   const [strategy, setStrategy] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'actions' | 'strategy'>('actions');
+
+  // Update default pillar when regulation changes
+  useEffect(() => {
+    const newDefaultPillar = pillars.length > 0 ? pillars[0].value : (isChileanPrivacy ? 'LAWFULNESS_FAIRNESS' : 'ICT_RISK_MANAGEMENT');
+    if (!pillars.find(p => p.value === selectedPillar)) {
+      // Current selected pillar is not valid for this regulation, switch to default
+      setSelectedPillar(newDefaultPillar);
+    }
+  }, [regulationType, isChileanPrivacy, pillars]);
 
   useEffect(() => {
     if (selectedPillar) {

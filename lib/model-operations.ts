@@ -2,9 +2,11 @@
  * Model Operations Abstraction Layer
  */
 
-import { connectDBLocal } from './mongodb-local';
+import { connectDBLocal, isLocalStorage } from './mongodb-local';
+import { LocalModel } from '@/models/LocalModel';
 import DORARequirement from '@/models/DORARequirement';
 import Control from '@/models/Control';
+import { getControlModel } from '@/models/Control';
 import Question from '@/models/Question';
 import { RegulationType } from './regulations';
 
@@ -20,6 +22,16 @@ export class RequirementOperations {
       ? RegulationType.CHILEAN_PRIVACY 
       : regulationType;
     
+    // Use regulation-scoped local storage (separate files per regulation)
+    if (isLocalStorage()) {
+      const model = regType === RegulationType.CHILEAN_PRIVACY
+        ? new LocalModel('Requirement', RegulationType.CHILEAN_PRIVACY)
+        : new LocalModel('DORARequirement', RegulationType.DORA);
+      const results = await model.find(query);
+      console.log(`[RequirementOperations] Found ${results.length} requirements (local, ${regType})`);
+      return results;
+    }
+    
     if (regType === RegulationType.CHILEAN_PRIVACY) {
       if (Requirement) {
         try {
@@ -32,25 +44,15 @@ export class RequirementOperations {
           console.warn('[RequirementOperations] Requirement model query failed, falling back to DORARequirement:', error.message);
         }
       }
-      // For local storage compatibility, get all and filter
-      // IMPORTANT: Don't pass query to find() when using local storage, filter manually
       const allReqs = await DORARequirement.find({});
-      console.log(`[RequirementOperations] Total requirements in DORARequirement: ${allReqs.length}`);
       const filtered = allReqs.filter((req: any) => {
-        // Must start with CHILE-
-        if (!req.requirementId?.startsWith('CHILE-')) {
-          return false;
-        }
-        // Apply query filters manually
+        if (!req.requirementId?.startsWith('CHILE-')) return false;
         for (const [key, value] of Object.entries(query)) {
-          if (key === 'requirementId') continue; // Already filtered by prefix
-          if (req[key] !== value) {
-            return false;
-          }
+          if (key === 'requirementId') continue;
+          if (req[key] !== value) return false;
         }
         return true;
       });
-      console.log(`[RequirementOperations] Filtered Chilean Privacy requirements: ${filtered.length}`);
       return filtered;
     }
     return await DORARequirement.find(query);
@@ -58,6 +60,12 @@ export class RequirementOperations {
   
   static async findOne(regulationType: string, query: any) {
     await connectDBLocal();
+    if (isLocalStorage()) {
+      const model = regulationType === 'CHILEAN_PRIVACY' || regulationType === RegulationType.CHILEAN_PRIVACY
+        ? new LocalModel('Requirement', RegulationType.CHILEAN_PRIVACY)
+        : new LocalModel('DORARequirement', RegulationType.DORA);
+      return await model.findOne(query);
+    }
     if (regulationType === 'CHILEAN_PRIVACY') {
       if (Requirement) {
         const result = await Requirement.findOne({ regulationType: 'CHILEAN_PRIVACY', ...query });
@@ -70,68 +78,68 @@ export class RequirementOperations {
           if (req[key] !== value) return false;
         }
         return true;
-      });
+      }) || null;
     }
     return await DORARequirement.findOne(query);
   }
   
   static async upsert(regulationType: string, requirementData: any) {
     await connectDBLocal();
+    const isChilean = regulationType === 'CHILEAN_PRIVACY' || regulationType === RegulationType.CHILEAN_PRIVACY;
+    const chileRequirementId = requirementData.requirementId?.startsWith('CHILE-')
+      ? requirementData.requirementId
+      : `CHILE-${requirementData.requirementId}`;
     
-    if (regulationType === 'CHILEAN_PRIVACY') {
-      const chileRequirementId = requirementData.requirementId?.startsWith('CHILE-')
-        ? requirementData.requirementId
-        : `CHILE-${requirementData.requirementId}`;
-      
+    if (isLocalStorage()) {
+      const model = isChilean
+        ? new LocalModel('Requirement', RegulationType.CHILEAN_PRIVACY)
+        : new LocalModel('DORARequirement', RegulationType.DORA);
+      const filter = isChilean ? { requirementId: chileRequirementId } : { requirementId: requirementData.requirementId };
+      const payload = isChilean ? { ...requirementData, requirementId: chileRequirementId } : requirementData;
+      return await model.findOneAndUpdate(filter, payload, { upsert: true, new: true });
+    }
+    
+    if (isChilean) {
       if (Requirement) {
         return await Requirement.findOneAndUpdate(
-          { 
-            regulationType: 'CHILEAN_PRIVACY',
-            requirementId: chileRequirementId,
-          },
-          {
-            ...requirementData,
-            requirementId: chileRequirementId,
-            regulationType: 'CHILEAN_PRIVACY',
-          },
+          { regulationType: 'CHILEAN_PRIVACY', requirementId: chileRequirementId },
+          { ...requirementData, requirementId: chileRequirementId, regulationType: 'CHILEAN_PRIVACY' },
           { upsert: true, new: true }
         );
       }
-      
-      // Fallback to DORARequirement for local storage
       return await DORARequirement.findOneAndUpdate(
         { requirementId: chileRequirementId },
-        {
-          ...requirementData,
-          requirementId: chileRequirementId,
-        },
-        { upsert: true, new: true }
-      );
-    } else {
-      return await DORARequirement.findOneAndUpdate(
-        { requirementId: requirementData.requirementId },
-        requirementData,
+        { ...requirementData, requirementId: chileRequirementId },
         { upsert: true, new: true }
       );
     }
+    return await DORARequirement.findOneAndUpdate(
+      { requirementId: requirementData.requirementId },
+      requirementData,
+      { upsert: true, new: true }
+    );
   }
 }
 
 export class ControlOperations {
-  static async find(query: any = {}) {
+  static async find(query: any = {}, regulation?: string) {
     await connectDBLocal();
-    return await Control.find(query);
+    const model = regulation && isLocalStorage() ? getControlModel(regulation) : Control;
+    return await model.find(query);
   }
-  static async findOne(query: any) {
+  static async findOne(query: any, regulation?: string) {
     await connectDBLocal();
-    return await Control.findOne(query);
+    const model = regulation && isLocalStorage() ? getControlModel(regulation) : Control;
+    return await model.findOne(query);
   }
-  static async create(controlData: any) {
+  static async create(controlData: any, regulation?: string) {
     await connectDBLocal();
-    return await Control.create(controlData);
+    const model = regulation && isLocalStorage() ? getControlModel(regulation) : Control;
+    return await model.create(controlData);
   }
-  static async findOneAndUpdate(query: any, update: any, options: any = {}) {
+  static async findOneAndUpdate(query: any, update: any, options: any = {}, regulation?: string) {
     await connectDBLocal();
-    return await Control.findOneAndUpdate(query, update, { ...options, new: true });
+    const model = regulation && isLocalStorage() ? getControlModel(regulation) : Control;
+    return await model.findOneAndUpdate(query, update, { ...options, new: true });
   }
 }

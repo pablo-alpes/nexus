@@ -9,9 +9,9 @@ export class LocalModel<T> {
   private storage: LocalStorage;
   private modelName: string;
 
-  constructor(modelName: string) {
+  constructor(modelName: string, regulation?: string) {
     this.modelName = modelName;
-    this.storage = getStorage(modelName);
+    this.storage = getStorage(modelName, regulation);
   }
 
   async find(query: any = {}, sort?: any): Promise<T[]> {

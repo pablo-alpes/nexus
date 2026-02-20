@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDBLocal } from '@/lib/mongodb-local';
+import { connectDBLocal, isLocalStorage } from '@/lib/mongodb-local';
 import DORARequirement from '@/models/DORARequirement';
 import Requirement from '@/models/Requirement';
-import Control from '@/models/Control';
+import Control, { getControlModel } from '@/models/Control';
 import { ensureRequirementsImported } from '@/lib/auto-import';
 import { RegulationType } from '@/lib/regulations';
 import * as XLSX from 'xlsx';
@@ -34,16 +34,15 @@ export async function GET(request: NextRequest) {
     
     console.log(`[API /requirements] Found ${requirements.length} requirements for regulation ${regulation}`);
     
-    // If includeCounts is true, add control counts for each requirement
+    // If includeCounts is true, add control counts for each requirement (use regulation-scoped controls)
     if (includeCounts) {
+      const ControlModel = isLocalStorage() ? getControlModel(regulation) : Control;
       const requirementsWithCounts = await Promise.all(
         requirements.map(async (req: any) => {
           const reqId = String(req._id || req.requirementId);
           const reqRequirementId = req.requirementId;
           
-          // Find controls that reference this requirement
-          // Check both _id and requirementId in the requirementIds array
-          const allControls = await Control.find({});
+          const allControls = await ControlModel.find({});
           const matchingControls = allControls.filter((control: any) => {
             if (!control.requirementIds || !Array.isArray(control.requirementIds)) {
               return false;

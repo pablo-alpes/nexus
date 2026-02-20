@@ -1,10 +1,11 @@
 /**
- * Auto-setup questionnaire - creates questions if none exist
+ * Auto-setup questionnaire - creates DORA questions if none exist
  */
 
-import { connectDBLocal } from './mongodb-local';
-import Question from '@/models/Question';
+import { connectDBLocal, isLocalStorage } from './mongodb-local';
+import Question, { getQuestionModel } from '@/models/Question';
 import DORARequirement from '@/models/DORARequirement';
+import { RegulationType } from './regulations';
 import fs from 'fs';
 import path from 'path';
 
@@ -24,9 +25,9 @@ export async function ensureQuestionnaireSetup(): Promise<void> {
 
   try {
     await connectDBLocal();
+    const QuestionModel = isLocalStorage() ? getQuestionModel(RegulationType.DORA) : Question;
     
-    // Simple check: if questions exist and setup was completed, skip
-    const questionCount = await Question.countDocuments();
+    const questionCount = await QuestionModel.countDocuments();
     if (questionCount > 0 && questionnaireSetupCompleted) {
       console.log(`✅ Questions already exist (${questionCount} questions), skipping setup`);
       return;
@@ -108,21 +109,19 @@ async function createQuestionsDirectly() {
     },
   ];
 
-  // Get requirements for mapping
+  const QuestionModel = isLocalStorage() ? getQuestionModel(RegulationType.DORA) : Question;
   const allRequirements = await DORARequirement.find();
   let globalOrder = 1;
 
   for (const pillarGroup of questionnaireStructure) {
     for (const questionData of pillarGroup.questions) {
-      // Check if question already exists by questionId
-      const existingById = await Question.findOne({ questionId: questionData.questionId });
+      const existingById = await QuestionModel.findOne({ questionId: questionData.questionId });
       if (existingById) {
         console.log(`⏭️  Question ${questionData.questionId} already exists, skipping...`);
         continue;
       }
       
-      // Also check if question with same text already exists (prevent duplicates)
-      const existingByText = await Question.findOne({ 
+      const existingByText = await QuestionModel.findOne({ 
         text: questionData.text,
         pillar: pillarGroup.pillar 
       });
@@ -138,7 +137,7 @@ async function createQuestionsDirectly() {
         return keywords.some(keyword => text.includes(keyword)) && req.pillar === pillarGroup.pillar;
       });
 
-      await Question.create({
+      await QuestionModel.create({
         questionId: questionData.questionId,
         text: questionData.text,
         type: 'YES_NO',
@@ -158,6 +157,7 @@ async function createQuestionsDirectly() {
           },
         ],
         pillar: pillarGroup.pillar,
+        regulationType: RegulationType.DORA,
         order: globalOrder++,
         isRequired: true,
       });

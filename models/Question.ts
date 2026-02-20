@@ -23,6 +23,7 @@ export interface IQuestion extends Document {
   type: QuestionType;
   options?: IQuestionOption[];
   pillar?: string; // DORA Pillar this question relates to
+  regulationType?: string; // DORA | CHILEAN_PRIVACY - for filtering and separate persistence
   order: number;
   isRequired: boolean;
   parentQuestionId?: Types.ObjectId; // For conditional questions
@@ -57,6 +58,10 @@ const QuestionSchema = new Schema<IQuestion>(
     pillar: {
       type: String,
     },
+    regulationType: {
+      type: String,
+      enum: ['DORA', 'CHILEAN_PRIVACY'],
+    },
     order: {
       type: Number,
       required: true,
@@ -85,4 +90,12 @@ if (isLocalStorage()) {
 }
 
 export default QuestionModel;
+
+/** Returns regulation-scoped model for local storage (separate file per regulation); same model for MongoDB. */
+export function getQuestionModel(regulation?: string) {
+  if (isLocalStorage()) {
+    return new LocalModel<IQuestion>('Question', regulation || 'DORA');
+  }
+  return QuestionModel;
+}
 

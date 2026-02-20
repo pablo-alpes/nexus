@@ -1,11 +1,12 @@
 /**
- * Auto-setup controls - creates controls from ISO standards mapped to DORA requirements
+ * Auto-setup controls - creates DORA controls from ISO standards mapped to DORA requirements
  */
 
-import { connectDBLocal } from './mongodb-local';
-import Control from '@/models/Control';
+import { connectDBLocal, isLocalStorage } from './mongodb-local';
+import Control, { getControlModel } from '@/models/Control';
 import DORARequirement from '@/models/DORARequirement';
-import Question from '@/models/Question';
+import Question, { getQuestionModel } from '@/models/Question';
+import { RegulationType } from './regulations';
 import fs from 'fs';
 import path from 'path';
 
@@ -31,9 +32,9 @@ export async function ensureControlsSetup(): Promise<void> {
 
   try {
     await connectDBLocal();
+    const ControlModel = isLocalStorage() ? getControlModel(RegulationType.DORA) : Control;
     
-    // Always check if controls actually exist, even if flag is set
-    const controlCount = await Control.countDocuments();
+    const controlCount = await ControlModel.countDocuments();
     if (controlCount > 0) {
       controlsSetupCompleted = true;
       console.log(`✅ Controls already exist (${controlCount} controls)`);
@@ -76,7 +77,7 @@ export async function ensureControlsSetup(): Promise<void> {
 }
 
 async function createControlsFromISOStandards(): Promise<void> {
-  // Load ISO 27002/27005 controls from static data file
+  const ControlModel = isLocalStorage() ? getControlModel(RegulationType.DORA) : Control;
   const isoControlsPath = path.join(process.cwd(), 'data', 'iso27002-controls.json');
   
   if (!fs.existsSync(isoControlsPath)) {
@@ -145,7 +146,7 @@ async function createControlsFromISOStandards(): Promise<void> {
       }
       
       // Check if control already exists
-      const existing = await Control.findOne({ controlId: isoControl.controlId });
+      const existing = await ControlModel.findOne({ controlId: isoControl.controlId });
       if (existing) {
         skippedCount++;
         continue;
@@ -183,7 +184,7 @@ async function createControlsFromISOStandards(): Promise<void> {
       };
       
       try {
-        await Control.create(controlData);
+        await ControlModel.create(controlData);
         createdCount++;
         
         if (createdCount % 20 === 0) {
@@ -204,8 +205,7 @@ async function createControlsFromISOStandards(): Promise<void> {
     console.log(`   Skipped ${skippedCount} controls (already exist or errors)`);
   }
   
-  // Verify controls were actually created
-  const finalCount = await Control.countDocuments();
+  const finalCount = await ControlModel.countDocuments();
   if (finalCount === 0 && createdCount === 0) {
     console.error('⚠️  WARNING: No controls were created! Check for errors above.');
     throw new Error('Failed to create any controls');
@@ -213,7 +213,7 @@ async function createControlsFromISOStandards(): Promise<void> {
 }
 
 async function createControlsFromRequirements(): Promise<void> {
-  // Fallback: create controls from requirements if ISO file doesn't exist
+  const ControlModel = isLocalStorage() ? getControlModel(RegulationType.DORA) : Control;
   const requirements = await DORARequirement.find();
   let controlCounter = 1;
   
@@ -246,7 +246,7 @@ async function createControlsFromRequirements(): Promise<void> {
         notes: req.notes || null,
       };
       
-      await Control.create(controlData);
+      await ControlModel.create(controlData);
       controlCounter++;
     }
   }
@@ -255,9 +255,11 @@ async function createControlsFromRequirements(): Promise<void> {
 }
 
 async function updateQuestionsWithControls(): Promise<void> {
-  const questions = await Question.find();
+  const QuestionModel = isLocalStorage() ? getQuestionModel(RegulationType.DORA) : Question;
+  const ControlModel = isLocalStorage() ? getControlModel(RegulationType.DORA) : Control;
+  const questions = await QuestionModel.find();
   const requirements = await DORARequirement.find();
-  const controls = await Control.find();
+  const controls = await ControlModel.find();
   let updatedCount = 0;
   
   // Create a map of requirement IDs to control IDs
@@ -311,7 +313,7 @@ async function updateQuestionsWithControls(): Promise<void> {
         const updatedOptions = question.options.map(opt => 
           opt.value === 'yes' ? yesOption : opt
         );
-        await Question.findOneAndUpdate(
+        await QuestionModel.findOneAndUpdate(
           { _id: question._id },
           { options: updatedOptions },
           { new: true }

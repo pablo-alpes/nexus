@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDBLocal } from '@/lib/mongodb-local';
-import QuestionMapping from '@/models/QuestionMapping';
+import { connectDBLocal, isLocalStorage } from '@/lib/mongodb-local';
+import QuestionMapping, { getQuestionMappingModel } from '@/models/QuestionMapping';
 import { getActiveRuleVersion } from '@/lib/services/precomputed-mappings';
 import { RegulationType } from '@/lib/regulations';
 
-// GET: list mappings for current rule version
+// GET: list mappings for current rule version - scoped by regulation for separate DORA vs Chilean Privacy data
 export async function GET(request: NextRequest) {
   try {
     await connectDBLocal();
     
-    // Get regulation from query parameter
     const { searchParams } = new URL(request.url);
     const regulationParam = searchParams.get('regulation');
     const regulationType = regulationParam === 'CHILEAN_PRIVACY' 
@@ -18,22 +17,21 @@ export async function GET(request: NextRequest) {
     
     const ruleVersion = await getActiveRuleVersion(regulationType);
     
-    // Support both mongoose and LocalModel (no .lean() in LocalModel)
-    const raw = await QuestionMapping.find({ ruleVersion });
+    // Use regulation-scoped model for local storage (separate file per regulation)
+    const MappingModel = isLocalStorage() ? getQuestionMappingModel(regulationType) : QuestionMapping;
+    const raw = await MappingModel.find({ ruleVersion });
     const mappings = Array.isArray(raw) ? raw : [];
     
-    // Filter mappings by regulation if needed (based on question IDs or other criteria)
-    // For Chilean Privacy, filter by Q-PRIV- prefix
+    // For MongoDB, filter by questionId prefix when documents are mixed
     let filteredMappings = mappings;
-    if (regulationType === RegulationType.CHILEAN_PRIVACY) {
-      filteredMappings = mappings.filter((m: any) => 
-        m.questionId?.startsWith('Q-PRIV-')
-      );
-    } else {
-      // For DORA, filter by Q- prefix (but not Q-PRIV-)
-      filteredMappings = mappings.filter((m: any) => 
-        m.questionId?.startsWith('Q-') && !m.questionId?.startsWith('Q-PRIV-')
-      );
+    if (!isLocalStorage()) {
+      if (regulationType === RegulationType.CHILEAN_PRIVACY) {
+        filteredMappings = mappings.filter((m: any) => m.questionId?.startsWith('Q-PRIV-'));
+      } else {
+        filteredMappings = mappings.filter((m: any) =>
+          m.questionId?.startsWith('Q-') && !m.questionId?.startsWith('Q-PRIV-')
+        );
+      }
     }
     
     return NextResponse.json({ ruleVersion, mappings: filteredMappings });
@@ -44,20 +42,23 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// PUT: update controlBasedRequirements for a question mapping
+// PUT: update controlBasedRequirements for a question mapping (regulation from body/query for storage scope)
 export async function PUT(request: NextRequest) {
   try {
     await connectDBLocal();
     const body = await request.json();
-    const { questionId, controlBasedRequirements, ruleVersion } = body;
+    const regulationFromUrl = request.nextUrl.searchParams.get('regulation');
+    const { questionId, controlBasedRequirements, ruleVersion, regulation } = body;
+    const regulationType = (regulation || regulationFromUrl) === 'CHILEAN_PRIVACY' ? RegulationType.CHILEAN_PRIVACY : RegulationType.DORA;
+    const MappingModel = isLocalStorage() ? getQuestionMappingModel(regulationType) : QuestionMapping;
 
     if (!questionId || !controlBasedRequirements) {
       return NextResponse.json({ error: 'questionId and controlBasedRequirements are required' }, { status: 400 });
     }
 
-    const version = ruleVersion || await getActiveRuleVersion();
+    const version = ruleVersion || await getActiveRuleVersion(regulationType);
 
-    const updated = await QuestionMapping.findOneAndUpdate(
+    const updated = await MappingModel.findOneAndUpdate(
       { questionId, ruleVersion: version },
       { controlBasedRequirements, computedAt: new Date() },
       { new: true }

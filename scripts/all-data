@@ -1,0 +1,31 @@
+cd /usr/local/dev/nexus
+
+# Step 0: Create questionnaire
+echo "Step 0: Creating questionnaire..."
+npx tsx scripts/create-chilean-privacy-questionnaire.js
+
+# Step 1: Import requirements
+echo "Step 1: Importing requirements..."
+npx tsx scripts/import-chilean-privacy-requirements.js
+
+# Step 2: Create controls
+echo "Step 2: Creating controls..."
+npx tsx scripts/create-chilean-privacy-controls.js
+
+# Step 3: Add ISO 27002 controls
+echo "Step 3: Adding ISO 27002 controls..."
+npx tsx scripts/add-iso27002-controls-chilean-privacy.js
+
+# Step 4: Map requirements to controls (use npx tsx, not node)
+echo "Step 4: Mapping requirements to controls..."
+npx tsx scripts/map-chilean-privacy-requirements-to-controls.js
+
+# Step 5: Precompute mappings (this uses npm run, so it's fine)
+echo "Step 5: Precomputing mappings..."
+npm run precompute:mappings:privacy
+
+# Step 6: Prepopulate privacy data
+echo "Step 6: Prepopulating privacy data..."
+npm run prepopulate:privacy
+
+echo "✅ Complete!"

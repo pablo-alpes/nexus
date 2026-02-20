@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDBLocal } from '@/lib/mongodb-local';
+import { connectDBLocal, isLocalStorage } from '@/lib/mongodb-local';
 import GapAnalysis from '@/models/GapAnalysis';
-import Control from '@/models/Control';
+import Control, { getControlModel } from '@/models/Control';
 import Asset from '@/models/Asset';
 import QuestionnaireResponse from '@/models/QuestionnaireResponse';
-import DORARequirement from '@/models/DORARequirement';
-import Question from '@/models/Question';
+import Question, { getQuestionModel } from '@/models/Question';
 import { getAuthUser } from '@/lib/auth-helper';
 import { DORAPillar } from '@/models/DORARequirement';
 import { ControlStatus } from '@/models/Control';
@@ -110,8 +109,9 @@ export async function POST(request: NextRequest) {
     const { RequirementOperations } = await import('@/lib/model-operations');
     const allRequirements = await RequirementOperations.findByRegulation(regulationType, { pillar });
     
-    // Step 4: Get all controls for this pillar
-    const allControlsForPillar = await Control.find({ pillar });
+    // Step 4: Get all controls for this pillar (regulation-scoped in local storage)
+    const ControlModel = isLocalStorage() ? getControlModel(regulationType) : Control;
+    const allControlsForPillar = await ControlModel.find({ pillar });
     
     // Step 4a: Determine which controls are applicable based on questionnaire response
     // The questionnaire response already contains the correct applicableControls calculated using:
@@ -136,8 +136,8 @@ export async function POST(request: NextRequest) {
     // Check if there are "No" answers for this pillar in the questionnaire
     let hasNoAnswersForPillar = false;
     if (questionnaireResponse && questionnaireResponse.answers) {
-      // Get all questions for this pillar
-      const questionsForPillar = await Question.find({ pillar });
+      const QuestionModel = isLocalStorage() ? getQuestionModel(regulationType) : Question;
+      const questionsForPillar = await QuestionModel.find({ pillar });
       const questionIdsForPillar = new Set(questionsForPillar.map((q: any) => String(q._id || q.questionId)));
       
       // Check if any answer for this pillar is "no"

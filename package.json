@@ -26,6 +26,7 @@
     "test:chilean-privacy-completeness": "node scripts/test-chilean-privacy-completeness.js",
     "test:chilean-privacy-flow": "node scripts/test-chilean-privacy-engine-flow.js",
     "test:chilean-privacy-suite": "node scripts/test-chilean-privacy-suite.js",
+    "test:regulation-and-stats": "USE_LOCAL_STORAGE=true tsx scripts/test-regulation-and-stats.ts",
     "precompute:mappings": "tsx scripts/precompute-mappings.ts",
     "precompute:mappings:privacy": "tsx scripts/precompute-chilean-privacy-mappings.ts",
     "parse:chilean-privacy": "node scripts/parse-chilean-privacy-law.js",
