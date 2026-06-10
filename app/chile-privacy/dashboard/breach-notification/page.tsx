@@ -44,6 +44,8 @@ interface BreachNotification {
   currentStage?: string;
   processOwner?: string;
   escalationLevel?: 'NONE' | 'MANAGEMENT' | 'EXECUTIVE' | 'BOARD';
+  containmentMeasures?: string[];
+  remediationActions?: string[];
 }
 
 const SEVERITY_COLORS: Record<string, string> = {
@@ -88,7 +90,7 @@ export default function BreachNotificationPage() {
     breachCategory: 'ACCIDENTAL',
     affectedDataCategories: [] as string[],
     affectedDataSubjects: 0,
-    severity: 'MEDIUM' as const,
+    severity: 'MEDIUM' as 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL',
     containmentMeasures: [] as string[],
     remediationActions: [] as string[],
   });

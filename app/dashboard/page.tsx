@@ -331,6 +331,17 @@ export default function DashboardPage() {
                 {language === 'es' ? 'Ver y gestionar mapeos de preguntas a requisitos' : 'View and manage question-to-requirement mappings'}
               </p>
             </Link>
+            <Link
+              href={isChileanPrivacy ? '/chile-privacy/dashboard/profile' : '/dashboard/profile'}
+              className="block p-4 border border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50"
+            >
+              <h3 className="font-semibold text-lg mb-1">
+                6. {language === 'es' ? 'Perfil y módulo de regulación' : 'Profile & regulation module'}
+              </h3>
+              <p className="text-gray-600">
+                {language === 'es' ? 'Elegir qué módulo de regulación ver por defecto' : 'Choose which regulation module to see by default'}
+              </p>
+            </Link>
           </div>
         </div>
       </div>

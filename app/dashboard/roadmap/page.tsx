@@ -615,7 +615,7 @@ export default function RoadmapPage() {
                     Cancel
                   </button>
                   <button
-                    onClick={() => handleTaskUpdate(editingTask)}
+                    onClick={() => handleTaskUpdate()}
                     className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
                   >
                     Save Changes

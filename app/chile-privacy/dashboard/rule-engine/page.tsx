@@ -2492,7 +2492,7 @@ export default function RuleEnginePage() {
                               Linked Controls ({controls.length})
                             </div>
                             <div className="flex flex-wrap gap-2">
-                              {controls.length > 0 ? controls.map((c) => (
+                              {controls.length > 0 ? controls.map((c: Control) => (
                                 <span
                                   key={c.controlId}
                                   className="px-2 py-1 bg-purple-100 rounded text-xs font-mono flex items-center gap-1 group relative cursor-move"
@@ -2635,9 +2635,9 @@ export default function RuleEnginePage() {
                             </div>
                             {reqIds.length > 0 ? (
                               <div className="space-y-3">
-                                {reqIds.map((reqId) => {
+                                {reqIds.map((reqId: string) => {
                                   // Try multiple ways to find the requirement
-                                  let req = requirements[reqId];
+                                  let req: Requirement | undefined = requirements[reqId];
                                   if (!req) {
                                     req = allRequirements.find(r => 
                                       r.requirementId === reqId || 

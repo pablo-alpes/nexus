@@ -384,7 +384,7 @@ export async function POST(request: NextRequest) {
     );
     
     // Get rule version and coherence metrics for response
-    let coherenceMetrics = null;
+    let coherenceMetrics: { averageRelevance?: number; highConfidenceCount?: number; mediumConfidenceCount?: number; lowConfidenceCount?: number; overallCoherence?: number } | null = null;
     if (noAnswers.length > 0 && noAnswers[0].question) {
       try {
         const precomputed = await getPrecomputedMappings(noAnswers[0].question.questionId, ruleVersion, regulationType);

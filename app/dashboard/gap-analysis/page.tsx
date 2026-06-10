@@ -33,7 +33,7 @@ export default function GapAnalysisPage() {
 
     setGenerating(true);
     try {
-      const response = await apiRequest('/gap-analysis', {
+      const response = await apiRequest<{ gapAnalysis: any; summary?: { gaps?: number; compliancePercentage?: number } }>('/gap-analysis', {
         method: 'POST',
         body: JSON.stringify({ 
           pillar: selectedPillar,

@@ -234,7 +234,7 @@ export async function POST(request: NextRequest) {
     console.log(`📋 Remediation: Gap analysis has ${gapAnalysis.gaps?.length || 0} gaps`);
     
     // Create remediation actions from gaps
-    const actions = [];
+    const actions: any[] = [];
     
     for (const gap of gapAnalysis.gaps || []) {
       if (gap.status === 'FULLY_IMPLEMENTED' || gap.status === 'NOT_APPLICABLE') {
@@ -407,7 +407,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Generate AI-powered strategic recommendations
-    let strategy = null;
+    let strategy: Awaited<ReturnType<typeof generateAIStrategy>> | null = null;
     try {
       strategy = await generateAIStrategy(
         actions,

@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
     const worksheet = workbook.Sheets[sheetName];
     const data = XLSX.utils.sheet_to_json(worksheet);
     
-    const requirements = [];
+    const requirements: any[] = [];
     for (const row of data as any[]) {
       const requirement = {
         requirementId: row.requirementId || row['Requirement ID'],

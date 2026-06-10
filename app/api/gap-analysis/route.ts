@@ -208,7 +208,17 @@ export async function POST(request: NextRequest) {
     const controlsToAnalyze = filteredControls;
     
     // Step 6: Analyze gaps for each control
-    const gaps = [];
+    const gaps: Array<{
+      controlId: string;
+      controlTitle: string;
+      controlDescription: any;
+      requirementIds: string[];
+      requirementNames: string[];
+      status: ControlStatus;
+      gapDescription: string;
+      priority: string;
+      reasoning: string[];
+    }> = [];
     let implementedCount = 0;
     let notApplicableCount = 0;
     

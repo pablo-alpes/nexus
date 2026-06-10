@@ -228,3 +228,41 @@ export function getPillars(regulationType: RegulationType): RegulationPillar[] {
   const config = getRegulationConfig(regulationType);
   return config.pillars;
 }
+
+/** Module descriptor for UI (regulation = one module) */
+export interface RegulationModuleInfo {
+  id: RegulationType;
+  name: string;
+  nameEs?: string;
+  description: string;
+  routePrefix: string; // e.g. '' for DORA (main), '/chile-privacy' for Chilean Privacy
+}
+
+/**
+ * Get all regulation modules for navigation and user preference
+ * Adding a new regulation: add to enum, REGULATION_REGISTRY, and this list
+ */
+export function getRegulationModules(): RegulationModuleInfo[] {
+  return [
+    {
+      id: RegulationType.DORA,
+      name: DORA_CONFIG.name,
+      description: DORA_CONFIG.description,
+      routePrefix: '',
+    },
+    {
+      id: RegulationType.CHILEAN_PRIVACY,
+      name: CHILEAN_PRIVACY_CONFIG.name,
+      nameEs: CHILEAN_PRIVACY_CONFIG.nameEs,
+      description: CHILEAN_PRIVACY_CONFIG.description,
+      routePrefix: '/chile-privacy',
+    },
+    {
+      id: RegulationType.CHILEAN_PRIVACY_19628,
+      name: CHILEAN_PRIVACY_19628_CONFIG.name,
+      nameEs: CHILEAN_PRIVACY_19628_CONFIG.nameEs,
+      description: CHILEAN_PRIVACY_19628_CONFIG.description,
+      routePrefix: '/chile-privacy', // can be same app, different data
+    },
+  ];
+}

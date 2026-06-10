@@ -26,6 +26,10 @@
     "test:chilean-privacy-completeness": "node scripts/test-chilean-privacy-completeness.js",
     "test:chilean-privacy-flow": "node scripts/test-chilean-privacy-engine-flow.js",
     "test:chilean-privacy-suite": "node scripts/test-chilean-privacy-suite.js",
+    "test": "jest",
+    "test:ci": "jest --ci --coverage",
+    "check": "npm run test:ci",
+    "check:full": "npm run lint && npm run build && npm run test:ci",
     "test:regulation-and-stats": "USE_LOCAL_STORAGE=true tsx scripts/test-regulation-and-stats.ts",
     "precompute:mappings": "tsx scripts/precompute-mappings.ts",
     "precompute:mappings:privacy": "tsx scripts/precompute-chilean-privacy-mappings.ts",
@@ -65,8 +69,10 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.12",
     "eslint": "^8.56.0",
     "eslint-config-next": "^14.0.4",
+    "jest": "^29.7.0",
     "tsx": "^4.21.0"
   }
 }

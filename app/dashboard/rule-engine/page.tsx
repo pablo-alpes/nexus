@@ -38,6 +38,7 @@ interface Requirement {
   title?: string;
   name?: string;
   description?: string;
+  legalText?: string;
   article?: string;
   chapter?: string;
   pillar?: string;
@@ -778,7 +779,7 @@ export default function RuleEnginePage() {
   const handleExportExcel = () => {
     try {
       // Prepare data for export
-      const exportData = [];
+      const exportData: any[] = [];
 
       // Export Requirements with all linkages
       allRequirements.forEach(req => {
@@ -1082,11 +1083,11 @@ export default function RuleEnginePage() {
   
   const groupedByPillar: Record<string, any[]> = {};
   itemsToGroup.forEach((item) => {
-    const pillar = organizeBy === 'questions' 
-      ? (item.question?.pillar || 'UNKNOWN')
+    const pillar = organizeBy === 'questions'
+      ? ((item as { question?: Question }).question?.pillar || 'UNKNOWN')
       : organizeBy === 'requirements'
-      ? (item.requirement?.pillar || 'UNKNOWN')
-      : (item.control?.pillar || 'UNKNOWN');
+      ? ((item as { requirement?: Requirement }).requirement?.pillar || 'UNKNOWN')
+      : ((item as { control?: Control }).control?.pillar || 'UNKNOWN');
     if (!groupedByPillar[pillar]) groupedByPillar[pillar] = [];
     groupedByPillar[pillar].push(item);
   });
@@ -1470,7 +1471,7 @@ export default function RuleEnginePage() {
               <tbody className="bg-white divide-y divide-gray-200">
                       {organizeBy === 'questions' ? pillarItems.map(({ mapping: m, question: q }) => {
                   const reqs = m.controlBasedRequirements || [];
-                        const totalControls = reqs.reduce((sum, reqId) => {
+                        const totalControls = reqs.reduce((sum: number, reqId: string) => {
                           return sum + (controlsByRequirement[String(reqId)]?.length || 0);
                         }, 0);
                         
@@ -1507,7 +1508,7 @@ export default function RuleEnginePage() {
                               </div>
                               {reqs.length > 0 ? (
                                 <div className="space-y-3">
-                                  {reqs.map((reqId) => {
+                                  {reqs.map((reqId: string) => {
                                     const req = requirements[reqId];
                                     const controls = controlsByRequirement[String(reqId)] || [];
                                     if (!req) return null; // Skip if requirement not found
@@ -1644,7 +1645,7 @@ export default function RuleEnginePage() {
                             <td className="px-4 py-3 text-sm">
                           <div className="space-y-2">
                                 {questionIds.length > 0 ? (
-                                  questionIds.map((qId) => {
+                                  questionIds.map((qId: string) => {
                                     const q = questionsById[qId];
                                   return (
                                       <div key={qId} className="flex items-center gap-2">
@@ -1743,7 +1744,7 @@ export default function RuleEnginePage() {
                       <td className="px-4 py-3 text-sm text-gray-700">
                               {questionIds.length > 0 ? (
                                 <div className="space-y-1">
-                                  {questionIds.map((qId) => {
+                                  {questionIds.map((qId: string) => {
                                     const q = questionsById[qId];
                                     return (
                                       <div key={qId} className="text-xs">
@@ -2054,7 +2055,7 @@ export default function RuleEnginePage() {
                               </div>
                               {questionIds.length > 0 ? (
                                 <div className="space-y-2">
-                                  {questionIds.map((qId) => {
+                                  {questionIds.map((qId: string) => {
                                     const q = questionsById[qId];
                                     return (
                                       <div key={qId} className="bg-blue-50 rounded p-2 border border-blue-200">
@@ -2417,7 +2418,7 @@ export default function RuleEnginePage() {
                             </div>
                             {questionIds.length > 0 ? (
                               <div className="space-y-2">
-                                {questionIds.map((qId) => {
+                                {questionIds.map((qId: string) => {
                                   const q = questionsById[qId];
                                   return (
                                     <div 

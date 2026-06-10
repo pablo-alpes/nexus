@@ -26,8 +26,8 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const imported = [];
-    const errors = [];
+    const imported: string[] = [];
+    const errors: { requirementId: string; error: string }[] = [];
     
     for (const req of requirements) {
       try {
@@ -94,8 +94,8 @@ export async function GET(request: NextRequest) {
     const data = JSON.parse(fileContent);
     
     // Import requirements
-    const imported = [];
-    const errors = [];
+    const imported: string[] = [];
+    const errors: { requirementId: string; error: string }[] = [];
     
     for (const req of data.requirements) {
       try {

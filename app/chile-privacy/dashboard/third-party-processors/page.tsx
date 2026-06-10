@@ -89,7 +89,7 @@ export default function ThirdPartyProcessorsPage() {
       await apiRequest('/third-party-processors', {
         method: 'POST',
         body: JSON.stringify({
-          ...mergedData,
+          ...(mergedData as Record<string, unknown>),
           regulation: regulationType,
         }),
       });
