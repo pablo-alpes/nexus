@@ -12,7 +12,7 @@
     "setup": "node scripts/setup-data.js",
     "setup:assets": "node scripts/create-mock-assets.js",
     "setup:questionnaire": "node scripts/create-dora-questionnaire.js",
-        "setup:chilean-privacy": "node scripts/fetch-chilean-privacy-law.js && tsx scripts/import-chilean-privacy-requirements.js && tsx scripts/create-chilean-privacy-questionnaire.js",
+    "setup:chilean-privacy": "node scripts/fetch-chilean-privacy-law.js && tsx scripts/import-chilean-privacy-requirements.js && tsx scripts/create-chilean-privacy-questionnaire.js",
     "setup:chilean-privacy-complete": "bash scripts/setup-chilean-privacy-complete.sh",
     "populate:chilean-privacy": "node scripts/populate-chilean-privacy-data.js",
     "test:controls-fallback": "node scripts/test-controls-requirements-fallback.js",
@@ -34,14 +34,14 @@
     "precompute:mappings": "tsx scripts/precompute-mappings.ts",
     "precompute:mappings:privacy": "tsx scripts/precompute-chilean-privacy-mappings.ts",
     "parse:chilean-privacy": "node scripts/parse-chilean-privacy-law.js",
-        "prepopulate:privacy": "tsx scripts/prepopulate-privacy-data.ts",
-        "load:privacy": "tsx scripts/load-all-privacy-data.ts",
-        "load:all": "tsx scripts/load-all-data.ts",
-        "load:chilean-privacy": "tsx scripts/load-all-chilean-privacy-data.ts",
-        "export:requirements": "tsx scripts/export-requirements-to-json.ts",
-        "export:mappings": "tsx scripts/export-mappings-to-json.ts",
-        "export:all": "tsx scripts/export-requirements-to-json.ts && tsx scripts/export-mappings-to-json.ts",
-        "import:mappings": "tsx scripts/import-mappings-from-json.ts"
+    "prepopulate:privacy": "tsx scripts/prepopulate-privacy-data.ts",
+    "load:privacy": "tsx scripts/load-all-privacy-data.ts",
+    "load:all": "tsx scripts/load-all-data.ts",
+    "load:chilean-privacy": "tsx scripts/load-all-chilean-privacy-data.ts",
+    "export:requirements": "tsx scripts/export-requirements-to-json.ts",
+    "export:mappings": "tsx scripts/export-mappings-to-json.ts",
+    "export:all": "tsx scripts/export-requirements-to-json.ts && tsx scripts/export-mappings-to-json.ts",
+    "import:mappings": "tsx scripts/import-mappings-from-json.ts"
   },
   "dependencies": {
     "@azure/storage-blob": "^12.17.0",
@@ -74,5 +74,8 @@
     "eslint-config-next": "^14.0.4",
     "jest": "^29.7.0",
     "tsx": "^4.21.0"
+  },
+  "optionalDependencies": {
+    "@next/swc-darwin-arm64": "14.2.33"
   }
 }

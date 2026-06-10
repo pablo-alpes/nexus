@@ -8,13 +8,21 @@
 import { useState, ReactNode } from 'react';
 import { useTranslation } from '@/lib/hooks/useTranslation';
 
+type StepComponentProps = {
+  data: any;
+  updateData: (data: any) => void;
+  allData: any;
+};
+
+type StepComponent = ReactNode | ((props: StepComponentProps) => ReactNode);
+
 interface WizardStep {
   id: string;
   title: string;
   titleEs?: string;
   description?: string;
   descriptionEs?: string;
-  component: ReactNode;
+  component: StepComponent;
   validation?: () => boolean;
 }
 
@@ -142,7 +150,7 @@ export default function Wizard({ steps, onComplete, onCancel, title, titleEs }: 
           {/* Render step component with data and update function */}
           <div className="min-h-[300px]">
             {typeof currentStepData.component === 'function'
-              ? currentStepData.component({
+              ? (currentStepData.component as (props: StepComponentProps) => ReactNode)({
                   data: getStepData(currentStepData.id),
                   updateData: (data: any) => updateFormData(currentStepData.id, data),
                   allData: formData,

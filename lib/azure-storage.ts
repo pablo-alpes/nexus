@@ -1,23 +1,28 @@
-import { BlobServiceClient } from '@azure/storage-blob';
+import { BlobServiceClient, ContainerClient } from '@azure/storage-blob';
 import crypto from 'crypto';
 
-const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING!;
 const containerName = process.env.AZURE_STORAGE_CONTAINER_NAME || 'dora-evidence';
 
-if (!connectionString) {
-  throw new Error('AZURE_STORAGE_CONNECTION_STRING is not set');
-}
+let containerClient: ContainerClient | null = null;
 
-const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
-const containerClient = blobServiceClient.getContainerClient(containerName);
+function getContainerClient(): ContainerClient {
+  const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+  if (!connectionString) {
+    throw new Error('AZURE_STORAGE_CONNECTION_STRING is not set');
+  }
+  if (!containerClient) {
+    const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
+    containerClient = blobServiceClient.getContainerClient(containerName);
+  }
+  return containerClient;
+}
 
 // Ensure container exists
 export async function ensureContainerExists() {
-  const exists = await containerClient.exists();
+  const client = getContainerClient();
+  const exists = await client.exists();
   if (!exists) {
-    await containerClient.create({
-      access: 'private',
-    });
+    await client.create();
   }
 }
 
@@ -51,7 +56,7 @@ export async function uploadEvidence(
   const randomId = crypto.randomBytes(8).toString('hex');
   const blobName = `evidence/${timestamp}-${randomId}-${fileName}`;
 
-  const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+  const blockBlobClient = getContainerClient().getBlockBlobClient(blobName);
 
   await blockBlobClient.upload(encrypted, encrypted.length, {
     blobHTTPHeaders: {
@@ -72,7 +77,7 @@ export async function uploadEvidence(
 }
 
 export async function downloadEvidence(blobName: string): Promise<Buffer> {
-  const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+  const blockBlobClient = getContainerClient().getBlockBlobClient(blobName);
   const downloadResponse = await blockBlobClient.download(0);
   
   if (!downloadResponse.readableStreamBody) {
@@ -81,7 +86,7 @@ export async function downloadEvidence(blobName: string): Promise<Buffer> {
 
   const chunks: Buffer[] = [];
   for await (const chunk of downloadResponse.readableStreamBody) {
-    chunks.push(chunk);
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
   }
   
   const encrypted = Buffer.concat(chunks);
@@ -101,12 +106,12 @@ export async function downloadEvidence(blobName: string): Promise<Buffer> {
 }
 
 export async function deleteEvidence(blobName: string): Promise<void> {
-  const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+  const blockBlobClient = getContainerClient().getBlockBlobClient(blobName);
   await blockBlobClient.delete();
 }
 
 export async function getEvidenceMetadata(blobName: string) {
-  const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+  const blockBlobClient = getContainerClient().getBlockBlobClient(blobName);
   const properties = await blockBlobClient.getProperties();
   return {
     contentType: properties.contentType,
@@ -115,4 +120,3 @@ export async function getEvidenceMetadata(blobName: string) {
     lastModified: properties.lastModified,
   };
 }
-

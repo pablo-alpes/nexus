@@ -130,7 +130,7 @@ export default function RoadmapPage() {
     
     const start = new Date(roadmap.startDate);
     const end = new Date(roadmap.endDate);
-    const monthsList = [];
+    const monthsList: Date[] = [];
     
     const current = new Date(start);
     current.setDate(1); // Start of month

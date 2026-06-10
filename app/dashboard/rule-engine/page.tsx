@@ -2170,7 +2170,7 @@ export default function RuleEnginePage() {
                     <h3 className="font-semibold text-gray-800">{pillar.replace(/_/g, ' ')}</h3>
                   </div>
             <div className="p-4 space-y-3">
-                    {organizeBy === 'questions' ? pillarItems.map(({ mapping: m, question: q }) => {
+                    {(organizeBy as 'questions' | 'requirements' | 'controls') === 'questions' ? pillarItems.map(({ mapping: m, question: q }) => {
                       const reqs = (m.controlBasedRequirements || []).map((rId) => ({
                         id: rId,
                         meta: requirements[rId],
@@ -2600,7 +2600,7 @@ export default function RuleEnginePage() {
                               <div className="space-y-3">
                                 {reqIds.map((reqId) => {
                                   // Try multiple ways to find the requirement
-                                  let req = requirements[reqId];
+                                  let req: Requirement | undefined = requirements[reqId];
                                   if (!req) {
                                     req = allRequirements.find(r => 
                                       r.requirementId === reqId || 
