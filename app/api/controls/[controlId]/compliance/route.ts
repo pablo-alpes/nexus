@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDBLocal } from '@/lib/mongodb-local';
-import Control from '@/models/Control';
+import { connectDBLocal, isLocalStorage } from '@/lib/mongodb-local';
+import Control, { getControlModel } from '@/models/Control';
 import { getAuthUser } from '@/lib/auth-helper';
+import { RegulationType } from '@/lib/regulations';
 
 // PUT - Update compliance status for a control
 export async function PUT(
@@ -18,7 +19,9 @@ export async function PUT(
     }
     
     const body = await request.json();
-    const { complianceStatus, notes } = body;
+    const { complianceStatus, notes, regulation } = body;
+    const regulationType = regulation || RegulationType.DORA;
+    const ControlModel = isLocalStorage() ? getControlModel(regulationType) : Control;
     
     if (!complianceStatus) {
       return NextResponse.json(
@@ -35,7 +38,7 @@ export async function PUT(
       );
     }
     
-    const control = await Control.findOneAndUpdate(
+    let control = await ControlModel.findOneAndUpdate(
       { controlId: params.controlId },
       {
         complianceStatus,
@@ -44,6 +47,14 @@ export async function PUT(
       { new: true }
     );
     
+    if (!control) {
+      control = await ControlModel.findOneAndUpdate(
+        { _id: params.controlId },
+        { complianceStatus, notes: notes || undefined },
+        { new: true }
+      );
+    }
+
     if (!control) {
       return NextResponse.json(
         { error: 'Control not found' },

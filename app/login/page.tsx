@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest } from '@/lib/api';
@@ -11,6 +11,29 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [quickLoginLoading, setQuickLoginLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleQuickTestLogin = async () => {
+    if (!mounted) return;
+    setError('');
+    setQuickLoginLoading(true);
+    try {
+      const response = await apiRequest<{ token: string; user: any; message?: string }>('/auth/test-login', {
+        method: 'POST',
+      });
+      localStorage.setItem('token', response.token);
+      // Use hard redirect for reliability across all runtime contexts
+      window.location.href = '/dashboard';
+    } catch (err: any) {
+      setError(err.message || 'Test login not available');
+      setQuickLoginLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,20 +83,11 @@ export default function LoginPage() {
           </p>
           <button
             type="button"
-            onClick={async () => {
-              try {
-                const response = await apiRequest<{ token: string; user: any }>('/auth/test-login', {
-                  method: 'POST',
-                });
-                localStorage.setItem('token', response.token);
-                router.push('/dashboard');
-              } catch (err: any) {
-                setError(err.message || 'Test login not available');
-              }
-            }}
-            className="mt-2 w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"
+            onClick={handleQuickTestLogin}
+            disabled={quickLoginLoading || !mounted}
+            className="mt-2 w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            Quick Test Login (No Password Required)
+            {quickLoginLoading ? 'Logging in...' : 'Quick Test Login (No Password Required)'}
           </button>
         </div>
         
@@ -114,7 +128,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || quickLoginLoading}
             className="w-full bg-primary-600 text-white py-2 rounded-md hover:bg-primary-700 disabled:opacity-50"
           >
             {loading ? 'Logging in...' : 'Login'}

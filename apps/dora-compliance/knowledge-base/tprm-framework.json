@@ -1,0 +1,55 @@
+{
+  "metadata": {
+    "module": "TPRM",
+    "regulation": "DORA",
+    "pillar": "THIRD_PARTY_RISK",
+    "version": "1.0",
+    "description": "Third-Party Risk Management framework extending DORA ICT third-party requirements (Articles 28-30)"
+  },
+  "requirements": [
+    {
+      "id": "TPRM-REQ-001",
+      "doraReference": "DORA-REQ-180",
+      "title": "ICT Third-Party Register",
+      "description": "Maintain a register of all ICT third-party service providers supporting critical or important functions"
+    },
+    {
+      "id": "TPRM-REQ-002",
+      "doraReference": "DORA-REQ-181",
+      "title": "Pre-contractual Risk Assessment",
+      "description": "Conduct risk assessment before entering into contractual arrangements with ICT third-party providers"
+    },
+    {
+      "id": "TPRM-REQ-003",
+      "doraReference": "DORA-REQ-182",
+      "title": "Contractual Minimum Clauses",
+      "description": "Ensure contracts include audit rights, exit strategy, incident notification, SLA, and data location provisions"
+    },
+    {
+      "id": "TPRM-REQ-004",
+      "doraReference": "DORA-REQ-183",
+      "title": "Concentration Risk Monitoring",
+      "description": "Monitor and manage concentration risk from over-reliance on single ICT third-party providers"
+    },
+    {
+      "id": "TPRM-REQ-005",
+      "doraReference": "DORA-REQ-184",
+      "title": "Sub-contracting Chain Oversight",
+      "description": "Oversee and approve sub-contracting arrangements by ICT third-party providers"
+    },
+    {
+      "id": "TPRM-REQ-006",
+      "doraReference": "DORA-REQ-185",
+      "title": "Ongoing Performance Monitoring",
+      "description": "Continuously monitor ICT third-party provider performance and compliance with contractual obligations"
+    }
+  ],
+  "assessmentCriteria": [
+    { "id": "AUDIT_RIGHTS", "weight": 15, "label": "Audit & inspection rights in contract" },
+    { "id": "EXIT_STRATEGY", "weight": 20, "label": "Documented exit strategy and transition plan" },
+    { "id": "INCIDENT_NOTIFICATION", "weight": 20, "label": "Incident notification obligations (≤ 4h for major)" },
+    { "id": "SLA", "weight": 15, "label": "Service level agreements defined and monitored" },
+    { "id": "DATA_LOCATION", "weight": 15, "label": "Data location and sovereignty clauses" },
+    { "id": "SUB_CONTRACTING", "weight": 15, "label": "Sub-contracting controls and disclosure" }
+  ]
+}

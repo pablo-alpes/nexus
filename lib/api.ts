@@ -1,12 +1,12 @@
-const getApiUrl = () => {
-  if (typeof window !== 'undefined') {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || window.location.origin + '/api';
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/f85e8ae0-d382-466b-9574-875e68788737',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/api.ts:3',message:'API URL determined',data:{nextPublicApiUrl:process.env.NEXT_PUBLIC_API_URL,windowOrigin:window.location.origin,finalApiUrl:apiUrl},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-    // #endregion
-    return apiUrl;
+const getApiCandidates = (): string[] => {
+  if (typeof window === 'undefined') {
+    return [process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'];
   }
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+
+  const configured = process.env.NEXT_PUBLIC_API_URL;
+  const sameOrigin = `${window.location.origin}/api`;
+  const candidates = [configured, sameOrigin].filter(Boolean) as string[];
+  return Array.from(new Set(candidates));
 };
 
 export async function apiRequest<T>(
@@ -40,18 +40,29 @@ export async function apiRequest<T>(
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
-  
-  const response = await fetch(`${getApiUrl()}${endpoint}`, {
-    ...options,
-    headers,
-  });
-  
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'An error occurred');
+
+  const apiCandidates = getApiCandidates();
+  let lastError: Error | null = null;
+
+  for (const baseUrl of apiCandidates) {
+    try {
+      const response = await fetch(`${baseUrl}${endpoint}`, {
+        ...options,
+        headers,
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'An error occurred' }));
+        throw new Error(error.error || 'An error occurred');
+      }
+
+      return response.json();
+    } catch (err: any) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+    }
   }
-  
-  return response.json();
+
+  throw lastError || new Error('Network error while calling API');
 }
 
 export async function uploadFile(
@@ -59,20 +70,30 @@ export async function uploadFile(
   formData: FormData
 ): Promise<any> {
   const token = localStorage.getItem('token');
-  
-  const response = await fetch(`${getApiUrl()}${endpoint}`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-    body: formData,
-  });
-  
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'An error occurred');
+  const apiCandidates = getApiCandidates();
+  let lastError: Error | null = null;
+
+  for (const baseUrl of apiCandidates) {
+    try {
+      const response = await fetch(`${baseUrl}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'An error occurred' }));
+        throw new Error(error.error || 'An error occurred');
+      }
+
+      return response.json();
+    } catch (err: any) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+    }
   }
-  
-  return response.json();
+
+  throw lastError || new Error('Network error while uploading file');
 }
 

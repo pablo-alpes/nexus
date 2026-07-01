@@ -219,10 +219,7 @@ const DataProcessingRegisterSchema = new Schema<IDataProcessingRegister>(
   }
 );
 
-DataProcessingRegisterSchema.index({ activityId: 1 });
 DataProcessingRegisterSchema.index({ regulationType: 1, status: 1 });
-DataProcessingRegisterSchema.index({ pillar: 1 });
-DataProcessingRegisterSchema.index({ legalBasis: 1 });
 
 let DataProcessingRegister: Model<IDataProcessingRegister>;
 

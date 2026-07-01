@@ -53,6 +53,7 @@ export default function QuestionnairePage() {
   const [ruleVersion, setRuleVersion] = useState<RuleVersionInfo | null>(null);
   const [coherenceMetrics, setCoherenceMetrics] = useState<CoherenceMetrics | null>(null);
   const [overallMetrics, setOverallMetrics] = useState<any>(null);
+  const [gapAnalysisSummary, setGapAnalysisSummary] = useState<any>(null);
 
   // Detect regulation from route
   const isChileanPrivacy = pathname?.includes('chile-privacy') || pathname?.includes('chilean-privacy');
@@ -140,6 +141,10 @@ export default function QuestionnairePage() {
         applicableControlsCount: number;
         ruleVersion?: string;
         coherenceMetrics?: CoherenceMetrics;
+        gapAnalysisSummary?: {
+          overallCompliance: number;
+          pillarResults: Array<{ pillar: string; compliancePercentage: number; gaps: number }>;
+        };
         mappingCompleteness?: {
           questionsProcessed: number;
           questionsWithMappings: number;
@@ -162,8 +167,10 @@ export default function QuestionnairePage() {
         (response.response as any).mappingCompleteness = response.mappingCompleteness;
       }
       if (response.ruleVersion) {
-        // Update rule version if provided
         loadRuleVersion();
+      }
+      if (response.gapAnalysisSummary) {
+        setGapAnalysisSummary(response.gapAnalysisSummary);
       }
       setShowResults(true);
       
@@ -414,6 +421,47 @@ export default function QuestionnairePage() {
               </div>
             )}
           </div>
+
+          {gapAnalysisSummary && (
+            <div className="bg-white rounded-lg shadow p-6 mb-6">
+              <h2 className="text-xl font-semibold mb-4">Compliance Analysis (Auto-generated)</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div className="bg-indigo-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Overall Compliance</p>
+                  <p className={`text-3xl font-bold ${gapAnalysisSummary.overallCompliance >= 60 ? 'text-green-600' : 'text-red-600'}`}>
+                    {gapAnalysisSummary.overallCompliance}%
+                  </p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Pillars Analyzed</p>
+                  <p className="text-3xl font-bold text-gray-700">
+                    {gapAnalysisSummary.pillarResults?.length || 0}
+                  </p>
+                </div>
+                <div className="bg-red-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Total Gaps</p>
+                  <p className="text-3xl font-bold text-red-600">
+                    {gapAnalysisSummary.pillarResults?.reduce((sum: number, p: any) => sum + (p.gaps || 0), 0) || 0}
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                {gapAnalysisSummary.pillarResults?.map((pillar: any) => (
+                  <div key={pillar.pillar} className="text-center p-2 bg-gray-50 rounded">
+                    <p className="text-xs text-gray-500 truncate">{pillarLabels[pillar.pillar] || pillar.pillar}</p>
+                    <p className={`text-lg font-bold ${pillar.compliancePercentage >= 80 ? 'text-green-600' : pillar.compliancePercentage >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
+                      {pillar.compliancePercentage}%
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-gray-500 mt-3">
+                Gap analysis was automatically generated for all DORA pillars. View details on the{' '}
+                <Link href="/dashboard/gap-analysis" className="text-primary-600 underline">Gap Analysis</Link> page
+                or <Link href="/dashboard" className="text-primary-600 underline">Dashboard</Link>.
+              </p>
+            </div>
+          )}
 
           <div className="space-y-6">
             {Object.entries(answersByPillar).map(([pillar, pillarAnswers]) => (

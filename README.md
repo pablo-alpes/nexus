@@ -958,6 +958,39 @@ Nexus Cloud uses a **dual-storage architecture** for maximum flexibility:
 
 ## Getting Started
 
+### Quick Demo (single command)
+
+From the `nexus/` folder:
+
+```bash
+npm run demo:all-in-one
+```
+
+This command:
+- resets local demo DB
+- seeds deterministic mock data
+- fixes DORA pillar assignment
+- recomputes mappings
+- builds and starts HTTPS locally
+
+### VPS Quick Start (simple)
+
+On your VPS, inside the `nexus/` folder:
+
+```bash
+npm install
+npm run vps:bootstrap
+```
+
+This command:
+- prepares demo/runtime data
+- builds the app
+- starts it with PM2
+
+Important:
+- For a public production domain, keep app behind **Nginx + Let's Encrypt**.
+- The built-in script is sufficient to run the app process, but TLS termination should be done by Nginx in VPS production.
+
 ### Prerequisites
 
 - **Node.js 18+**

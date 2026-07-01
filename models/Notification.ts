@@ -108,7 +108,6 @@ const NotificationSchema = new Schema<INotification>(
   }
 );
 
-NotificationSchema.index({ notificationId: 1 });
 NotificationSchema.index({ regulationType: 1, status: 1 });
 NotificationSchema.index({ recipientEmail: 1, status: 1 });
 NotificationSchema.index({ notificationType: 1, priority: 1 });

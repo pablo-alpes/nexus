@@ -7,6 +7,8 @@ import { getAuthUser } from '@/lib/auth-helper';
 import { ControlStatus } from '@/models/Control';
 import { RegulationType, getRegulationConfig, getPillars } from '@/lib/regulations';
 
+export const dynamic = 'force-dynamic';
+
 // Get pillars dynamically based on regulation type
 function getPillarsForRegulation(regulationType?: string): string[] {
   if (!regulationType || regulationType === RegulationType.DORA) {
@@ -171,7 +173,7 @@ export async function GET(request: NextRequest) {
         const totalControls = pillarCompliance[pillar].totalControls;
         pillarCompliance[pillar].compliancePercentage = totalControls > 0
           ? Math.round((implementedCount / totalControls) * 100)
-          : 0;
+          : (analysis.compliancePercentage ?? 0);
         
         // Fallback: if no gaps array, use original compliance percentage
         if (!analysis.gaps || !Array.isArray(analysis.gaps) || analysis.gaps.length === 0) {
@@ -195,17 +197,21 @@ export async function GET(request: NextRequest) {
     
     Object.values(pillarCompliance).forEach(pillar => {
       if (pillar.totalControls > 0) {
-        // Weight by number of controls in this pillar
         totalComplianceWeighted += pillar.compliancePercentage * pillar.totalControls;
         totalControlsAcrossPillars += pillar.totalControls;
+        pillarCount++;
+      } else if (pillar.compliancePercentage > 0) {
+        // Pillar with 100% compliance and no gaps (all Yes answers)
+        totalComplianceWeighted += pillar.compliancePercentage;
         pillarCount++;
       }
     });
     
-    // Calculate weighted average compliance
-    const overallCompliance = totalControlsAcrossPillars > 0 
-      ? Math.round(totalComplianceWeighted / totalControlsAcrossPillars)
-      : (pillarCount > 0 ? Math.round(Object.values(pillarCompliance).reduce((sum, p) => sum + p.compliancePercentage, 0) / pillarCount) : 0);
+    const overallCompliance = pillarCount > 0
+      ? (totalControlsAcrossPillars > 0
+          ? Math.round(totalComplianceWeighted / totalControlsAcrossPillars)
+          : Math.round(totalComplianceWeighted / pillarCount))
+      : 0;
     
     console.log(`📊 Overall Compliance Calculation:`);
     console.log(`   Total Controls: ${totalControlsAcrossPillars}`);

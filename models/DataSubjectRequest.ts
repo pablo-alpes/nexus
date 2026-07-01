@@ -84,10 +84,7 @@ const DataSubjectRequestSchema = new Schema<IDataSubjectRequest>(
   }
 );
 
-DataSubjectRequestSchema.index({ requestId: 1 });
 DataSubjectRequestSchema.index({ regulationType: 1, status: 1 });
-DataSubjectRequestSchema.index({ dataSubjectEmail: 1 });
-DataSubjectRequestSchema.index({ dueDate: 1 });
 
 let DataSubjectRequest: Model<IDataSubjectRequest>;
 

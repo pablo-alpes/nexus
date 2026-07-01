@@ -8,9 +8,10 @@ import { RegulationType, getRegulationConfig } from '@/lib/regulations';
 import Question, { getQuestionModel } from '@/models/Question';
 import DORARequirement from '@/models/DORARequirement';
 import Requirement from '@/models/Requirement';
-import Control from '@/models/Control';
+import Control, { getControlModel } from '@/models/Control';
 import QuestionMapping, { getQuestionMappingModel } from '@/models/QuestionMapping';
 import RuleVersion from '@/models/RuleVersion';
+import { RequirementOperations } from '@/lib/model-operations';
 import { generateEmbedding, calculateSimilarity, getConfidenceLevel, cosineSimilarity } from './nlp-similarity';
 import fs from 'fs';
 import path from 'path';
@@ -141,7 +142,8 @@ async function getRequirementsFromControls(question: any, regulationType?: Regul
   // Determine regulation type from question or parameter
   const regType = regulationType || (question.regulationType as RegulationType) || RegulationType.DORA;
   
-  const controls = await Control.find({ pillar: question.pillar });
+  const ControlModel = isLocalStorage() ? getControlModel(regType) : Control;
+  const controls = await ControlModel.find({ pillar: question.pillar });
   const reqsFromControls = new Set<string>();
   
   // Get requirements from DB controls (normalize to requirementId strings)
@@ -160,9 +162,10 @@ async function getRequirementsFromControls(question: any, regulationType?: Regul
         
         // Fallback to DORARequirement (for DORA or if not found)
         if (!req) {
-          req = await DORARequirement.findOne({
-            $or: [{ _id: reqId }, { requirementId: String(reqId) }],
-          });
+          const allReqs = await RequirementOperations.findByRegulation(regType, {});
+          req = allReqs.find(
+            (r: any) => String(r._id) === String(reqId) || r.requirementId === String(reqId)
+          );
         }
         
         if (req) {
@@ -303,7 +306,9 @@ export async function precomputeQuestionMapping(
   // 4. Non-control-based with medium similarity (>= 0.5)
   
   const filteredSimilarities = nlpSimilarities
-    .filter(s => s.similarity >= MIN_SIMILARITY_THRESHOLD) // Only medium/high confidence
+    // Keep all control-based requirements by prudence, even below NLP threshold.
+    // This prevents empty mappings when pillar wording differs from legal text.
+    .filter(s => s.isControlBased || s.similarity >= MIN_SIMILARITY_THRESHOLD)
     .sort((a, b) => {
       // Sort by: control-based first, then by similarity
       if (a.isControlBased && !b.isControlBased) return -1;

@@ -2353,7 +2353,7 @@
       "title": "Article 9: Protection and prevention",
       "description": "4.   As part of the ICT risk management framework referred to in Article 6(1), financial entities shall: \r\n (b) following a risk-based approach, establish a sound network and infrastructure management structure using appropriate techniques, methods and protocols that may include implementing automated mechanisms to isolate affected information assets in the event of cyber-attacks;",
       "legalText": "4.   As part of the ICT risk management framework referred to in Article 6(1), financial entities shall: \r\n (b) following a risk-based approach, establish a sound network and infrastructure management structure using appropriate techniques, methods and protocols that may include implementing automated mechanisms to isolate affected information assets in the event of cyber-attacks;",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "INCIDENT_MANAGEMENT",
       "complianceStatus": "FULLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -2397,7 +2397,7 @@
       "title": "Article 9: Protection and prevention",
       "description": "4.   As part of the ICT risk management framework referred to in Article 6(1), financial entities shall: \r\n (c) implement policies that limit the physical or logical access to information assets and ICT assets to what is required for legitimate and approved functions and activities only, and establish to that end a set of policies, procedures and controls that address access rights and ensure a sound administration thereof;",
       "legalText": "4.   As part of the ICT risk management framework referred to in Article 6(1), financial entities shall: \r\n (c) implement policies that limit the physical or logical access to information assets and ICT assets to what is required for legitimate and approved functions and activities only, and establish to that end a set of policies, procedures and controls that address access rights and ensure a sound administration thereof;",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "INCIDENT_MANAGEMENT",
       "complianceStatus": "PARTIALLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -2441,7 +2441,7 @@
       "title": "Article 9: Protection and prevention",
       "description": "4.   As part of the ICT risk management framework referred to in Article 6(1), financial entities shall: \r\n (d) implement policies and protocols for strong authentication mechanisms, based on relevant standards and dedicated control systems, and protection measures of cryptographic keys whereby data is encrypted based on results of approved data classification and ICT risk assessment processes;",
       "legalText": "4.   As part of the ICT risk management framework referred to in Article 6(1), financial entities shall: \r\n (d) implement policies and protocols for strong authentication mechanisms, based on relevant standards and dedicated control systems, and protection measures of cryptographic keys whereby data is encrypted based on results of approved data classification and ICT risk assessment processes;",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "INCIDENT_MANAGEMENT",
       "complianceStatus": "PARTIALLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -2485,7 +2485,7 @@
       "title": "Article 9: Protection and prevention",
       "description": "4.   As part of the ICT risk management framework referred to in Article 6(1), financial entities shall: \r\n (e) implement documented policies, procedures and controls for ICT change management, including changes to software, hardware, firmware components, systems or security parameters, that are based on a risk assessment approach and are an integral part of the financial entity’s overall change management process, in order to ensure that all changes to ICT systems are recorded, tested, assessed, approved, implemented and verified in a controlled manner;",
       "legalText": "4.   As part of the ICT risk management framework referred to in Article 6(1), financial entities shall: \r\n (e) implement documented policies, procedures and controls for ICT change management, including changes to software, hardware, firmware components, systems or security parameters, that are based on a risk assessment approach and are an integral part of the financial entity’s overall change management process, in order to ensure that all changes to ICT systems are recorded, tested, assessed, approved, implemented and verified in a controlled manner;",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "INCIDENT_MANAGEMENT",
       "complianceStatus": "PARTIALLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -2529,7 +2529,7 @@
       "title": "Article 9: Protection and prevention",
       "description": "4.   As part of the ICT risk management framework referred to in Article 6(1), financial entities shall: \r\n (f) have appropriate and comprehensive documented policies for patches and updates.",
       "legalText": "4.   As part of the ICT risk management framework referred to in Article 6(1), financial entities shall: \r\n (f) have appropriate and comprehensive documented policies for patches and updates.",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "INCIDENT_MANAGEMENT",
       "complianceStatus": "FULLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -2573,7 +2573,7 @@
       "title": "Article 9: Protection and prevention",
       "description": "For the purposes of the first subparagraph, point (b), financial entities shall design the network connection infrastructure in a way that allows it to be instantaneously severed or segmented in order to minimise and prevent contagion, especially for interconnected financial processes.",
       "legalText": "For the purposes of the first subparagraph, point (b), financial entities shall design the network connection infrastructure in a way that allows it to be instantaneously severed or segmented in order to minimise and prevent contagion, especially for interconnected financial processes.",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "INCIDENT_MANAGEMENT",
       "complianceStatus": "FULLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -2617,7 +2617,7 @@
       "title": "Article 9: Protection and prevention",
       "description": "For the purposes of the first subparagraph, point (e), the ICT change management process shall be approved by appropriate lines of management and shall have specific protocols in place.",
       "legalText": "For the purposes of the first subparagraph, point (e), the ICT change management process shall be approved by appropriate lines of management and shall have specific protocols in place.",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "INCIDENT_MANAGEMENT",
       "complianceStatus": "FULLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -2661,7 +2661,7 @@
       "title": "Article 10: Detection",
       "description": "1.   Financial entities shall have in place mechanisms to promptly detect anomalous activities, in accordance with Article 17, including ICT network performance issues and ICT-related incidents, and to identify potential material single points of failure.",
       "legalText": "1.   Financial entities shall have in place mechanisms to promptly detect anomalous activities, in accordance with Article 17, including ICT network performance issues and ICT-related incidents, and to identify potential material single points of failure.",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "INCIDENT_MANAGEMENT",
       "complianceStatus": "FULLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -2705,7 +2705,7 @@
       "title": "Article 10: Detection",
       "description": "All detection mechanisms referred to in the first subparagraph shall be regularly tested in accordance with Article 25.",
       "legalText": "All detection mechanisms referred to in the first subparagraph shall be regularly tested in accordance with Article 25.",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "INCIDENT_MANAGEMENT",
       "complianceStatus": "FULLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -2749,7 +2749,7 @@
       "title": "Article 10: Detection",
       "description": "2.   The detection mechanisms referred to in paragraph 1 shall enable multiple layers of control, define alert thresholds and criteria to trigger and initiate ICT-related incident response processes, including automatic alert mechanisms for relevant staff in charge of ICT-related incident response.",
       "legalText": "2.   The detection mechanisms referred to in paragraph 1 shall enable multiple layers of control, define alert thresholds and criteria to trigger and initiate ICT-related incident response processes, including automatic alert mechanisms for relevant staff in charge of ICT-related incident response.",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "INCIDENT_MANAGEMENT",
       "complianceStatus": "FULLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -2793,7 +2793,7 @@
       "title": "Article 10: Detection",
       "description": "3.   Financial entities shall devote sufficient resources and capabilities to monitor user activity, the occurrence of ICT anomalies and ICT-related incidents, in particular cyber-attacks.",
       "legalText": "3.   Financial entities shall devote sufficient resources and capabilities to monitor user activity, the occurrence of ICT anomalies and ICT-related incidents, in particular cyber-attacks.",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "INCIDENT_MANAGEMENT",
       "complianceStatus": "FULLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -4377,7 +4377,7 @@
       "title": "Article 13: Learning and evolving",
       "description": "The post ICT-related incident reviews referred to in the first subparagraph shall determine whether the established procedures were followed and the actions taken were effective, including in relation to the following:\r\n (a) the promptness in responding to security alerts and determining the impact of ICT-related incidents and their severity;",
       "legalText": "The post ICT-related incident reviews referred to in the first subparagraph shall determine whether the established procedures were followed and the actions taken were effective, including in relation to the following:\r\n (a) the promptness in responding to security alerts and determining the impact of ICT-related incidents and their severity;",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "THIRD_PARTY_RISK",
       "complianceStatus": "FULLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -4421,7 +4421,7 @@
       "title": "Article 13: Learning and evolving",
       "description": "The post ICT-related incident reviews referred to in the first subparagraph shall determine whether the established procedures were followed and the actions taken were effective, including in relation to the following:\r\n (b) the quality and speed of performing a forensic analysis, where deemed appropriate;",
       "legalText": "The post ICT-related incident reviews referred to in the first subparagraph shall determine whether the established procedures were followed and the actions taken were effective, including in relation to the following:\r\n (b) the quality and speed of performing a forensic analysis, where deemed appropriate;",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "THIRD_PARTY_RISK",
       "complianceStatus": "FULLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -4465,7 +4465,7 @@
       "title": "Article 13: Learning and evolving",
       "description": "The post ICT-related incident reviews referred to in the first subparagraph shall determine whether the established procedures were followed and the actions taken were effective, including in relation to the following:\r\n (c) the effectiveness of incident escalation within the financial entity;",
       "legalText": "The post ICT-related incident reviews referred to in the first subparagraph shall determine whether the established procedures were followed and the actions taken were effective, including in relation to the following:\r\n (c) the effectiveness of incident escalation within the financial entity;",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "THIRD_PARTY_RISK",
       "complianceStatus": "FULLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -4509,7 +4509,7 @@
       "title": "Article 13: Learning and evolving",
       "description": "The post ICT-related incident reviews referred to in the first subparagraph shall determine whether the established procedures were followed and the actions taken were effective, including in relation to the following:\r\n (d) the effectiveness of internal and external communication.",
       "legalText": "The post ICT-related incident reviews referred to in the first subparagraph shall determine whether the established procedures were followed and the actions taken were effective, including in relation to the following:\r\n (d) the effectiveness of internal and external communication.",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "THIRD_PARTY_RISK",
       "complianceStatus": "FULLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -4553,7 +4553,7 @@
       "title": "Article 13: Learning and evolving",
       "description": "3.   Lessons derived from the digital operational resilience testing carried out in accordance with Articles 26 and 27 and from real life ICT-related incidents, in particular cyber-attacks, along with challenges faced upon the activation of ICT business continuity plans and ICT response and recovery plans, together with relevant information exchanged with counterparts and assessed during supervisory reviews, shall be duly incorporated on a continuous basis into the ICT risk assessment process. Those findings shall form the basis for appropriate reviews of relevant components of the ICT risk management framework referred to in Article 6(1).",
       "legalText": "3.   Lessons derived from the digital operational resilience testing carried out in accordance with Articles 26 and 27 and from real life ICT-related incidents, in particular cyber-attacks, along with challenges faced upon the activation of ICT business continuity plans and ICT response and recovery plans, together with relevant information exchanged with counterparts and assessed during supervisory reviews, shall be duly incorporated on a continuous basis into the ICT risk assessment process. Those findings shall form the basis for appropriate reviews of relevant components of the ICT risk management framework referred to in Article 6(1).",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "THIRD_PARTY_RISK",
       "complianceStatus": "FULLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -4597,7 +4597,7 @@
       "title": "Article 13: Learning and evolving",
       "description": "4.   Financial entities shall monitor the effectiveness of the implementation of their digital operational resilience strategy set out in Article 6(8). They shall map the evolution of ICT risk over time, analyse the frequency, types, magnitude and evolution of ICT-related incidents, in particular cyber-attacks and their patterns, with a view to understanding the level of ICT risk exposure, in particular in relation to critical or important functions, and enhance the cyber maturity and preparedness of the financial entity.",
       "legalText": "4.   Financial entities shall monitor the effectiveness of the implementation of their digital operational resilience strategy set out in Article 6(8). They shall map the evolution of ICT risk over time, analyse the frequency, types, magnitude and evolution of ICT-related incidents, in particular cyber-attacks and their patterns, with a view to understanding the level of ICT risk exposure, in particular in relation to critical or important functions, and enhance the cyber maturity and preparedness of the financial entity.",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "THIRD_PARTY_RISK",
       "complianceStatus": "FULLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -4641,7 +4641,7 @@
       "title": "Article 13: Learning and evolving",
       "description": "5.   Senior ICT staff shall report at least yearly to the management body on the findings referred to in paragraph 3 and put forward recommendations.",
       "legalText": "5.   Senior ICT staff shall report at least yearly to the management body on the findings referred to in paragraph 3 and put forward recommendations.",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "THIRD_PARTY_RISK",
       "complianceStatus": "FULLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -4685,7 +4685,7 @@
       "title": "Article 13: Learning and evolving",
       "description": "6.   Financial entities shall develop ICT security awareness programmes and digital operational resilience training as compulsory modules in their staff training schemes. Those programmes and training shall be applicable to all employees and to senior management staff, and shall have a level of complexity commensurate to the remit of their functions. Where appropriate, financial entities shall also include ICT third-party service providers in their relevant training schemes in accordance with Article 30(2), point (i).",
       "legalText": "6.   Financial entities shall develop ICT security awareness programmes and digital operational resilience training as compulsory modules in their staff training schemes. Those programmes and training shall be applicable to all employees and to senior management staff, and shall have a level of complexity commensurate to the remit of their functions. Where appropriate, financial entities shall also include ICT third-party service providers in their relevant training schemes in accordance with Article 30(2), point (i).",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "THIRD_PARTY_RISK",
       "complianceStatus": "FULLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -4729,7 +4729,7 @@
       "title": "Article 13: Learning and evolving",
       "description": "7.   Financial entities, other than microenterprises, shall monitor relevant technological developments on a continuous basis, also with a view to understanding the possible impact of the deployment of such new technologies on ICT security requirements and digital operational resilience. They shall keep up-to-date with the latest ICT risk management processes, in order to effectively combat current or new forms of cyber-attacks.",
       "legalText": "7.   Financial entities, other than microenterprises, shall monitor relevant technological developments on a continuous basis, also with a view to understanding the possible impact of the deployment of such new technologies on ICT security requirements and digital operational resilience. They shall keep up-to-date with the latest ICT risk management processes, in order to effectively combat current or new forms of cyber-attacks.",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "THIRD_PARTY_RISK",
       "complianceStatus": "FULLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -4773,7 +4773,7 @@
       "title": "Article 14: Communication",
       "description": "1.   As part of the ICT risk management framework referred to in Article 6(1), financial entities shall have in place crisis communication plans enabling a responsible disclosure of, at least, major ICT-related incidents or vulnerabilities to clients and counterparts as well as to the public, as appropriate.",
       "legalText": "1.   As part of the ICT risk management framework referred to in Article 6(1), financial entities shall have in place crisis communication plans enabling a responsible disclosure of, at least, major ICT-related incidents or vulnerabilities to clients and counterparts as well as to the public, as appropriate.",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "THIRD_PARTY_RISK",
       "complianceStatus": "NOT_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -4817,7 +4817,7 @@
       "title": "Article 14: Communication",
       "description": "2.   As part of the ICT risk management framework, financial entities shall implement communication policies for internal staff and for external stakeholders. Communication policies for staff shall take into account the need to differentiate between staff involved in ICT risk management, in particular the staff responsible for response and recovery, and staff that needs to be informed.",
       "legalText": "2.   As part of the ICT risk management framework, financial entities shall implement communication policies for internal staff and for external stakeholders. Communication policies for staff shall take into account the need to differentiate between staff involved in ICT risk management, in particular the staff responsible for response and recovery, and staff that needs to be informed.",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "THIRD_PARTY_RISK",
       "complianceStatus": "NOT_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -4861,7 +4861,7 @@
       "title": "Article 14: Communication",
       "description": "3.   At least one person in the financial entity shall be tasked with implementing the communication strategy for ICT-related incidents and fulfil the public and media function for that purpose.",
       "legalText": "3.   At least one person in the financial entity shall be tasked with implementing the communication strategy for ICT-related incidents and fulfil the public and media function for that purpose.",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "THIRD_PARTY_RISK",
       "complianceStatus": "NOT_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -4905,7 +4905,7 @@
       "title": "Article 16: Simplified ICT risk management framework",
       "description": "1.   Articles 5 to 15 of this Regulation shall not apply to small and non-interconnected investment firms, payment institutions exempted pursuant to Directive (EU) 2015/2366; institutions exempted pursuant to Directive 2013/36/EU in respect of which Member States have decided not to apply the option referred to in Article 2(4) of this Regulation; electronic money institutions exempted pursuant to Directive 2009/110/EC; and small institutions for occupational retirement provision.",
       "legalText": "1.   Articles 5 to 15 of this Regulation shall not apply to small and non-interconnected investment firms, payment institutions exempted pursuant to Directive (EU) 2015/2366; institutions exempted pursuant to Directive 2013/36/EU in respect of which Member States have decided not to apply the option referred to in Article 2(4) of this Regulation; electronic money institutions exempted pursuant to Directive 2009/110/EC; and small institutions for occupational retirement provision.",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "THIRD_PARTY_RISK",
       "complianceStatus": "NOT_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -4949,7 +4949,7 @@
       "title": "Article 16: Simplified ICT risk management framework",
       "description": "Without prejudice to the first subparagraph, the entities listed in the first subparagraph shall:\r\n(a) put in place and maintain a sound and documented ICT risk management framework that details the mechanisms and measures aimed at a quick, efficient and comprehensive management of ICT risk, including for the protection of relevant physical components and infrastructures;",
       "legalText": "Without prejudice to the first subparagraph, the entities listed in the first subparagraph shall:\r\n(a) put in place and maintain a sound and documented ICT risk management framework that details the mechanisms and measures aimed at a quick, efficient and comprehensive management of ICT risk, including for the protection of relevant physical components and infrastructures;",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "THIRD_PARTY_RISK",
       "complianceStatus": "NOT_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -5257,7 +5257,7 @@
       "title": "Article 16: Simplified ICT risk management framework",
       "description": "Without prejudice to the first subparagraph, the entities listed in the first subparagraph shall:\r\n(h) implement, as appropriate, relevant operational conclusions resulting from the tests referred to in point (g) and from post-incident analysis into the ICT risk assessment process and develop, according to needs and ICT risk profile, ICT security awareness programmes and digital operational resilience training for staff and management.",
       "legalText": "Without prejudice to the first subparagraph, the entities listed in the first subparagraph shall:\r\n(h) implement, as appropriate, relevant operational conclusions resulting from the tests referred to in point (g) and from post-incident analysis into the ICT risk assessment process and develop, according to needs and ICT risk profile, ICT security awareness programmes and digital operational resilience training for staff and management.",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "RESILIENCE_TESTING",
       "complianceStatus": "PARTIALLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -5301,7 +5301,7 @@
       "title": "Article 16: Simplified ICT risk management framework",
       "description": "2.   The ICT risk management framework referred to in paragraph 1, second subparagraph, point (a), shall be documented and reviewed periodically and upon the occurrence of major ICT-related incidents in compliance with supervisory instructions. It shall be continuously improved on the basis of lessons derived from implementation and monitoring. A report on the review of the ICT risk management framework shall be submitted to the competent authority upon its request.",
       "legalText": "2.   The ICT risk management framework referred to in paragraph 1, second subparagraph, point (a), shall be documented and reviewed periodically and upon the occurrence of major ICT-related incidents in compliance with supervisory instructions. It shall be continuously improved on the basis of lessons derived from implementation and monitoring. A report on the review of the ICT risk management framework shall be submitted to the competent authority upon its request.",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "RESILIENCE_TESTING",
       "complianceStatus": "PARTIALLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -5345,7 +5345,7 @@
       "title": "Article 17: ICT-related incident management process",
       "description": "1.   Financial entities shall define, establish and implement an ICT-related incident management process to detect, manage and notify ICT-related incidents.",
       "legalText": "1.   Financial entities shall define, establish and implement an ICT-related incident management process to detect, manage and notify ICT-related incidents.",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "RESILIENCE_TESTING",
       "complianceStatus": "PARTIALLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -5389,7 +5389,7 @@
       "title": "Article 17: ICT-related incident management process",
       "description": "2.   Financial entities shall record all ICT-related incidents and significant cyber threats. Financial entities shall establish appropriate procedures and processes to ensure a consistent and integrated monitoring, handling and follow-up of ICT-related incidents, to ensure that root causes are identified, documented and addressed in order to prevent the occurrence of such incidents.",
       "legalText": "2.   Financial entities shall record all ICT-related incidents and significant cyber threats. Financial entities shall establish appropriate procedures and processes to ensure a consistent and integrated monitoring, handling and follow-up of ICT-related incidents, to ensure that root causes are identified, documented and addressed in order to prevent the occurrence of such incidents.",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "RESILIENCE_TESTING",
       "complianceStatus": "PARTIALLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -5433,7 +5433,7 @@
       "title": "Article 17: ICT-related incident management process",
       "description": "3.   The ICT-related incident management process referred to in paragraph 1 shall: \r\n (a) put in place early warning indicators;",
       "legalText": "3.   The ICT-related incident management process referred to in paragraph 1 shall: \r\n (a) put in place early warning indicators;",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "RESILIENCE_TESTING",
       "complianceStatus": "PARTIALLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -5477,7 +5477,7 @@
       "title": "Article 17: ICT-related incident management process",
       "description": "3.   The ICT-related incident management process referred to in paragraph 1 shall: \r\n (b) establish procedures to identify, track, log, categorise and classify ICT-related incidents according to their priority and severity and according to the criticality of the services impacted, in accordance with the criteria set out in Article 18(1);",
       "legalText": "3.   The ICT-related incident management process referred to in paragraph 1 shall: \r\n (b) establish procedures to identify, track, log, categorise and classify ICT-related incidents according to their priority and severity and according to the criticality of the services impacted, in accordance with the criteria set out in Article 18(1);",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "RESILIENCE_TESTING",
       "complianceStatus": "PARTIALLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -5521,7 +5521,7 @@
       "title": "Article 17: ICT-related incident management process",
       "description": "3.   The ICT-related incident management process referred to in paragraph 1 shall: \r\n (c) assign roles and responsibilities that need to be activated for different ICT-related incident types and scenarios;",
       "legalText": "3.   The ICT-related incident management process referred to in paragraph 1 shall: \r\n (c) assign roles and responsibilities that need to be activated for different ICT-related incident types and scenarios;",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "RESILIENCE_TESTING",
       "complianceStatus": "PARTIALLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -5565,7 +5565,7 @@
       "title": "Article 17: ICT-related incident management process",
       "description": "3.   The ICT-related incident management process referred to in paragraph 1 shall: \r\n (d) set out plans for communication to staff, external stakeholders and media in accordance with Article 14 and for notification to clients, for internal escalation procedures, including ICT-related customer complaints, as well as for the provision of information to financial entities that act as counterparts, as appropriate;",
       "legalText": "3.   The ICT-related incident management process referred to in paragraph 1 shall: \r\n (d) set out plans for communication to staff, external stakeholders and media in accordance with Article 14 and for notification to clients, for internal escalation procedures, including ICT-related customer complaints, as well as for the provision of information to financial entities that act as counterparts, as appropriate;",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "RESILIENCE_TESTING",
       "complianceStatus": "PARTIALLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -5609,7 +5609,7 @@
       "title": "Article 17: ICT-related incident management process",
       "description": "3.   The ICT-related incident management process referred to in paragraph 1 shall: \r\n (e) ensure that at least major ICT-related incidents are reported to relevant senior management and inform the management body of at least major ICT-related incidents, explaining the impact, response and additional controls to be established as a result of such ICT-related incidents;",
       "legalText": "3.   The ICT-related incident management process referred to in paragraph 1 shall: \r\n (e) ensure that at least major ICT-related incidents are reported to relevant senior management and inform the management body of at least major ICT-related incidents, explaining the impact, response and additional controls to be established as a result of such ICT-related incidents;",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "RESILIENCE_TESTING",
       "complianceStatus": "PARTIALLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -5653,7 +5653,7 @@
       "title": "Article 17: ICT-related incident management process",
       "description": "3.   The ICT-related incident management process referred to in paragraph 1 shall: \r\n (f) establish ICT-related incident response procedures to mitigate impacts and ensure that services become operational and secure in a timely manner.",
       "legalText": "3.   The ICT-related incident management process referred to in paragraph 1 shall: \r\n (f) establish ICT-related incident response procedures to mitigate impacts and ensure that services become operational and secure in a timely manner.",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "RESILIENCE_TESTING",
       "complianceStatus": "PARTIALLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -5697,7 +5697,7 @@
       "title": "Article 18: Classification of ICT-related incidents and cyber threats",
       "description": "1.   Financial entities shall classify ICT-related incidents and shall determine their impact based on the following criteria: \r\n (a) the number and/or relevance of clients or financial counterparts affected and, where applicable, the amount or number of transactions affected by the ICT-related incident, and whether the ICT-related incident has caused reputational impact;",
       "legalText": "1.   Financial entities shall classify ICT-related incidents and shall determine their impact based on the following criteria: \r\n (a) the number and/or relevance of clients or financial counterparts affected and, where applicable, the amount or number of transactions affected by the ICT-related incident, and whether the ICT-related incident has caused reputational impact;",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "RESILIENCE_TESTING",
       "complianceStatus": "PARTIALLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -5741,7 +5741,7 @@
       "title": "Article 18: Classification of ICT-related incidents and cyber threats",
       "description": "1.   Financial entities shall classify ICT-related incidents and shall determine their impact based on the following criteria: \r\n (b) the duration of the ICT-related incident, including the service downtime;",
       "legalText": "1.   Financial entities shall classify ICT-related incidents and shall determine their impact based on the following criteria: \r\n (b) the duration of the ICT-related incident, including the service downtime;",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "RESILIENCE_TESTING",
       "complianceStatus": "PARTIALLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -5785,7 +5785,7 @@
       "title": "Article 18: Classification of ICT-related incidents and cyber threats",
       "description": "1.   Financial entities shall classify ICT-related incidents and shall determine their impact based on the following criteria: \r\n (c) the geographical spread with regard to the areas affected by the ICT-related incident, particularly if it affects more than two Member States;",
       "legalText": "1.   Financial entities shall classify ICT-related incidents and shall determine their impact based on the following criteria: \r\n (c) the geographical spread with regard to the areas affected by the ICT-related incident, particularly if it affects more than two Member States;",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "RESILIENCE_TESTING",
       "complianceStatus": "PARTIALLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -5829,7 +5829,7 @@
       "title": "Article 18: Classification of ICT-related incidents and cyber threats",
       "description": "1.   Financial entities shall classify ICT-related incidents and shall determine their impact based on the following criteria: \r\n (d) the data losses that the ICT-related incident entails, in relation to availability, authenticity, integrity or confidentiality of data;",
       "legalText": "1.   Financial entities shall classify ICT-related incidents and shall determine their impact based on the following criteria: \r\n (d) the data losses that the ICT-related incident entails, in relation to availability, authenticity, integrity or confidentiality of data;",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "RESILIENCE_TESTING",
       "complianceStatus": "PARTIALLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -5873,7 +5873,7 @@
       "title": "Article 18: Classification of ICT-related incidents and cyber threats",
       "description": "1.   Financial entities shall classify ICT-related incidents and shall determine their impact based on the following criteria: \r\n (e) the criticality of the services affected, including the financial entity’s transactions and operations;",
       "legalText": "1.   Financial entities shall classify ICT-related incidents and shall determine their impact based on the following criteria: \r\n (e) the criticality of the services affected, including the financial entity’s transactions and operations;",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "RESILIENCE_TESTING",
       "complianceStatus": "PARTIALLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -5917,7 +5917,7 @@
       "title": "Article 18: Classification of ICT-related incidents and cyber threats",
       "description": "1.   Financial entities shall classify ICT-related incidents and shall determine their impact based on the following criteria: \r\n (f) the economic impact, in particular direct and indirect costs and losses, of the ICT-related incident in both absolute and relative terms.",
       "legalText": "1.   Financial entities shall classify ICT-related incidents and shall determine their impact based on the following criteria: \r\n (f) the economic impact, in particular direct and indirect costs and losses, of the ICT-related incident in both absolute and relative terms.",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "RESILIENCE_TESTING",
       "complianceStatus": "PARTIALLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -5961,7 +5961,7 @@
       "title": "Article 18: Classification of ICT-related incidents and cyber threats",
       "description": "2.   Financial entities shall classify cyber threats as significant based on the criticality of the services at risk, including the financial entity’s transactions and operations, number and/or relevance of clients or financial counterparts targeted and the geographical spread of the areas at risk.",
       "legalText": "2.   Financial entities shall classify cyber threats as significant based on the criticality of the services at risk, including the financial entity’s transactions and operations, number and/or relevance of clients or financial counterparts targeted and the geographical spread of the areas at risk.",
-      "pillar": "ICT_RISK_MANAGEMENT",
+      "pillar": "RESILIENCE_TESTING",
       "complianceStatus": "PARTIALLY_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -8687,7 +8687,7 @@
       "title": "Article 28: General principles",
       "description": "5.   Financial entities may only enter into contractual arrangements with ICT third-party service providers that comply with appropriate information security standards. When those contractual arrangements concern critical or important functions, financial entities shall, prior to concluding the arrangements, take due consideration of the use, by ICT third-party service providers, of the most up-to-date and highest quality information security standards.",
       "legalText": "5.   Financial entities may only enter into contractual arrangements with ICT third-party service providers that comply with appropriate information security standards. When those contractual arrangements concern critical or important functions, financial entities shall, prior to concluding the arrangements, take due consideration of the use, by ICT third-party service providers, of the most up-to-date and highest quality information security standards.",
-      "pillar": "THIRD_PARTY_RISK",
+      "pillar": "INFORMATION_SHARING",
       "complianceStatus": "NOT_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -8725,7 +8725,7 @@
       "title": "Article 28: General principles",
       "description": "6.   In exercising access, inspection and audit rights over the ICT third-party service provider, financial entities shall, on the basis of a risk-based approach, pre-determine the frequency of audits and inspections as well as the areas to be audited through adhering to commonly accepted audit standards in line with any supervisory instruction on the use and incorporation of such audit standards.",
       "legalText": "6.   In exercising access, inspection and audit rights over the ICT third-party service provider, financial entities shall, on the basis of a risk-based approach, pre-determine the frequency of audits and inspections as well as the areas to be audited through adhering to commonly accepted audit standards in line with any supervisory instruction on the use and incorporation of such audit standards.",
-      "pillar": "THIRD_PARTY_RISK",
+      "pillar": "INFORMATION_SHARING",
       "complianceStatus": "NOT_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -8763,7 +8763,7 @@
       "title": "Article 28: General principles",
       "description": "Where contractual arrangements concluded with ICT third-party service providers on the use of ICT services entail high technical complexity, the financial entity shall verify that auditors, whether internal or external, or a pool of auditors, possess appropriate skills and knowledge to effectively perform the relevant audits and assessments.",
       "legalText": "Where contractual arrangements concluded with ICT third-party service providers on the use of ICT services entail high technical complexity, the financial entity shall verify that auditors, whether internal or external, or a pool of auditors, possess appropriate skills and knowledge to effectively perform the relevant audits and assessments.",
-      "pillar": "THIRD_PARTY_RISK",
+      "pillar": "INFORMATION_SHARING",
       "complianceStatus": "NOT_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -8801,7 +8801,7 @@
       "title": "Article 28: General principles",
       "description": "7.   Financial entities shall ensure that contractual arrangements on the use of ICT services may be terminated in any of the following circumstances: \r\n (a) significant breach by the ICT third-party service provider of applicable laws, regulations or contractual terms;",
       "legalText": "7.   Financial entities shall ensure that contractual arrangements on the use of ICT services may be terminated in any of the following circumstances: \r\n (a) significant breach by the ICT third-party service provider of applicable laws, regulations or contractual terms;",
-      "pillar": "THIRD_PARTY_RISK",
+      "pillar": "INFORMATION_SHARING",
       "complianceStatus": "NOT_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -8839,7 +8839,7 @@
       "title": "Article 28: General principles",
       "description": "7.   Financial entities shall ensure that contractual arrangements on the use of ICT services may be terminated in any of the following circumstances: \r\n (b) circumstances identified throughout the monitoring of ICT third-party risk that are deemed capable of altering the performance of the functions provided through the contractual arrangement, including material changes that affect the arrangement or the situation of the ICT third-party service provider;",
       "legalText": "7.   Financial entities shall ensure that contractual arrangements on the use of ICT services may be terminated in any of the following circumstances: \r\n (b) circumstances identified throughout the monitoring of ICT third-party risk that are deemed capable of altering the performance of the functions provided through the contractual arrangement, including material changes that affect the arrangement or the situation of the ICT third-party service provider;",
-      "pillar": "THIRD_PARTY_RISK",
+      "pillar": "INFORMATION_SHARING",
       "complianceStatus": "NOT_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [
@@ -8877,7 +8877,7 @@
       "title": "Article 28: General principles",
       "description": "7.   Financial entities shall ensure that contractual arrangements on the use of ICT services may be terminated in any of the following circumstances: \r\n (c) ICT third-party service provider’s evidenced weaknesses pertaining to its overall ICT risk management and in particular in the way it ensures the availability, authenticity, integrity and, confidentiality, of data, whether personal or otherwise sensitive data, or non-personal data;",
       "legalText": "7.   Financial entities shall ensure that contractual arrangements on the use of ICT services may be terminated in any of the following circumstances: \r\n (c) ICT third-party service provider’s evidenced weaknesses pertaining to its overall ICT risk management and in particular in the way it ensures the availability, authenticity, integrity and, confidentiality, of data, whether personal or otherwise sensitive data, or non-personal data;",
-      "pillar": "THIRD_PARTY_RISK",
+      "pillar": "INFORMATION_SHARING",
       "complianceStatus": "NOT_COMPLIANT",
       "notes": null,
       "iso27001Mappings": [

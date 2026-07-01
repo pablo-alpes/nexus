@@ -254,10 +254,7 @@ const DPIASchema = new Schema<IDPIA>(
   }
 );
 
-DPIASchema.index({ dpiaId: 1 });
-DPIASchema.index({ projectId: 1 });
 DPIASchema.index({ regulationType: 1, status: 1 });
-DPIASchema.index({ overallRiskLevel: 1 });
 
 let DPIA: Model<IDPIA>;
 

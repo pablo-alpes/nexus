@@ -164,6 +164,52 @@ export default function Sidebar({ isChileanPrivacy = false }: SidebarProps) {
     },
   ] : [];
 
+  // DORA Management Section (only for DORA module)
+  const doraManagementItems = !isChileanPrivacy ? [
+    {
+      id: 'management-hub',
+      label: isSpanish ? 'Hub de Gestión' : 'Management Hub',
+      labelEs: 'Hub de Gestión',
+      icon: '🧭',
+      path: `${basePath}/management`,
+    },
+    {
+      id: 'management-ict',
+      label: isSpanish ? 'Gestión Riesgo ICT' : 'ICT Risk Management',
+      labelEs: 'Gestión Riesgo ICT',
+      icon: '🛡️',
+      path: `${basePath}/management/ict-risk`,
+    },
+    {
+      id: 'management-incident',
+      label: isSpanish ? 'Gestión Incidentes' : 'Incident Management',
+      labelEs: 'Gestión Incidentes',
+      icon: '🚨',
+      path: `${basePath}/management/incident`,
+    },
+    {
+      id: 'management-resilience',
+      label: isSpanish ? 'Gestión Resiliencia' : 'Resilience Testing',
+      labelEs: 'Gestión Resiliencia',
+      icon: '🧪',
+      path: `${basePath}/management/resilience`,
+    },
+    {
+      id: 'management-third-party',
+      label: isSpanish ? 'Gestión de Terceros' : 'Third-Party Management',
+      labelEs: 'Gestión de Terceros',
+      icon: '🤝',
+      path: `${basePath}/management/third-party`,
+    },
+    {
+      id: 'management-information-sharing',
+      label: isSpanish ? 'Gestión Info Sharing' : 'Information Sharing',
+      labelEs: 'Gestión Info Sharing',
+      icon: '🔄',
+      path: `${basePath}/management/information-sharing`,
+    },
+  ] : [];
+
   const isActive = (path: string) => {
     if (path === basePath) {
       return pathname === basePath;
@@ -228,6 +274,42 @@ export default function Sidebar({ isChileanPrivacy = false }: SidebarProps) {
             );
           })}
         </ul>
+
+        {/* DORA Management Section */}
+        {doraManagementItems.length > 0 && (
+          <>
+            {!isCollapsed && (
+              <div className="px-3 mb-2 mt-4">
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  {isSpanish ? 'Management' : 'Management'}
+                </h3>
+              </div>
+            )}
+            <ul className="space-y-1 px-2 mb-4">
+              {doraManagementItems.map((item) => {
+                const active = isActive(item.path);
+                return (
+                  <li key={item.id}>
+                    <Link
+                      href={item.path}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                        active
+                          ? 'bg-blue-100 text-blue-700 font-semibold'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                      title={isCollapsed ? (isSpanish ? item.labelEs : item.label) : undefined}
+                    >
+                      <span className="text-xl flex-shrink-0">{item.icon}</span>
+                      {!isCollapsed && (
+                        <span className="flex-1">{isSpanish ? item.labelEs : item.label}</span>
+                      )}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        )}
 
         {/* Privacy Management Section */}
         {privacyManagementItems.length > 0 && (

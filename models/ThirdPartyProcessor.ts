@@ -227,11 +227,7 @@ const ThirdPartyProcessorSchema = new Schema<IThirdPartyProcessor>(
   }
 );
 
-ThirdPartyProcessorSchema.index({ processorId: 1 });
 ThirdPartyProcessorSchema.index({ regulationType: 1, status: 1 });
-ThirdPartyProcessorSchema.index({ complianceStatus: 1 });
-ThirdPartyProcessorSchema.index({ riskLevel: 1 });
-ThirdPartyProcessorSchema.index({ country: 1 });
 
 let ThirdPartyProcessor: Model<IThirdPartyProcessor>;
 

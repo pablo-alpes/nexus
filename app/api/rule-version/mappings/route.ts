@@ -4,6 +4,8 @@ import QuestionMapping, { getQuestionMappingModel } from '@/models/QuestionMappi
 import { getActiveRuleVersion } from '@/lib/services/precomputed-mappings';
 import { RegulationType } from '@/lib/regulations';
 
+export const dynamic = 'force-dynamic';
+
 // GET: list mappings for current rule version - scoped by regulation for separate DORA vs Chilean Privacy data
 export async function GET(request: NextRequest) {
   try {

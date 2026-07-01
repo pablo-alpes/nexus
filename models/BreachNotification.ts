@@ -205,10 +205,7 @@ const BreachNotificationSchema = new Schema<IBreachNotification>(
   }
 );
 
-BreachNotificationSchema.index({ breachId: 1 });
 BreachNotificationSchema.index({ regulationType: 1, status: 1 });
-BreachNotificationSchema.index({ severity: 1 });
-BreachNotificationSchema.index({ breachDate: 1 });
 BreachNotificationSchema.index({ authorityNotificationRequired: 1, authorityNotificationDate: 1 });
 
 let BreachNotification: Model<IBreachNotification>;

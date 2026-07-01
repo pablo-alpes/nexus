@@ -224,8 +224,8 @@ export default function DashboardPage() {
                 {pillars.map((pillar) => {
                   const pillarDisplay = getPillarDisplay(pillar);
                   const pillarData = kpis?.pillarCompliance[pillar.id];
-                  const compliance = pillarData?.compliancePercentage || 0;
-                  const hasData = pillarData && pillarData.totalControls > 0;
+                  const compliance = pillarData?.compliancePercentage ?? 0;
+                  const hasData = pillarData && (pillarData.totalControls > 0 || compliance > 0);
                   
                   return (
                     <div
@@ -320,12 +320,38 @@ export default function DashboardPage() {
                 {language === 'es' ? 'Obtener pasos accionables para lograr el cumplimiento' : 'Get actionable steps to achieve compliance'}
               </p>
             </Link>
+            {!isChileanPrivacy && (
+              <Link
+                href="/dashboard/management"
+                className="block p-4 border border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50"
+              >
+                <h3 className="font-semibold text-lg mb-1">
+                  5. Pillar Management Hub
+                </h3>
+                <p className="text-gray-600">
+                  Manage ICT, incident, resilience, third-party, and information-sharing modules in one place
+                </p>
+              </Link>
+            )}
+            {!isChileanPrivacy && (
+            <Link
+              href="/dashboard/tprm"
+              className="block p-4 border border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50"
+            >
+              <h3 className="font-semibold text-lg mb-1">
+                6. Third-Party Risk Management (TPRM)
+              </h3>
+              <p className="text-gray-600">
+                Manage ICT third-party providers, DORA contractual clauses, and concentration risk
+              </p>
+            </Link>
+            )}
             <Link
               href={isChileanPrivacy ? '/chile-privacy/dashboard/rule-engine' : '/dashboard/rule-engine'}
               className="block p-4 border border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50"
             >
               <h3 className="font-semibold text-lg mb-1">
-                5. {language === 'es' ? 'Motor de Reglas' : 'Rule Engine'}
+                {isChileanPrivacy ? '6' : '7'}. {language === 'es' ? 'Motor de Reglas' : 'Rule Engine'}
               </h3>
               <p className="text-gray-600">
                 {language === 'es' ? 'Ver y gestionar mapeos de preguntas a requisitos' : 'View and manage question-to-requirement mappings'}

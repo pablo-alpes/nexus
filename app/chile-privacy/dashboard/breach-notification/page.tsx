@@ -34,6 +34,8 @@ interface BreachNotification {
   affectedDataCategories: string[];
   affectedDataSubjects: number;
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  containmentMeasures?: string[];
+  remediationActions?: string[];
   status: 'DETECTED' | 'INVESTIGATING' | 'CONTAINED' | 'NOTIFIED_AUTHORITY' | 'NOTIFIED_SUBJECTS' | 'RESOLVED';
   authorityNotificationRequired: boolean;
   authorityNotificationDate?: string;
@@ -45,6 +47,20 @@ interface BreachNotification {
   processOwner?: string;
   escalationLevel?: 'NONE' | 'MANAGEMENT' | 'EXECUTIVE' | 'BOARD';
 }
+
+type BreachFormData = {
+  incidentTitle: string;
+  incidentDescription: string;
+  breachDate: string;
+  discoveryDate: string;
+  breachType: BreachNotification['breachType'];
+  breachCategory: string;
+  affectedDataCategories: string[];
+  affectedDataSubjects: number;
+  severity: BreachNotification['severity'];
+  containmentMeasures: string[];
+  remediationActions: string[];
+};
 
 const SEVERITY_COLORS: Record<string, string> = {
   LOW: 'bg-green-100 text-green-800',
@@ -79,7 +95,7 @@ export default function BreachNotificationPage() {
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [filterSeverity, setFilterSeverity] = useState<string>('');
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<BreachFormData>({
     incidentTitle: '',
     incidentDescription: '',
     breachDate: new Date().toISOString().split('T')[0],

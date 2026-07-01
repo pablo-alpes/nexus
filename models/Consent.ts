@@ -108,10 +108,8 @@ const ConsentSchema = new Schema<IConsent>(
   }
 );
 
-ConsentSchema.index({ consentId: 1 });
 ConsentSchema.index({ regulationType: 1, consentStatus: 1 });
 ConsentSchema.index({ dataSubjectEmail: 1, processingActivityId: 1 });
-ConsentSchema.index({ processingActivityId: 1 });
 
 let Consent: Model<IConsent>;
 

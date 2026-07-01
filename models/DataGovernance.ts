@@ -111,11 +111,7 @@ const DataGovernanceSchema = new Schema<IDataGovernance>(
   }
 );
 
-DataGovernanceSchema.index({ governanceId: 1 });
 DataGovernanceSchema.index({ regulationType: 1, status: 1 });
-DataGovernanceSchema.index({ 'dataOwner.email': 1 });
-DataGovernanceSchema.index({ 'dataSteward.email': 1 });
-DataGovernanceSchema.index({ 'dataCustodian.email': 1 });
 
 let DataGovernance: Model<IDataGovernance>;
 

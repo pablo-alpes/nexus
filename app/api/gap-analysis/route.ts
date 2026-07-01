@@ -11,6 +11,13 @@ import { ControlStatus } from '@/models/Control';
 import { RegulationType, getRegulationConfig } from '@/lib/regulations';
 
 import { ensureControlsSetup } from '@/lib/auto-controls';
+import {
+  computeQuestionnaireControlMapping,
+  summarizePillarAnswers,
+  filterApplicableControlsForPillar,
+  evaluateControlStatus,
+  calculateCompliancePercentage,
+} from '@/lib/compliance-engine';
 
 function getPillarsForRegulation(regulationType: RegulationType | string | null) {
   if (!regulationType || regulationType === RegulationType.DORA) {
@@ -113,99 +120,55 @@ export async function POST(request: NextRequest) {
     const ControlModel = isLocalStorage() ? getControlModel(regulationType) : Control;
     const allControlsForPillar = await ControlModel.find({ pillar });
     
-    // Step 4a: Determine which controls are applicable based on questionnaire response
-    // The questionnaire response already contains the correct applicableControls calculated using:
-    // 1. Precomputed question-to-requirement mappings (static, from precomputed-mappings.ts)
-    // 2. Static requirement-to-control mappings (Control.requirementIds - defined in data)
-    // We should NOT recalculate - just use what's stored in questionnaireResponse.applicableControls
+    const QuestionModel = isLocalStorage() ? getQuestionModel(regulationType) : Question;
+    const questionsForPillar = await QuestionModel.find({ pillar });
+
+    let pillarSummary = {
+      hasNoAnswers: false,
+      hasYesAnswers: false,
+      allYesOrNA: false,
+      noAnswerQuestionIds: [] as string[],
+      yesAnswerQuestionIds: [] as string[],
+    };
+
     const applicableControlIdsFromQuestionnaire = new Set<string>();
+    let controlReasoningMap: Record<string, string[]> = {};
 
-    if (questionnaireResponse && questionnaireResponse.applicableControls) {
-      questionnaireResponse.applicableControls.forEach((id: any) => {
-        applicableControlIdsFromQuestionnaire.add(String(id));
-      });
-      console.log(`📋 Questionnaire response has ${applicableControlIdsFromQuestionnaire.size} applicable controls`);
-      console.log(`   (Calculated from: Questions → Requirements [precomputed] → Controls [static mapping])`);
-    }
+    if (questionnaireResponse?.answers?.length) {
+      pillarSummary = summarizePillarAnswers(questionsForPillar, questionnaireResponse.answers);
 
-    // Step 4b: Filter controls based on questionnaire response
-    // The questionnaire response.applicableControls is the source of truth
-    // It was calculated using the correct flow: Questions → Requirements → Controls
-    let filteredControls: any[] = [];
-    
-    // Check if there are "No" answers for this pillar in the questionnaire
-    let hasNoAnswersForPillar = false;
-    if (questionnaireResponse && questionnaireResponse.answers) {
-      const QuestionModel = isLocalStorage() ? getQuestionModel(regulationType) : Question;
-      const questionsForPillar = await QuestionModel.find({ pillar });
-      const questionIdsForPillar = new Set(questionsForPillar.map((q: any) => String(q._id || q.questionId)));
-      
-      // Check if any answer for this pillar is "no"
-      hasNoAnswersForPillar = questionnaireResponse.answers.some((answer: any) => {
-        const questionId = String(answer.questionId || answer.question);
-        return questionIdsForPillar.has(questionId) && answer.value === 'no';
-      });
-      
-      console.log(`📋 Checking answers for pillar ${pillar}: hasNoAnswers=${hasNoAnswersForPillar}`);
-    }
-    
-    if (questionnaireResponse) {
-      // If questionnaire response has applicable controls, ONLY use those (strict filtering)
-      if (applicableControlIdsFromQuestionnaire.size > 0) {
-        console.log(`📋 Filtering by questionnaire: ${applicableControlIdsFromQuestionnaire.size} applicable controls for pillar ${pillar}`);
-        
-        // Filter controls that match questionnaire response AND are for this pillar
-        filteredControls = allControlsForPillar.filter((control: any) => {
-          // Check multiple ID formats for matching
-          const controlId1 = String(control._id || '');
-          const controlId2 = String(control.controlId || '');
-          
-          // Check if either ID matches
-          const matches = applicableControlIdsFromQuestionnaire.has(controlId1) || 
-                         applicableControlIdsFromQuestionnaire.has(controlId2);
-          
-          return matches;
-        });
-        
-        console.log(`   ✅ Filtered to ${filteredControls.length} controls from questionnaire (out of ${allControlsForPillar.length} total for pillar)`);
-        
-        // If no controls matched, log for debugging
-        if (filteredControls.length === 0) {
-          console.log(`   ⚠️  WARNING: No controls matched! This might indicate an ID format mismatch.`);
-          console.log(`   ⚠️  Sample questionnaire IDs:`, Array.from(applicableControlIdsFromQuestionnaire).slice(0, 5));
-          console.log(`   ⚠️  Sample control IDs for pillar:`, allControlsForPillar.slice(0, 3).map((c: any) => ({ _id: String(c._id), controlId: String(c.controlId || '') })));
-          
-          // If there are "No" answers but no controls matched, use all controls for this pillar as fallback
-          if (hasNoAnswersForPillar) {
-            console.log(`   ⚠️  FALLBACK: Using all controls for pillar ${pillar} because there are "No" answers but no controls matched`);
-            filteredControls = allControlsForPillar;
-          }
-        }
-      } 
-      // If questionnaire response exists but has 0 applicable controls
-      else {
-        // Check if there are "No" answers - if yes, this is a problem (should have controls)
-        if (hasNoAnswersForPillar) {
-          console.log(`📋 ⚠️  WARNING: Questionnaire has "No" answers for pillar ${pillar} but 0 applicable controls found!`);
-          console.log(`   This indicates missing mappings. Using all controls for pillar as fallback.`);
-          console.log(`   Compliance will be calculated based on control implementation status.`);
-          filteredControls = allControlsForPillar; // Use all controls as fallback
-        } else {
-          // No "No" answers and no applicable controls = all answers were "Yes" = 100% compliance
-          console.log(`📋 Questionnaire response exists but has 0 applicable controls - this means NO GAPS (all answers were "Yes")`);
-          console.log(`   ✅ No controls to analyze - 100% compliance for this pillar`);
-          filteredControls = []; // Empty array = no gaps, 100% compliance
-        }
-      }
-    }
-    // If no questionnaire response exists, show all controls for this pillar (baseline analysis)
-    else {
-      console.log(`📋 No questionnaire response found - using all ${allControlsForPillar.length} controls for pillar ${pillar} (baseline analysis)`);
-      filteredControls = allControlsForPillar;
+      // Always recompute mappings fresh to avoid stale control ID mismatches
+      const freshMapping = await computeQuestionnaireControlMapping(
+        questionnaireResponse.answers,
+        regulationType as RegulationType
+      );
+      freshMapping.applicableControlIds.forEach((id) => applicableControlIdsFromQuestionnaire.add(id));
+      controlReasoningMap = freshMapping.controlReasoning;
+
+      console.log(
+        `📋 Pillar ${pillar}: hasNo=${pillarSummary.hasNoAnswers}, allYesOrNA=${pillarSummary.allYesOrNA}, applicableControls=${applicableControlIdsFromQuestionnaire.size}`
+      );
     }
 
-    // Use filtered controls for analysis
-    const controlsToAnalyze = filteredControls;
+    let controlsToAnalyze: any[] = [];
+
+    if (!questionnaireResponse) {
+      console.log(`📋 No questionnaire — baseline analysis for ${allControlsForPillar.length} controls`);
+      controlsToAnalyze = allControlsForPillar;
+    } else if (pillarSummary.allYesOrNA || (!pillarSummary.hasNoAnswers && applicableControlIdsFromQuestionnaire.size === 0)) {
+      console.log(`📋 All Yes/NA for pillar ${pillar} — no gaps (100% compliance)`);
+      controlsToAnalyze = [];
+    } else {
+      controlsToAnalyze = filterApplicableControlsForPillar(
+        allControlsForPillar,
+        applicableControlIdsFromQuestionnaire
+      );
+      console.log(
+        `📋 Filtered to ${controlsToAnalyze.length} gap controls for pillar ${pillar} (from ${allControlsForPillar.length} total)`
+      );
+    }
+
+    const hasNoAnswersForPillar = pillarSummary.hasNoAnswers;
     
     // Step 6: Analyze gaps for each control
     const gaps = [];
@@ -242,22 +205,10 @@ export async function POST(request: NextRequest) {
         gapDescription = 'No applicable assets found for this control';
         notApplicableCount++;
       } else {
-        // Check control compliance status
-        // Default to NOT_IMPLEMENTED if no status is set (this is a gap)
-        if (control.complianceStatus === 'FULLY_COMPLIANT' || control.status === ControlStatus.FULLY_IMPLEMENTED) {
-          status = ControlStatus.FULLY_IMPLEMENTED;
-          gapDescription = `Fully implemented for ${applicableAssets.length} asset(s)`;
-          implementedCount++;
-        } else if (control.complianceStatus === 'PARTIALLY_COMPLIANT' || control.status === ControlStatus.PARTIALLY_IMPLEMENTED) {
-          status = ControlStatus.PARTIALLY_IMPLEMENTED;
-          gapDescription = `Partially implemented for ${applicableAssets.length} asset(s)`;
-          implementedCount += 0.5; // Count as half
-        } else {
-          // Default: NOT_IMPLEMENTED (this is a gap)
-          status = ControlStatus.NOT_IMPLEMENTED;
-          gapDescription = `Not implemented for ${applicableAssets.length} asset(s)`;
-          // Don't increment implementedCount - this is a gap
-        }
+        const evaluated = evaluateControlStatus(control, applicableAssets);
+        status = evaluated.status;
+        gapDescription = evaluated.gapDescription;
+        implementedCount += evaluated.implementedWeight;
       }
       
       // Step 6c: Determine priority based on asset criticality and requirement priority
@@ -331,7 +282,9 @@ export async function POST(request: NextRequest) {
       
       // Get reasoning from questionnaire response if available
       let reasoning: string[] = [];
-      if (questionnaireResponse && (questionnaireResponse as any).controlReasoning) {
+      if (controlReasoningMap[controlId]?.length) {
+        reasoning = controlReasoningMap[controlId];
+      } else if (questionnaireResponse && (questionnaireResponse as any).controlReasoning) {
         const controlReasoning = (questionnaireResponse as any).controlReasoning;
         reasoning = controlReasoning[controlId] || controlReasoning[String(control.controlId)] || [];
       }
@@ -364,44 +317,11 @@ export async function POST(request: NextRequest) {
     const totalControls = controlsToAnalyze.length;
     const applicableControlsCount = totalControls - notApplicableCount; // Exclude not applicable
     
-    // Calculate compliance percentage
-    // If no questionnaire response exists, we can't determine compliance (should be 0)
-    // If questionnaire exists but has 0 applicable controls, it means all answers were "Yes" (100% compliance)
-    // If questionnaire exists and has applicable controls, calculate based on implemented vs total
-    let compliancePercentage: number;
-    
-    // Count gaps (NOT_IMPLEMENTED controls) for accurate calculation
-    const notImplementedGaps = gaps.filter(g => g.status === ControlStatus.NOT_IMPLEMENTED).length;
-    const fullyImplemented = gaps.filter(g => g.status === ControlStatus.FULLY_IMPLEMENTED).length;
-    const partiallyImplemented = gaps.filter(g => g.status === ControlStatus.PARTIALLY_IMPLEMENTED).length;
-    
-    if (!questionnaireResponse) {
-      // No questionnaire response = can't determine compliance, should be 0%
-      compliancePercentage = 0;
-    } else if (totalControls === 0 && applicableControlIdsFromQuestionnaire.size === 0 && !hasNoAnswersForPillar) {
-      // If questionnaire exists but no controls to analyze AND no applicable controls from questionnaire,
-      // AND no "No" answers, it means all answers were "Yes" (100% compliance)
-      compliancePercentage = 100;
-    } else if (totalControls === 0 && hasNoAnswersForPillar) {
-      // If there are "No" answers but no controls found, this is a problem
-      // Compliance should be 0% because there are gaps that couldn't be mapped
-      console.log(`   ⚠️  WARNING: "No" answers exist but no controls found - setting compliance to 0%`);
-      compliancePercentage = 0;
-    } else if (applicableControlsCount === 0) {
-      // All controls are not applicable
-      // If there are gaps (NOT_IMPLEMENTED) or "No" answers, compliance should be 0%
-      compliancePercentage = (notImplementedGaps > 0 || hasNoAnswersForPillar) ? 0 : 100;
-    } else {
-      // Calculate based on implemented vs applicable controls
-      // Recalculate using actual gap counts to ensure accuracy
-      const totalImplemented = fullyImplemented + (partiallyImplemented * 0.5);
-      compliancePercentage = Math.round((totalImplemented / applicableControlsCount) * 100);
-      
-      // Ensure compliance is never 100% if there are NOT_IMPLEMENTED gaps or "No" answers
-      if ((notImplementedGaps > 0 || hasNoAnswersForPillar) && compliancePercentage >= 100) {
-        compliancePercentage = Math.max(0, Math.round((totalImplemented / applicableControlsCount) * 100));
-      }
-    }
+    const compliancePercentage = calculateCompliancePercentage(
+      gaps,
+      pillarSummary,
+      !!questionnaireResponse
+    );
     
     // Log compliance calculation details
     console.log(`📊 Compliance Calculation:`);

@@ -239,10 +239,8 @@ const PrivacyByDesignProjectSchema = new Schema<IPrivacyByDesignProject>(
   }
 );
 
-PrivacyByDesignProjectSchema.index({ projectId: 1 });
 PrivacyByDesignProjectSchema.index({ regulationType: 1, status: 1 });
 PrivacyByDesignProjectSchema.index({ dpiaRequired: 1, dpiaStatus: 1 });
-PrivacyByDesignProjectSchema.index({ riskLevel: 1 });
 
 let PrivacyByDesignProject: Model<IPrivacyByDesignProject>;
 
