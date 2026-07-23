@@ -14,6 +14,10 @@ export enum EvidenceType {
 export interface IEvidence extends Document {
   evidenceId: string;
   userId: Types.ObjectId;
+  cabinetId?: string;
+  clientId?: string;
+  article?: string; // e.g. "Artículo 12" — organises evidence by law article
+  regulationType?: string;
   controlId?: Types.ObjectId; // Control this evidence supports
   requirementId?: Types.ObjectId; // Requirement this evidence supports
   remediationActionId?: Types.ObjectId; // Optional: if linked to remediation
@@ -40,6 +44,22 @@ const EvidenceSchema = new Schema<IEvidence>(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
+    },
+    cabinetId: {
+      type: String,
+      index: true,
+    },
+    clientId: {
+      type: String,
+      index: true,
+    },
+    article: {
+      type: String,
+      index: true,
+    },
+    regulationType: {
+      type: String,
+      index: true,
     },
     controlId: {
       type: Schema.Types.ObjectId,

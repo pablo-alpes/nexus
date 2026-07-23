@@ -91,6 +91,12 @@ export default function ChilePrivacyLogin() {
 
       if (typeof window !== 'undefined') {
         localStorage.setItem('token', data.token);
+        if (data.user) {
+          localStorage.setItem('user', JSON.stringify(data.user));
+          if (data.user.cabinetId) localStorage.setItem('cabinetId', String(data.user.cabinetId));
+          if (data.user.clientId) localStorage.setItem('clientId', String(data.user.clientId));
+          if (data.user.role) localStorage.setItem('role', String(data.user.role));
+        }
         window.location.href = '/chile-privacy/dashboard';
       }
     } catch (err: any) {
@@ -119,6 +125,13 @@ export default function ChilePrivacyLogin() {
           >
             {loading ? 'Logging in...' : 'Quick Test Login (No Password Required)'}
           </button>
+        </div>
+
+        <div className="mb-4 p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700">
+          <p className="font-medium mb-1">Demo showcase</p>
+          <p><span className="text-slate-500">Cabinet:</span> demo@nexus.privacy</p>
+          <p><span className="text-slate-500">Password:</span> DemoCabinet2026!</p>
+          <p className="mt-1 text-xs text-slate-500">Run <code className="bg-slate-100 px-1 rounded">npm run seed:chile-demo</code> first.</p>
         </div>
         
         {error && (

@@ -2,27 +2,43 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectDBLocal, isLocalStorage } from '@/lib/mongodb-local';
 import QuestionnaireResponse from '@/models/QuestionnaireResponse';
 import Question, { getQuestionModel } from '@/models/Question';
-import { getAuthUser } from '@/lib/auth-helper';
+import { getAuthUser, getAuthUserContext } from '@/lib/auth-helper';
 import { ensureControlsSetup } from '@/lib/auto-controls';
 import { getPrecomputedMappings, getActiveRuleVersion } from '@/lib/services/precomputed-mappings';
 import { RegulationType } from '@/lib/regulations';
 import { computeQuestionnaireControlMapping } from '@/lib/compliance-engine';
+import { extractFilterParams, buildDataQuery, resolveTenantStamp } from '@/lib/query-helpers';
 
-// GET user's questionnaire response
+function responseLookupQuery(userId: string, stamp: { cabinetId?: string; clientId?: string }) {
+  if (stamp.clientId) {
+    return { clientId: stamp.clientId };
+  }
+  return { userId: String(userId) };
+}
+
+// GET user's questionnaire response (tenant-scoped)
 export async function GET(request: NextRequest) {
   try {
     await connectDBLocal();
     
-    // Check auth (bypassed in test mode)
     const user = getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
-    const payload = user;
-    
-    // Local storage doesn't support populate
-    const response = await QuestionnaireResponse.findOne({ userId: String(payload.userId) });
+
+    const ctx = await getAuthUserContext(request);
+    const filterParams = extractFilterParams(request);
+    const stamp = ctx
+      ? resolveTenantStamp(ctx, {}, filterParams)
+      : {};
+
+    let response = null;
+    if (stamp.clientId) {
+      response = await QuestionnaireResponse.findOne({ clientId: stamp.clientId });
+    }
+    if (!response) {
+      response = await QuestionnaireResponse.findOne({ userId: String(user.userId) });
+    }
     
     if (!response) {
       return NextResponse.json({ response: null });
@@ -42,16 +58,18 @@ export async function DELETE(request: NextRequest) {
   try {
     await connectDBLocal();
     
-    // Check auth (bypassed in test mode)
     const user = getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
-    const payload = user;
-    
-    // Delete the questionnaire response
-    await QuestionnaireResponse.deleteOne({ userId: String(payload.userId) });
+
+    const ctx = await getAuthUserContext(request);
+    const filterParams = extractFilterParams(request);
+    const stamp = ctx
+      ? resolveTenantStamp(ctx, {}, filterParams)
+      : {};
+
+    await QuestionnaireResponse.deleteOne(responseLookupQuery(user.userId, stamp));
     
     return NextResponse.json({ 
       success: true,
@@ -80,8 +98,12 @@ export async function POST(request: NextRequest) {
     }
     
     const payload = user;
+    const ctx = await getAuthUserContext(request);
     const body = await request.json();
     const regulationType = (body.regulation as RegulationType) || RegulationType.DORA;
+    const stamp = ctx
+      ? resolveTenantStamp(ctx, { clientId: body.clientId, cabinetId: body.cabinetId }, extractFilterParams(request))
+      : {};
     const QuestionModel = isLocalStorage() ? getQuestionModel(regulationType) : Question;
     const ruleVersion = await getActiveRuleVersion(regulationType);
 
@@ -138,10 +160,12 @@ export async function POST(request: NextRequest) {
       ? (mappingCompleteness.questionsWithMappings / mappingCompleteness.totalQuestions) * 100
       : 0;
     
-    // Save or update response
-    // Convert userId to string for local storage
+    // Save or update response (scoped by client when available)
     const responseData = {
       userId: String(payload.userId),
+      cabinetId: stamp.cabinetId,
+      clientId: stamp.clientId,
+      regulationType,
       answers: answerArray,
       applicableControls: applicableControls.map((id: any) => String(id)),
       controlReasoning: reasoningObject, // Store reasoning for transparency
@@ -149,7 +173,7 @@ export async function POST(request: NextRequest) {
     };
     
     const response = await QuestionnaireResponse.findOneAndUpdate(
-      { userId: String(payload.userId) },
+      responseLookupQuery(payload.userId, stamp),
       responseData,
       { upsert: true, new: true }
     );

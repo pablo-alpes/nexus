@@ -1,12 +1,13 @@
 'use client';
 
 /**
- * Dashboard Layout with Sidebar
- * Provides sidebar navigation for all dashboard pages
+ * Dashboard Layout with Sidebar + tenant (cabinet/client) context
  */
 
 import { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
+import ClientSwitcher from '@/components/ClientSwitcher';
+import { TenantViewProvider } from '@/contexts/TenantViewContext';
 
 export default function DashboardLayout({
   children,
@@ -21,7 +22,6 @@ export default function DashboardLayout({
       setSidebarCollapsed(saved === 'true');
     }
 
-    // Listen for sidebar toggle events
     const handleSidebarToggle = (event: CustomEvent) => {
       setSidebarCollapsed(event.detail.collapsed);
     };
@@ -34,13 +34,18 @@ export default function DashboardLayout({
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar isChileanPrivacy={true} />
-      <main 
-        className={`flex-1 transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-64'}`}
-      >
-        {children}
-      </main>
-    </div>
+    <TenantViewProvider>
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar isChileanPrivacy={true} />
+        <main
+          className={`flex-1 transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-64'}`}
+        >
+          <div className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur px-6 py-3 flex justify-end">
+            <ClientSwitcher />
+          </div>
+          {children}
+        </main>
+      </div>
+    </TenantViewProvider>
   );
 }

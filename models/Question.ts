@@ -24,6 +24,8 @@ export interface IQuestion extends Document {
   options?: IQuestionOption[];
   pillar?: string; // DORA Pillar this question relates to
   regulationType?: string; // DORA | CHILEAN_PRIVACY - for filtering and separate persistence
+  article?: string; // e.g. "Artículo 12"
+  requirementIds?: string[]; // Linked CHILE-ART-* requirement ids
   order: number;
   isRequired: boolean;
   parentQuestionId?: Types.ObjectId; // For conditional questions
@@ -62,6 +64,13 @@ const QuestionSchema = new Schema<IQuestion>(
       type: String,
       enum: ['DORA', 'CHILEAN_PRIVACY'],
     },
+    article: {
+      type: String,
+      index: true,
+    },
+    requirementIds: [{
+      type: String,
+    }],
     order: {
       type: Number,
       required: true,
