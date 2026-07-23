@@ -1,46 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
+import { connectDBLocal, isLocalStorage } from '@/lib/mongodb-local';
 import User from '@/models/User';
 import { comparePassword, generateToken } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB();
-    
+    if (isLocalStorage()) {
+      await connectDBLocal();
+    } else {
+      await connectDB();
+    }
+
     const body = await request.json();
     const { email, password } = body;
-    
+
     if (!email || !password) {
       return NextResponse.json(
         { error: 'Email and password are required' },
         { status: 400 }
       );
     }
-    
-    // Find user
-    const user = await User.findOne({ email });
+
+    const user = await User.findOne({ email: String(email).toLowerCase().trim() });
     if (!user) {
-      return NextResponse.json(
-        { error: 'Invalid credentials' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
-    
-    // Verify password
+
     const isValidPassword = await comparePassword(password, user.password);
     if (!isValidPassword) {
-      return NextResponse.json(
-        { error: 'Invalid credentials' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
-    
-    // Generate token
+
     const token = generateToken({
       userId: user._id.toString(),
       email: user.email,
     });
-    
+
     return NextResponse.json({
       token,
       user: {
@@ -48,13 +44,13 @@ export async function POST(request: NextRequest) {
         email: user.email,
         name: user.name,
         company: user.company,
+        role: user.role,
+        cabinetId: user.cabinetId ? String(user.cabinetId) : undefined,
+        clientId: user.clientId ? String(user.clientId) : undefined,
+        permissions: user.permissions,
       },
     });
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-

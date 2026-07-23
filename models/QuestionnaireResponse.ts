@@ -10,6 +10,9 @@ export interface IAnswer {
 
 export interface IQuestionnaireResponse extends Document {
   userId: Types.ObjectId;
+  cabinetId?: string;
+  clientId?: string;
+  regulationType?: string;
   answers: IAnswer[];
   applicableControls: Types.ObjectId[]; // Controls determined to be applicable
   controlReasoning?: Record<string, string[]>; // Reasoning for each control (transparency)
@@ -30,6 +33,18 @@ const QuestionnaireResponseSchema = new Schema<IQuestionnaireResponse>(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
+    },
+    cabinetId: {
+      type: String,
+      index: true,
+    },
+    clientId: {
+      type: String,
+      index: true,
+    },
+    regulationType: {
+      type: String,
+      index: true,
     },
     answers: [AnswerSchema],
     applicableControls: [{

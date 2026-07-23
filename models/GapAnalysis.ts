@@ -13,6 +13,8 @@ export interface IGap {
 
 export interface IGapAnalysis extends Document {
   userId: Types.ObjectId;
+  cabinetId?: string;
+  clientId?: string;
   regulationType?: string;
   gaps: IGap[];
   pillar: string; // Changed from DORAPillar to string to support multiple regulations
@@ -42,6 +44,14 @@ const GapAnalysisSchema = new Schema<IGapAnalysis>(
       type: Schema.Types.Mixed, // Allow both ObjectId and string for local storage
       ref: 'User',
       required: true,
+    },
+    cabinetId: {
+      type: String,
+      index: true,
+    },
+    clientId: {
+      type: String,
+      index: true,
     },
     gaps: [GapSchema],
     regulationType: {

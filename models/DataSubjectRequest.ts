@@ -9,6 +9,9 @@ import { LocalModel } from './LocalModel';
 
 export interface IDataSubjectRequest extends Document {
   requestId: string;
+  userId?: string;
+  cabinetId?: string;
+  clientId?: string;
   requestType: 'ACCESS' | 'RECTIFICATION' | 'DELETION' | 'PORTABILITY' | 'OPPOSITION' | 'RESTRICTION';
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'REJECTED' | 'CANCELLED';
   dataSubjectName: string;
@@ -34,6 +37,18 @@ const DataSubjectRequestSchema = new Schema<IDataSubjectRequest>(
       type: String,
       required: true,
       unique: true,
+      index: true,
+    },
+    userId: {
+      type: String,
+      index: true,
+    },
+    cabinetId: {
+      type: String,
+      index: true,
+    },
+    clientId: {
+      type: String,
       index: true,
     },
     requestType: {
@@ -86,10 +101,10 @@ const DataSubjectRequestSchema = new Schema<IDataSubjectRequest>(
 
 DataSubjectRequestSchema.index({ regulationType: 1, status: 1 });
 
-let DataSubjectRequest: Model<IDataSubjectRequest>;
+let DataSubjectRequest: any;
 
 if (isLocalStorage()) {
-  DataSubjectRequest = new LocalModel<IDataSubjectRequest>('DataSubjectRequest') as any;
+  DataSubjectRequest = new LocalModel<IDataSubjectRequest>('DataSubjectRequest');
 } else {
   DataSubjectRequest = mongoose.models.DataSubjectRequest || mongoose.model<IDataSubjectRequest>('DataSubjectRequest', DataSubjectRequestSchema);
 }

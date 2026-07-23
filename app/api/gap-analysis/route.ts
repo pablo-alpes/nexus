@@ -5,10 +5,11 @@ import Control, { getControlModel } from '@/models/Control';
 import Asset from '@/models/Asset';
 import QuestionnaireResponse from '@/models/QuestionnaireResponse';
 import Question, { getQuestionModel } from '@/models/Question';
-import { getAuthUser } from '@/lib/auth-helper';
+import { getAuthUser, getAuthUserContext } from '@/lib/auth-helper';
 import { DORAPillar } from '@/models/DORARequirement';
 import { ControlStatus } from '@/models/Control';
 import { RegulationType, getRegulationConfig } from '@/lib/regulations';
+import { extractFilterParams, buildDataQuery, resolveTenantStamp } from '@/lib/query-helpers';
 
 import { ensureControlsSetup } from '@/lib/auto-controls';
 import {
@@ -28,37 +29,40 @@ function getPillarsForRegulation(regulationType: RegulationType | string | null)
 }
 
 
-// GET gap analysis for user
+// GET gap analysis for tenant scope
 export async function GET(request: NextRequest) {
   try {
     await connectDBLocal();
     
-    // Check auth (bypassed in test mode)
-    const user = getAuthUser(request);
-    if (!user) {
+    const ctx = await getAuthUserContext(request);
+    if (!ctx) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const payload = user;
     const searchParams = request.nextUrl.searchParams;
     const pillar = searchParams.get('pillar');
     const regulation = searchParams.get('regulation') || RegulationType.DORA;
     const regulationPillars = getPillarsForRegulation(regulation);
     
-    const query: any = { userId: payload.userId };
+    const filterParams = extractFilterParams(request);
+    filterParams.regulationType = regulation;
+    const { query } = await buildDataQuery(ctx, filterParams);
+
+    // Prefer tenant fields; fall back to userId for legacy rows
+    if (!query.clientId && !query.cabinetId) {
+      query.userId = ctx.userId;
+    }
+
     if (pillar) {
-      // Verify pillar belongs to regulation
       if (regulationPillars.includes(pillar)) {
         query.pillar = pillar;
       } else {
         return NextResponse.json({ gapAnalyses: [] });
       }
     } else {
-      // Filter by regulation pillars
       query.pillar = { $in: regulationPillars };
     }
     
-    // Local storage doesn't support populate
     const gapAnalyses = await GapAnalysis.find(query, { createdAt: -1 });
     
     return NextResponse.json({ gapAnalyses });
@@ -85,10 +89,14 @@ export async function POST(request: NextRequest) {
     }
     
     const payload = user;
+    const ctx = await getAuthUserContext(request);
     const body = await request.json();
-    const { pillar, regulation } = body;
+    const { pillar, regulation, clientId, cabinetId } = body;
     const regulationType = regulation || RegulationType.DORA;
     const regulationPillars = getPillarsForRegulation(regulationType);
+    const stamp = ctx
+      ? resolveTenantStamp(ctx, { clientId, cabinetId }, extractFilterParams(request))
+      : {};
     
     if (!pillar) {
       return NextResponse.json(
@@ -340,6 +348,8 @@ export async function POST(request: NextRequest) {
     // Ensure all data is properly formatted for local storage
     const gapAnalysisData = {
       userId: String(payload.userId), // Always convert to string for local storage
+      cabinetId: stamp.cabinetId,
+      clientId: stamp.clientId,
       pillar,
       gaps: gaps.map((gap: any) => ({
         controlId: String(gap.controlId), // Ensure controlId is string
@@ -357,13 +367,19 @@ export async function POST(request: NextRequest) {
       compliancePercentage,
     };
     
-    // Save to database (local storage will handle string conversion)
+    // Save scoped by client when available (multitenant), else userId (legacy)
+    const upsertQuery: Record<string, any> = {
+      pillar,
+      regulationType: regulationType,
+    };
+    if (stamp.clientId) {
+      upsertQuery.clientId = stamp.clientId;
+    } else {
+      upsertQuery.userId = String(payload.userId);
+    }
+
     const gapAnalysis = await GapAnalysis.findOneAndUpdate(
-      { 
-        userId: String(payload.userId), 
-        pillar,
-        regulationType: regulationType,
-      },
+      upsertQuery,
       {
         ...gapAnalysisData,
         regulationType: regulationType,
